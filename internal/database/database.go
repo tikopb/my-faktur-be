@@ -23,6 +23,9 @@ func GetDb() *gorm.DB {
 	if err != nil {
 		panic("Failed to connect into database")
 	}
+
+	seedDB(db)
+
 	return db
 }
 

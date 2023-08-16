@@ -13,6 +13,7 @@ func main() {
 
 	fmt.Sprintln(db)
 
-	e.Logger.Fatal(e.Start((":3000")))
+	//after all set, push the start
+	e.Logger.Fatal(e.Start((":4000")))
 
 }
