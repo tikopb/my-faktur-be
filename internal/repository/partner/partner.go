@@ -18,16 +18,24 @@ func GetRepository(db *gorm.DB) Repository {
 }
 
 // Create implements Repository.
-func (pr *partnerRepo) Create(partner model.Partner) (model.Partner, error) {
+func (pr *partnerRepo) Create(partner model.Partner) (model.PartnerRespon, error) {
+	data := model.PartnerRespon{}
 	if err := pr.db.Create(&partner).Error; err != nil {
-		return partner, err
+		return data, err
 	}
-	return partner, nil
+
+	data = model.PartnerRespon{
+		Name:     partner.Name,
+		DNAmount: partner.DNAmount,
+		CNAmount: partner.CNAmount,
+		Isactive: partner.Isactive,
+	}
+	return data, nil
 }
 
 // Index implements Repository.
-func (pr *partnerRepo) Index() (model.Partner, error) {
-	var data model.Partner
+func (pr *partnerRepo) Index() ([]model.Partner, error) {
+	var data []model.Partner
 
 	if err := pr.db.Find(&data).Error; err != nil {
 		return data, err
@@ -41,7 +49,9 @@ func (pr *partnerRepo) Show(id int) (model.Partner, error) {
 	var data model.Partner
 
 	if err := pr.db.Where(model.Partner{ID: id}).Preload("Partner").First(&data).Error; err != nil {
-		return data, errors.New("data not found")
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return data, errors.New("data not found")
+		}
 	}
 	return data, nil
 }

@@ -7,11 +7,11 @@ import (
 type Repository interface {
 	// Index returns a list of Partners.
 	// Call this method to retrieve a list of Partners.
-	Index() (model.Partner, error)
+	Index() ([]model.Partner, error)
 
 	// Create creates a new Partner.
 	// Call this method to create a new Partner.
-	Create(partner model.Partner) (model.Partner, error)
+	Create(partner model.Partner) (model.PartnerRespon, error)
 
 	// Show retrieves an Partner by its ID.
 	// Call this method to retrieve a specific Partner by ID.
