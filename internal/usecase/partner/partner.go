@@ -32,7 +32,7 @@ func (m *partnerUsecase) CreatePartner(request model.Partner) (model.PartnerResp
 }
 
 // UpdatedPartner implements Partner_Usecase.
-func (m *partnerUsecase) UpdatedPartner(id int, request model.Partner) (model.Partner, error) {
+func (m *partnerUsecase) UpdatedPartner(id int, request model.Partner) (model.PartnerRespon, error) {
 	data, err := m.partnerRepo.Update(id, request)
 	return data, err
 }

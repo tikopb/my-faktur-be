@@ -19,7 +19,7 @@ type Repository interface {
 
 	// Update updates an existing Partner by its ID.
 	// Call this method to update an existing Partner by ID.
-	Update(id int, updatedPartner model.Partner) (model.Partner, error)
+	Update(id int, updatedPartner model.Partner) (model.PartnerRespon, error)
 
 	// Delete deletes an Partner by its ID.
 	// Call this method to delete an Partner by ID.

@@ -57,11 +57,12 @@ func (pr *partnerRepo) Show(id int) (model.Partner, error) {
 }
 
 // Update implements Repository.
-func (pr *partnerRepo) Update(id int, updatedPartner model.Partner) (model.Partner, error) {
+func (pr *partnerRepo) Update(id int, updatedPartner model.Partner) (model.PartnerRespon, error) {
+	dataUpdated := model.PartnerRespon{}
 	data, err := pr.Show(id)
 
 	if err != nil {
-		return data, err
+		return dataUpdated, err
 	}
 	data.Name = updatedPartner.Name
 	data.CreatedAt = updatedPartner.CreatedAt
@@ -72,10 +73,17 @@ func (pr *partnerRepo) Update(id int, updatedPartner model.Partner) (model.Partn
 
 	//save the data
 	if err := pr.db.Save(&data).Error; err != nil {
-		return data, err
+		return dataUpdated, err
 	}
 
-	return data, nil
+	//inisiate data updated return
+	dataUpdated = model.PartnerRespon{
+		Name:     data.Name,
+		DNAmount: data.DNAmount,
+		CNAmount: data.CNAmount,
+		Isactive: data.Isactive,
+	}
+	return dataUpdated, nil
 }
 
 // Delete implements Repository.
