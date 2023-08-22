@@ -8,3 +8,8 @@ type Product struct {
 	User        User   `gorm:"foreignKey:created_by"`
 	IsActive    bool   `gorm:"column:isactive"`
 }
+type ProductRespon struct {
+	Name        string `json:"name" gorm:"column:name"`
+	Description string `json:"description" gorm:"column:description"`
+	IsActive    bool   `gorm:"column:isactive"`
+}

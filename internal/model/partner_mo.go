@@ -11,6 +11,7 @@ type Partner struct {
 	DNAmount  float64   `gorm:"column:dn_amount" json:"dn_amount"`
 	CNAmount  float64   `gorm:"column:cn_amount" json:"cn_amount"`
 	Isactive  bool      `gorm:"column:cn_amount" json:"isactive"`
+	Code      string    `gorm:"column:bp_code;unique;not null" json:"bpcode"`
 }
 
 type PartnerRespon struct {

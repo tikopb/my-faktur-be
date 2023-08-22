@@ -37,7 +37,7 @@ func (pr *partnerRepo) Create(partner model.Partner) (model.PartnerRespon, error
 func (pr *partnerRepo) Index() ([]model.Partner, error) {
 	var data []model.Partner
 
-	if err := pr.db.Find(&data).Error; err != nil {
+	if err := pr.db.Order("name").Find(&data).Error; err != nil {
 		return data, err
 	}
 
