@@ -10,13 +10,13 @@ type Partner struct {
 	User      User      `gorm:"foreignKey:created_by"`
 	DNAmount  float64   `gorm:"column:dn_amount" json:"dn_amount"`
 	CNAmount  float64   `gorm:"column:cn_amount" json:"cn_amount"`
-	Isactive  bool      `gorm:"column:cn_amount" json:"isactive"`
+	Isactive  bool      `gorm:"column:isactive" json:"isactive"`
 	Code      string    `gorm:"column:bp_code;unique;not null" json:"bpcode"`
 }
 
 type PartnerRespon struct {
 	Name     string  `json:"name"`
-	DNAmount float64 `gorm:"column:dn_amount" json:"dn_amount"`
-	CNAmount float64 `gorm:"column:cn_amount" json:"cn_amount"`
-	Isactive bool    `gorm:"column:cn_amount" json:"isactive"`
+	DNAmount float64 `json:"dn_amount"`
+	CNAmount float64 `json:"cn_amount"`
+	Isactive bool    `json:"isactive"`
 }

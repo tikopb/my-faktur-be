@@ -27,7 +27,7 @@ func transformIdToInt(c echo.Context) int {
 }
 
 func (h *handler) IndexProduct(c echo.Context) error {
-	limitStr := c.Param("limit")
+	limitStr := c.QueryParam("limit")
 	if limitStr == "" {
 		limitStr = "15" // Default value
 	}
@@ -36,7 +36,7 @@ func (h *handler) IndexProduct(c echo.Context) error {
 		return handleError(c, http.StatusInternalServerError, err)
 	}
 
-	offsetStr := c.Param("offset")
+	offsetStr := c.QueryParam("offset")
 	if offsetStr == "" {
 		offsetStr = "0"
 	}
