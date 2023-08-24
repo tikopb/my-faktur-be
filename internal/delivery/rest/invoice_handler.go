@@ -9,7 +9,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func (h *handler) IndexProduct(c echo.Context) error {
+func (h *handler) IndexInvoice(c echo.Context) error {
 	limitStr := c.QueryParam("limit")
 	if limitStr == "" {
 		limitStr = "15" // Default value
@@ -28,7 +28,7 @@ func (h *handler) IndexProduct(c echo.Context) error {
 		return handleError(c, http.StatusInternalServerError, err)
 	}
 
-	data, err := h.productUsecase.IndexPartner(limit, offset)
+	data, err := h.invoiceUsecase.IndexInvoice(limit, offset)
 	if err != nil {
 		return handleError(c, http.StatusInternalServerError, err)
 	}
@@ -38,10 +38,10 @@ func (h *handler) IndexProduct(c echo.Context) error {
 	})
 }
 
-func (h *handler) GetProduct(c echo.Context) error {
-	Id := transformIdToInt(c)
+func (h *handler) GetInvoice(c echo.Context) error {
+	id := transformIdToInt(c)
 
-	data, err := h.productUsecase.GetProduct(Id)
+	data, err := h.productUsecase.GetProduct(id)
 	if err != nil {
 		return handleError(c, http.StatusInternalServerError, err)
 	}
@@ -51,27 +51,26 @@ func (h *handler) GetProduct(c echo.Context) error {
 	})
 }
 
-func (h *handler) CreateProduct(c echo.Context) error {
-	var request model.Product
+func (h *handler) CreateInvoice(c echo.Context) error {
+	var request model.Invoice
 	err := json.NewDecoder(c.Request().Body).Decode(&request)
 	if err != nil {
 		return handleError(c, http.StatusInternalServerError, err)
 	}
 
-	data, err := h.productUsecase.CreateProduct(request)
+	data, err := h.invoiceUsecase.CreateInvoice(request)
 	if err != nil {
 		return handleError(c, http.StatusInternalServerError, err)
 	}
-
 	return c.JSON(http.StatusOK, map[string]interface{}{
 		"data": data,
 	})
 }
 
-func (h *handler) UpdatedProduct(c echo.Context) error {
-	var request model.Product
-	// get param
-	Id := transformIdToInt(c)
+func (h *handler) UpdateInvoice(c echo.Context) error {
+	var request model.Invoice
+	//get param
+	id := transformIdToInt(c)
 
 	//run function
 	err := json.NewDecoder(c.Request().Body).Decode(&request)
@@ -79,7 +78,7 @@ func (h *handler) UpdatedProduct(c echo.Context) error {
 		return handleError(c, http.StatusInternalServerError, err)
 	}
 
-	data, err := h.productUsecase.UpdatedProduct(Id, request)
+	data, err := h.invoiceUsecase.UpdatedInvoice(id, request)
 	if err != nil {
 		return handleError(c, http.StatusInternalServerError, err)
 	}
@@ -90,11 +89,11 @@ func (h *handler) UpdatedProduct(c echo.Context) error {
 	})
 }
 
-func (h *handler) DeleteProduct(c echo.Context) error {
-	// get param
-	Id := transformIdToInt(c)
+func (h *handler) DeleteInvoice(c echo.Context) error {
+	//get param
+	id := transformIdToInt(c)
 
-	data, err := h.productUsecase.DeleteProduct(Id)
+	data, err := h.invoiceUsecase.DeleteInvoice(id)
 	if err != nil {
 		return handleError(c, http.StatusInternalServerError, err)
 	}
