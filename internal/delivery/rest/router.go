@@ -20,4 +20,12 @@ func LoadRoutes(e *echo.Echo, handler *handler) {
 	productGroup.PUT("/:id", handler.UpdatedProduct)
 	productGroup.DELETE("/:id", handler.DeleteProduct)
 
+	//group
+	invoiceGroup := e.Group("/invoice")
+	invoiceGroup.GET("", handler.IndexInvoice)
+	invoiceGroup.GET("/:id", handler.GetInvoice)
+	invoiceGroup.POST("", handler.CreateInvoice)
+	invoiceGroup.PUT("/:id", handler.UpdateInvoice)
+	invoiceGroup.DELETE("/:id", handler.DeleteInvoice)
+
 }

@@ -14,7 +14,7 @@ type Invoice struct {
 	PartnerID   int       `json:"partner_id" gorm:"column:partner_id"`
 	Partner     Partner   `gorm:"foreignKey:partner_id"`
 	GrandTotal  float64   `gorm:"column:grand_total"`
-	Discount    float64   `gorm:"column:discount"`
+	Discount    float64   `json:"discount" gorm:"column:discount"`
 	BatchNo     string    `json:"batchno" gorm:"column:batch_no"`
 	InvoiceLine []InvoiceLine
 	Status      constant.InvoiceStatus
@@ -31,4 +31,27 @@ type InvoiceLine struct {
 	Amount    float64 `gorm:"column:amount"`
 	CreatedBy string  `gorm:"column:created_by" json:"created_by"`
 	User      User    `gorm:"foreignKey:created_by"`
+}
+
+type InvoiceCreateRespon struct {
+	BatchNo     string    `json:"batchno"`
+	CreatedAt   time.Time `json:"created_at"`
+	GrandTotal  float64   `json:"grand_total"`
+	Discount    float64   `json:"discount"`
+	Status      constant.InvoiceStatus
+	PartnerName string  `json:"partner_name"`
+	CreatedBy   string  `json:"created_by"`
+	User        User    `json:"user"`
+	Partner     Partner `json:"partner"`
+}
+
+type InvoiceIndexRespont struct {
+	ID         int       `json:"id"`
+	CreatedAt  time.Time `json:"created_at"`
+	CreatedBy  string    `json:"created_by"`
+	Partner    Partner   `gorm:"foreignKey:partner_id"`
+	GrandTotal float64   `gorm:"column:grand_total"`
+	Discount   float64   `gorm:"column:discount"`
+	BatchNo    string    `json:"batchno" gorm:"column:batch_no"`
+	Status     constant.InvoiceStatus
 }
