@@ -6,6 +6,7 @@ import (
 	"bemyfaktur/internal/model/constant"
 )
 
+// -- invoice
 type Invoice struct {
 	ID          int       `json:"id" gorm:"primaryKey;autoIncrement"`
 	CreatedAt   time.Time `gorm:"column:created_at"`
@@ -18,19 +19,6 @@ type Invoice struct {
 	BatchNo     string    `json:"batchno" gorm:"column:batch_no"`
 	InvoiceLine []InvoiceLine
 	Status      constant.InvoiceStatus
-}
-
-type InvoiceLine struct {
-	ID        int     `json:"id" gorm:"primaryKey;autoIncrement"`
-	InvoiceID int     `gorm:"column:invoice_id"`
-	ProductID int     `gorm:"column:product_id"` // Fixed column name
-	Product   Product `gorm:"foreignKey:ProductID"`
-	Price     float64 `gorm:"column:price"`
-	Discount  float64 `gorm:"column:discount"`
-	Qty       float64 `gorm:"column:qty"`
-	Amount    float64 `gorm:"column:amount"`
-	CreatedBy string  `gorm:"column:created_by" json:"created_by"`
-	User      User    `gorm:"foreignKey:created_by"`
 }
 
 type InvoiceCreateRespon struct {
@@ -54,4 +42,20 @@ type InvoiceIndexRespont struct {
 	Discount   float64   `gorm:"column:discount"`
 	BatchNo    string    `json:"batchno" gorm:"column:batch_no"`
 	Status     constant.InvoiceStatus
+}
+
+// -- invoice line
+type InvoiceLine struct {
+	ID        int       `json:"id" gorm:"primaryKey;autoIncrement"`
+	CreatedAt time.Time `json:"created_at"`
+	InvoiceID int       `gorm:"column:invoice_id;not null"`
+	Invoice   Invoice   `gorm:"foreignKey:invoice_id"`
+	ProductID int       `gorm:"column:product_id"` // Fixed column name
+	Product   Product   `gorm:"foreignKey:ProductID"`
+	Price     float64   `gorm:"column:price"`
+	Discount  float64   `gorm:"column:discount"`
+	Qty       float64   `gorm:"column:qty"`
+	Amount    float64   `gorm:"column:amount"`
+	CreatedBy string    `gorm:"column:created_by" json:"created_by"`
+	User      User      `gorm:"foreignKey:created_by"`
 }
