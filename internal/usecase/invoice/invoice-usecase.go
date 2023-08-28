@@ -5,6 +5,7 @@ import (
 	"bemyfaktur/internal/repository/invoice"
 	"bemyfaktur/internal/repository/partner"
 	"bemyfaktur/internal/repository/product"
+	"bemyfaktur/internal/repository/user"
 	"errors"
 )
 
@@ -12,6 +13,7 @@ type invoiceUsecase struct {
 	invoiceRepo invoice.InvoiceRepositoryInterface
 	parterRepo  partner.Repository
 	productRepo product.Repository
+	userRepo    user.Repository
 }
 
 func GetUsecase(invoiceRepo invoice.InvoiceRepositoryInterface) InvoiceUsecaseInterface {
@@ -21,14 +23,27 @@ func GetUsecase(invoiceRepo invoice.InvoiceRepositoryInterface) InvoiceUsecaseIn
 }
 
 // CreateInvoice implements InvoiceUsecaseInterface.
-func (iu *invoiceUsecase) CreateInvoice(request model.Invoice) (model.InvoiceCreateRespon, error) {
-	data := model.InvoiceCreateRespon{}
-	partnerData, err := iu.parterRepo.Show(request.ID)
+/**
+definition of done
+a. validate User
+*/
+func (iu *invoiceUsecase) CreateInvoice(request model.InvoiceRequest) (model.InvoiceRespont, error) {
+	//# Get all data First
+	data := model.InvoiceRespont{}
+
+	//get Partner
+	partnerData, err := iu.parterRepo.Show(request.PartnerID)
 	if err != nil || !partnerData.Isactive {
 		return data, errors.New("partner not exist")
 	}
 
-	return iu.invoiceRepo.Create(request)
+	//Get user
+	userData, err := iu.userRepo.Show("1") //##@ UNTIL SECURITY MODULE DONE
+	if err != nil || !userData.IsActive {
+		return data, errors.New("user not activated")
+	}
+
+	return iu.invoiceRepo.Create(request, partnerData, userData)
 }
 
 // DeleteInvoice implements InvoiceUsecaseInterface.
@@ -42,7 +57,7 @@ func (iu *invoiceUsecase) GetInvoice(id int) (model.Invoice, error) {
 }
 
 // IndexInvoice implements InvoiceUsecaseInterface.
-func (iu *invoiceUsecase) IndexInvoice(limit int, offset int) ([]model.InvoiceIndexRespont, error) {
+func (iu *invoiceUsecase) IndexInvoice(limit int, offset int) ([]model.InvoiceRespont, error) {
 	return iu.invoiceRepo.Index(limit, offset)
 }
 
@@ -55,9 +70,9 @@ DOD (Definition Of Done)
 2.	insert data of invoice with struct invoice
 3. 	fill invoice respon for return
 */
-func (iu *invoiceUsecase) UpdatedInvoice(id int, request model.Invoice) (model.Invoice, error) {
-	data := model.Invoice{}
-	partnerData, err := iu.parterRepo.Show(request.ID)
+func (iu *invoiceUsecase) UpdatedInvoice(id int, request model.Invoice) (model.InvoiceRespont, error) {
+	data := model.InvoiceRespont{}
+	partnerData, err := iu.parterRepo.Show(request.PartnerID)
 	if err != nil || !partnerData.Isactive {
 		return data, errors.New("partner not exist")
 	}

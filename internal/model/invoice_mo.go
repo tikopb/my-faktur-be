@@ -21,28 +21,36 @@ type Invoice struct {
 	Status      constant.InvoiceStatus
 }
 
-type InvoiceCreateRespon struct {
-	BatchNo     string    `json:"batchno"`
-	CreatedAt   time.Time `json:"created_at"`
-	GrandTotal  float64   `json:"grand_total"`
-	Discount    float64   `json:"discount"`
-	Status      constant.InvoiceStatus
-	PartnerName string  `json:"partner_name"`
-	CreatedBy   string  `json:"created_by"`
-	User        User    `json:"user"`
-	Partner     Partner `json:"partner"`
-}
-
-type InvoiceIndexRespont struct {
-	ID         int       `json:"id"`
+type InvoiceRequest struct {
 	CreatedAt  time.Time `json:"created_at"`
-	CreatedBy  string    `json:"created_by"`
-	Partner    Partner   `gorm:"foreignKey:partner_id"`
-	GrandTotal float64   `gorm:"column:grand_total"`
-	Discount   float64   `gorm:"column:discount"`
-	BatchNo    string    `json:"batchno" gorm:"column:batch_no"`
+	PartnerID  int       `json:"partner_id"`
+	GrandTotal float64   `json:"grand_total"`
+	Discount   float64   `json:"discount"`
+	BatchNo    string    `json:"batchno"`
 	Status     constant.InvoiceStatus
 }
+
+type InvoiceRespont struct {
+	ID         int       `json:"id"`
+	CreatedAt  time.Time `json:"created_at"`
+	GrandTotal float64   `json:"grand_total"`
+	Discount   float64   `json:"discount"`
+	BatchNo    string    `json:"batchno"`
+	Status     constant.InvoiceStatus
+	CreatedBy  User    `json:"user"`
+	Partner    Partner `json:"partner"`
+}
+
+// type InvoiceIndexRespont struct {
+// 	ID         int       `json:"id"`
+// 	CreatedAt  time.Time `json:"created_at"`
+// 	CreatedBy  string    `json:"created_by"`
+// 	Partner    Partner   `gorm:"foreignKey:partner_id"`
+// 	GrandTotal float64   `gorm:"column:grand_total"`
+// 	Discount   float64   `gorm:"column:discount"`
+// 	BatchNo    string    `json:"batchno" gorm:"column:batch_no"`
+// 	Status     constant.InvoiceStatus
+// }
 
 // -- invoice line
 type InvoiceLine struct {

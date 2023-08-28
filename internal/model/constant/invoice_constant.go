@@ -3,7 +3,8 @@ package constant
 type InvoiceStatus string
 
 const (
+	InvoiceStatusDraft     InvoiceStatus = "DR"
+	InvoiceStatusProcessed InvoiceStatus = "IP"
 	InvoiceStatusComplete  InvoiceStatus = "CO"
-	InvoiceStatusProcessed InvoiceStatus = "processed"
-	InvoiceStatusVoid      InvoiceStatus = "vo"
+	InvoiceStatusVoid      InvoiceStatus = "VO"
 )

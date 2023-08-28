@@ -52,7 +52,7 @@ func (h *handler) GetInvoice(c echo.Context) error {
 }
 
 func (h *handler) CreateInvoice(c echo.Context) error {
-	var request model.Invoice
+	var request model.InvoiceRequest
 	err := json.NewDecoder(c.Request().Body).Decode(&request)
 	if err != nil {
 		return handleError(c, http.StatusInternalServerError, err)
