@@ -11,6 +11,8 @@ import (
 	invoiceReposiftory "bemyfaktur/internal/repository/invoice"
 	invoiceUsecase "bemyfaktur/internal/usecase/invoice"
 
+	usrRepository "bemyfaktur/internal/repository/user"
+
 	"gorm.io/gorm"
 )
 
@@ -27,8 +29,10 @@ func NewContainer(db *gorm.DB) *Container {
 	productRepo := productReposiftory.GetRepository(db)
 	productUsecase := productUsecase.GetUsecase(productRepo)
 
+	userRepository := usrRepository.GetRepository(db)
+
 	invoiceRepo := invoiceReposiftory.GetRepository(db)
-	invoiceUsecase := invoiceUsecase.GetUsecase(invoiceRepo)
+	invoiceUsecase := invoiceUsecase.GetUsecase(invoiceRepo, partnerRepo, productRepo, userRepository)
 
 	return &Container{
 		PartnerUsecase: partnerUsecase,

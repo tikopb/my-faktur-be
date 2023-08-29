@@ -34,10 +34,13 @@ func (*userRepo) Index(limit int, offset int) ([]model.User, error) {
 
 // Show implements Repository.
 func (ur *userRepo) Show(id string) (model.User, error) {
-	data := model.User{}
+	var data model.User
 
 	if err := ur.db.Where(model.User{ID: id}).Preload("User").First(&data).Error; err != nil {
-		return data, errors.New("data not found")
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return data, errors.New("user not found")
+		}
+		return data, err
 	}
 
 	return data, nil

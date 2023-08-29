@@ -11,7 +11,7 @@ type InvoiceRepositoryInterface interface {
 
 	// Create creates a new invoice.
 	// Call this method to create a new invoice.
-	Create(invoice model.InvoiceRequest, partner model.Partner, user model.User) (model.InvoiceRespont, error)
+	Create(invoice model.InvoiceRequest, partner model.Partner) (model.InvoiceRespont, error)
 
 	// Show retrieves an invoice by its ID.
 	// Call this method to retrieve a specific invoice by ID.

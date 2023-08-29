@@ -23,6 +23,7 @@ type Invoice struct {
 
 type InvoiceRequest struct {
 	CreatedAt  time.Time `json:"created_at"`
+	UserId     string    `json:"user_id"` //##@ until security module fixed
 	PartnerID  int       `json:"partner_id"`
 	GrandTotal float64   `json:"grand_total"`
 	Discount   float64   `json:"discount"`

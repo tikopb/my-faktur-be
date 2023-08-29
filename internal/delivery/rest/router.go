@@ -36,4 +36,7 @@ func LoadRoutes(e *echo.Echo, handler *handler) {
 	invoiceGroupLine.PUT("/:id", handler.UpdatedInvoiceLine)
 	invoiceGroupLine.DELETE("/:id", handler.DeleteInvoiceLine)
 
+	userGroup := e.Group("/user")
+	userGroup.GET("/:id", handler.Getuser)
+
 }

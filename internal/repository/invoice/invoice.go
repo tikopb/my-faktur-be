@@ -19,7 +19,7 @@ func GetRepository(db *gorm.DB) InvoiceRepositoryInterface {
 }
 
 // Create implements InvoiceRepositoryInterface.
-func (ir *invoiceRepo) Create(request model.InvoiceRequest, partner model.Partner, user model.User) (model.InvoiceRespont, error) {
+func (ir *invoiceRepo) Create(request model.InvoiceRequest, partner model.Partner) (model.InvoiceRespont, error) {
 	data := model.InvoiceRespont{}
 
 	invoiceData := model.Invoice{
@@ -27,7 +27,7 @@ func (ir *invoiceRepo) Create(request model.InvoiceRequest, partner model.Partne
 		CreatedAt:  request.CreatedAt,
 		GrandTotal: request.GrandTotal,
 		Discount:   request.Discount,
-		Status:     constant.InvoiceStatusComplete,
+		Status:     constant.InvoiceStatusDraft,
 		CreatedBy:  "1", //##@ UNTIL SECURITY MODULE DONE
 		PartnerID:  partner.ID,
 	}
@@ -45,7 +45,7 @@ func (ir *invoiceRepo) Create(request model.InvoiceRequest, partner model.Partne
 		BatchNo:    invoiceData.BatchNo,
 		Status:     invoiceData.Status,
 		CreatedBy:  invoiceData.User,
-		Partner:    invoiceData.Partner,
+		Partner:    partner,
 	}
 
 	return data, nil
@@ -94,7 +94,7 @@ func (ir *invoiceRepo) Index(limit int, offset int) ([]model.InvoiceRespont, err
 func (ir *invoiceRepo) Show(id int) (model.Invoice, error) {
 	var data model.Invoice
 
-	if err := ir.db.Where(model.Invoice{ID: id}).Preload("Invoice").First(&data).Error; err != nil {
+	if err := ir.db.Where(model.Invoice{ID: id}).Preload("Invoice").Preload("Partner").Preload("User").First(&data).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return data, errors.New("data not found")
 		}

@@ -41,7 +41,7 @@ func (h *handler) IndexInvoice(c echo.Context) error {
 func (h *handler) GetInvoice(c echo.Context) error {
 	id := transformIdToInt(c)
 
-	data, err := h.productUsecase.GetProduct(id)
+	data, err := h.invoiceUsecase.GetInvoice(id)
 	if err != nil {
 		return handleError(c, http.StatusInternalServerError, err)
 	}
