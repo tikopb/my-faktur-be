@@ -48,11 +48,12 @@ func (pr *partnerRepo) Index() ([]model.Partner, error) {
 func (pr *partnerRepo) Show(id int) (model.Partner, error) {
 	var data model.Partner
 
-	if err := pr.db.Where(model.Partner{ID: id}).Preload("Partner").First(&data).Error; err != nil {
+	if err := pr.db.First(&data, id).Preload("Partner").Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return data, errors.New("data not found")
 		}
 	}
+
 	return data, nil
 }
 

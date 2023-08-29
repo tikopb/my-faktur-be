@@ -23,13 +23,15 @@ func (ir *invoiceRepo) Create(request model.InvoiceRequest, partner model.Partne
 	data := model.InvoiceRespont{}
 
 	invoiceData := model.Invoice{
-		BatchNo:    request.BatchNo,
-		CreatedAt:  request.CreatedAt,
-		GrandTotal: request.GrandTotal,
-		Discount:   request.Discount,
-		Status:     constant.InvoiceStatusDraft,
-		CreatedBy:  "1", //##@ UNTIL SECURITY MODULE DONE
-		PartnerID:  partner.ID,
+		ID:          0,
+		CreatedAt:   request.CreatedAt,
+		CreatedBy:   "1",
+		PartnerID:   request.PartnerID,
+		GrandTotal:  request.GrandTotal,
+		Discount:    request.Discount,
+		BatchNo:     request.BatchNo,
+		InvoiceLine: []model.InvoiceLine{},
+		Status:      constant.InvoiceStatusDraft,
 	}
 
 	if err := ir.db.Create(&invoiceData).Error; err != nil {
@@ -37,6 +39,19 @@ func (ir *invoiceRepo) Create(request model.InvoiceRequest, partner model.Partne
 	}
 
 	//set return data
+	//get user return value
+	var userData model.User
+	if err := ir.db.First(&userData, invoiceData.CreatedBy).Error; err != nil {
+		return data, err
+	}
+	//get partner return value
+	var partnerData model.Partner
+	if err := ir.db.First(&partnerData, invoiceData.PartnerID).Preload("User").Error; err != nil {
+		return data, err
+	}
+
+	//get partner user value
+
 	data = model.InvoiceRespont{
 		ID:         invoiceData.ID,
 		CreatedAt:  invoiceData.CreatedAt,
@@ -44,8 +59,8 @@ func (ir *invoiceRepo) Create(request model.InvoiceRequest, partner model.Partne
 		Discount:   invoiceData.Discount,
 		BatchNo:    invoiceData.BatchNo,
 		Status:     invoiceData.Status,
-		CreatedBy:  invoiceData.User,
-		Partner:    partner,
+		CreatedBy:  userData,
+		Partner:    partnerData,
 	}
 
 	return data, nil
@@ -69,11 +84,24 @@ func (ir *invoiceRepo) Delete(id int) (string, error) {
 func (ir *invoiceRepo) Index(limit int, offset int) ([]model.InvoiceRespont, error) {
 	data := []model.Invoice{}
 	dataReturn := []model.InvoiceRespont{}
-	if err := ir.db.Order("CreatedAt DESC").Limit(limit).Offset(offset).Find(&data).Error; err != nil {
+	if err := ir.db.Order("created_at DESC").Limit(limit).Offset(offset).Find(&data).Error; err != nil {
 		return dataReturn, err
 	}
 
 	for _, invoice := range data {
+
+		//get user return value
+		//get user return value
+		var userData model.User
+		if err := ir.db.First(&userData, invoice.CreatedBy).Error; err != nil {
+			return dataReturn, err
+		}
+		//get partner return value
+		var partnerData model.Partner
+		if err := ir.db.First(&partnerData, invoice.PartnerID).Preload("User").Error; err != nil {
+			return dataReturn, err
+		}
+
 		indexResponse := model.InvoiceRespont{
 			ID:         invoice.ID,
 			CreatedAt:  invoice.CreatedAt,
@@ -81,8 +109,8 @@ func (ir *invoiceRepo) Index(limit int, offset int) ([]model.InvoiceRespont, err
 			Discount:   invoice.Discount,
 			BatchNo:    invoice.BatchNo,
 			Status:     invoice.Status,
-			CreatedBy:  invoice.User,
-			Partner:    invoice.Partner,
+			CreatedBy:  userData,
+			Partner:    partnerData,
 		}
 		dataReturn = append(dataReturn, indexResponse)
 	}
@@ -94,11 +122,12 @@ func (ir *invoiceRepo) Index(limit int, offset int) ([]model.InvoiceRespont, err
 func (ir *invoiceRepo) Show(id int) (model.Invoice, error) {
 	var data model.Invoice
 
-	if err := ir.db.Where(model.Invoice{ID: id}).Preload("Invoice").Preload("Partner").Preload("User").First(&data).Error; err != nil {
+	if err := ir.db.Preload("Invoice").Preload("Partner").Preload("User").First(&data, id).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return data, errors.New("data not found")
 		}
 	}
+
 	return data, nil
 }
 
@@ -112,7 +141,6 @@ func (ir *invoiceRepo) Update(id int, updatedInvoice model.Invoice) (model.Invoi
 		return data, err
 	}
 
-	invoiceData.CreatedBy = updatedInvoice.CreatedBy
 	invoiceData.PartnerID = updatedInvoice.PartnerID
 	invoiceData.GrandTotal = updatedInvoice.GrandTotal
 	invoiceData.Discount = updatedInvoice.Discount
@@ -125,6 +153,17 @@ func (ir *invoiceRepo) Update(id int, updatedInvoice model.Invoice) (model.Invoi
 	}
 
 	//set return data
+	//get user return value
+	var userData model.User
+	if err := ir.db.First(&userData, invoiceData.CreatedBy).Error; err != nil {
+		return data, err
+	}
+	//get partner return value
+	var partnerData model.Partner
+	if err := ir.db.First(&partnerData, invoiceData.PartnerID).Preload("User").Error; err != nil {
+		return data, err
+	}
+
 	data = model.InvoiceRespont{
 		ID:         invoiceData.ID,
 		CreatedAt:  invoiceData.CreatedAt,
@@ -132,8 +171,8 @@ func (ir *invoiceRepo) Update(id int, updatedInvoice model.Invoice) (model.Invoi
 		Discount:   invoiceData.Discount,
 		BatchNo:    invoiceData.BatchNo,
 		Status:     invoiceData.Status,
-		CreatedBy:  invoiceData.User,
-		Partner:    invoiceData.Partner,
+		CreatedBy:  userData,
+		Partner:    partnerData,
 	}
 
 	return data, nil

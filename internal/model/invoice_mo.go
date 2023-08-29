@@ -38,20 +38,9 @@ type InvoiceRespont struct {
 	Discount   float64   `json:"discount"`
 	BatchNo    string    `json:"batchno"`
 	Status     constant.InvoiceStatus
-	CreatedBy  User    `json:"user"`
+	CreatedBy  User    `json:"createdby"`
 	Partner    Partner `json:"partner"`
 }
-
-// type InvoiceIndexRespont struct {
-// 	ID         int       `json:"id"`
-// 	CreatedAt  time.Time `json:"created_at"`
-// 	CreatedBy  string    `json:"created_by"`
-// 	Partner    Partner   `gorm:"foreignKey:partner_id"`
-// 	GrandTotal float64   `gorm:"column:grand_total"`
-// 	Discount   float64   `gorm:"column:discount"`
-// 	BatchNo    string    `json:"batchno" gorm:"column:batch_no"`
-// 	Status     constant.InvoiceStatus
-// }
 
 // -- invoice line
 type InvoiceLine struct {

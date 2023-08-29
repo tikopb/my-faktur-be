@@ -41,10 +41,10 @@ func (iu *invoiceUsecase) CreateInvoice(request model.InvoiceRequest) (model.Inv
 	}
 
 	//Get user
-	// userData, err := iu.userRepo.Show(request.UserId) //##@ UNTIL SECURITY MODULE DONE
-	// if err != nil || !userData.IsActive {
-	// 	return data, errors.New("user not activated")
-	// }
+	userData, err := iu.userRepo.Show("1") //##@ UNTIL SECURITY MODULE DONE
+	if err != nil || !userData.IsActive {
+		return data, errors.New("user not activated")
+	}
 
 	return iu.invoiceRepo.Create(request, partnerData)
 }
