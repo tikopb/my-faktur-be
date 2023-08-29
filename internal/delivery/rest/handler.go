@@ -40,3 +40,23 @@ func transformIdToInt(c echo.Context) int {
 	}
 	return Id
 }
+
+func handlingLimitAndOffset(c echo.Context) (int, int) {
+	// Get query parameters with default values
+	limitStr := c.QueryParam("limit")
+	offsetStr := c.QueryParam("offset")
+
+	// Convert to integers with error handling
+	limit, err := strconv.Atoi(limitStr)
+	if err != nil {
+		panic("error converting 'limit' to integer")
+	}
+
+	offset, err := strconv.Atoi(offsetStr)
+	if err != nil {
+		panic("error converting 'offset' to integer")
+	}
+
+	// Return the values
+	return limit, offset
+}

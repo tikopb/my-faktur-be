@@ -19,23 +19,48 @@ func GetRepository(db *gorm.DB) InvoiceRepositoryInterface {
 }
 
 // Create implements InvoiceRepositoryInterface.
-func (ir *invoiceRepo) Create(invoice model.Invoice) (model.InvoiceCreateRespon, error) {
-	data := model.InvoiceCreateRespon{}
+func (ir *invoiceRepo) Create(request model.InvoiceRequest, partner model.Partner) (model.InvoiceRespont, error) {
+	data := model.InvoiceRespont{}
 
-	data = model.InvoiceCreateRespon{
-		BatchNo:     invoice.BatchNo,
-		CreatedAt:   invoice.CreatedAt,
-		GrandTotal:  invoice.GrandTotal,
-		Discount:    invoice.Discount,
-		Status:      constant.InvoiceStatusComplete,
-		PartnerName: invoice.Partner.Name,
-		CreatedBy:   invoice.Partner.Name,
-		User:        invoice.User,
-		Partner:     invoice.Partner,
+	invoiceData := model.Invoice{
+		ID:          0,
+		CreatedAt:   request.CreatedAt,
+		CreatedBy:   "1",
+		PartnerID:   request.PartnerID,
+		GrandTotal:  request.GrandTotal,
+		Discount:    request.Discount,
+		BatchNo:     request.BatchNo,
+		InvoiceLine: []model.InvoiceLine{},
+		Status:      constant.InvoiceStatusDraft,
 	}
 
-	if err := ir.db.Create(&data).Error; err != nil {
+	if err := ir.db.Create(&invoiceData).Error; err != nil {
 		return data, err
+	}
+
+	//set return data
+	//get user return value
+	var userData model.User
+	if err := ir.db.First(&userData, invoiceData.CreatedBy).Error; err != nil {
+		return data, err
+	}
+	//get partner return value
+	var partnerData model.Partner
+	if err := ir.db.First(&partnerData, invoiceData.PartnerID).Preload("User").Error; err != nil {
+		return data, err
+	}
+
+	//get partner user value
+
+	data = model.InvoiceRespont{
+		ID:         invoiceData.ID,
+		CreatedAt:  invoiceData.CreatedAt,
+		GrandTotal: invoiceData.GrandTotal,
+		Discount:   invoiceData.Discount,
+		BatchNo:    invoiceData.BatchNo,
+		Status:     invoiceData.Status,
+		CreatedBy:  userData,
+		Partner:    partnerData,
 	}
 
 	return data, nil
@@ -56,23 +81,36 @@ func (ir *invoiceRepo) Delete(id int) (string, error) {
 }
 
 // Index implements InvoiceRepositoryInterface.
-func (ir *invoiceRepo) Index(limit int, offset int) ([]model.InvoiceIndexRespont, error) {
+func (ir *invoiceRepo) Index(limit int, offset int) ([]model.InvoiceRespont, error) {
 	data := []model.Invoice{}
-	dataReturn := []model.InvoiceIndexRespont{}
-	if err := ir.db.Order("CreatedAt DESC").Limit(limit).Offset(offset).Find(&data).Error; err != nil {
+	dataReturn := []model.InvoiceRespont{}
+	if err := ir.db.Order("created_at DESC").Limit(limit).Offset(offset).Find(&data).Error; err != nil {
 		return dataReturn, err
 	}
 
 	for _, invoice := range data {
-		indexResponse := model.InvoiceIndexRespont{
+
+		//get user return value
+		//get user return value
+		var userData model.User
+		if err := ir.db.First(&userData, invoice.CreatedBy).Error; err != nil {
+			return dataReturn, err
+		}
+		//get partner return value
+		var partnerData model.Partner
+		if err := ir.db.First(&partnerData, invoice.PartnerID).Preload("User").Error; err != nil {
+			return dataReturn, err
+		}
+
+		indexResponse := model.InvoiceRespont{
 			ID:         invoice.ID,
 			CreatedAt:  invoice.CreatedAt,
-			CreatedBy:  invoice.CreatedBy,
-			Partner:    invoice.Partner,
 			GrandTotal: invoice.GrandTotal,
 			Discount:   invoice.Discount,
 			BatchNo:    invoice.BatchNo,
 			Status:     invoice.Status,
+			CreatedBy:  userData,
+			Partner:    partnerData,
 		}
 		dataReturn = append(dataReturn, indexResponse)
 	}
@@ -84,33 +122,58 @@ func (ir *invoiceRepo) Index(limit int, offset int) ([]model.InvoiceIndexRespont
 func (ir *invoiceRepo) Show(id int) (model.Invoice, error) {
 	var data model.Invoice
 
-	if err := ir.db.Where(model.Invoice{ID: id}).Preload("Invoice").First(&data).Error; err != nil {
+	if err := ir.db.Preload("Invoice").Preload("Partner").Preload("User").First(&data, id).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return data, errors.New("data not found")
 		}
 	}
+
 	return data, nil
 }
 
 // Update implements InvoiceRepositoryInterface.
-func (ir *invoiceRepo) Update(id int, updatedInvoice model.Invoice) (model.Invoice, error) {
-	data, err := ir.Show(id)
+func (ir *invoiceRepo) Update(id int, updatedInvoice model.Invoice) (model.InvoiceRespont, error) {
+	//set var
+	data := model.InvoiceRespont{}
+	invoiceData, err := ir.Show(id) //get invoice Data
 
 	if err != nil {
 		return data, err
 	}
 
-	data.CreatedBy = updatedInvoice.CreatedBy
-	data.PartnerID = updatedInvoice.PartnerID
-	data.GrandTotal = updatedInvoice.GrandTotal
-	data.Discount = updatedInvoice.Discount
-	data.BatchNo = updatedInvoice.BatchNo
-	data.Status = updatedInvoice.Status
+	invoiceData.PartnerID = updatedInvoice.PartnerID
+	invoiceData.GrandTotal = updatedInvoice.GrandTotal
+	invoiceData.Discount = updatedInvoice.Discount
+	invoiceData.BatchNo = updatedInvoice.BatchNo
+	invoiceData.Status = updatedInvoice.Status
 
 	//save the data
-	if err := ir.db.Save(&data).Error; err != nil {
-		return data, nil
+	if err := ir.db.Save(&invoiceData).Error; err != nil {
+		return data, err
 	}
 
-	panic("unimplemented")
+	//set return data
+	//get user return value
+	var userData model.User
+	if err := ir.db.First(&userData, invoiceData.CreatedBy).Error; err != nil {
+		return data, err
+	}
+	//get partner return value
+	var partnerData model.Partner
+	if err := ir.db.First(&partnerData, invoiceData.PartnerID).Preload("User").Error; err != nil {
+		return data, err
+	}
+
+	data = model.InvoiceRespont{
+		ID:         invoiceData.ID,
+		CreatedAt:  invoiceData.CreatedAt,
+		GrandTotal: invoiceData.GrandTotal,
+		Discount:   invoiceData.Discount,
+		BatchNo:    invoiceData.BatchNo,
+		Status:     invoiceData.Status,
+		CreatedBy:  userData,
+		Partner:    partnerData,
+	}
+
+	return data, nil
 }
