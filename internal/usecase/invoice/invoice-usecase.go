@@ -127,8 +127,8 @@ func (iu *invoiceUsecase) UpdatedInvoiceLine(id int, request model.InvoiceLine, 
 }
 
 // IndexLine implements InvoiceUsecaseInterface.
-func (iu *invoiceUsecase) IndexLine(limit int, offset int, invoiceId int) ([]model.InvoiceLine, error) {
-	return iu.invoiceRepo.IndexLine(limit, offset, invoiceId)
+func (iu *invoiceUsecase) IndexLine(limit int, offset int, invoiceId int, q string) ([]model.InvoiceLineRespont, error) {
+	return iu.invoiceRepo.IndexLine(limit, offset, invoiceId, q)
 }
 
 // validated product is activated on production

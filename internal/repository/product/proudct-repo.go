@@ -22,7 +22,7 @@ func (pr *productRepo) Create(product model.Product) (model.ProductRespon, error
 	data := model.ProductRespon{}
 	if err := pr.db.Create(&product).Error; err != nil {
 		if errors.Is(err, gorm.ErrDuplicatedKey) {
-			return data, errors.New("Duplicatet data")
+			return data, errors.New("duplicatet data")
 		}
 		return data, err
 	}
@@ -50,7 +50,7 @@ func (pr *productRepo) Index(limit int, offset int) ([]model.Product, error) {
 func (pr *productRepo) Show(id int) (model.Product, error) {
 	var data model.Product
 
-	if err := pr.db.Where(model.Partner{ID: id}).Preload("Product").First(&data).Error; err != nil {
+	if err := pr.db.First(&data, id).Preload("Product").Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return data, errors.New("data not found")
 		}
