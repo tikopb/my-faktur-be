@@ -27,7 +27,7 @@ type InvoiceRepositoryInterface interface {
 
 	// Index returns a list of InvoiceLine.
 	// Call this method to retrieve a list of InvoiceLine.
-	IndexLine(limit int, offset int, invoiceId int) ([]model.InvoiceLine, error)
+	IndexLine(limit int, offset int, invoiceId int, q string) ([]model.InvoiceLineRespont, error)
 
 	// Create creates a new InvoiceLine.
 	// Call this method to create a new invoice.

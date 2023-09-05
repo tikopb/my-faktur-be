@@ -11,14 +11,16 @@ import (
 
 func (h *handler) IndexInvoiceLine(c echo.Context) error {
 	//set limit and offset
-	limit, offset := handlingLimitAndOffset(c)
+	limit, offset := HandlingLimitAndOffset(c)
 	invoiceIdParam := c.QueryParam("invoiceId")
 	invoiceId, err := strconv.Atoi(invoiceIdParam)
+	q := c.QueryParam("q")
+
 	if err != nil {
 		return handleError(c, http.StatusInternalServerError, err)
 	}
 
-	data, err := h.invoiceUsecase.IndexLine(limit, offset, invoiceId)
+	data, err := h.invoiceUsecase.IndexLine(limit, offset, invoiceId, q)
 	if err != nil {
 
 	}

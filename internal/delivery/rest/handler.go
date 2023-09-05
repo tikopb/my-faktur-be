@@ -33,18 +33,24 @@ func handleError(c echo.Context, statusCode int, err error) error {
 
 func transformIdToInt(c echo.Context) int {
 	// get param
-	PartnerId := c.Param("id")
-	Id, err := strconv.Atoi(PartnerId)
+	ID := c.Param("id")
+	Id, err := strconv.Atoi(ID)
 	if err != nil {
 		panic(err)
 	}
 	return Id
 }
 
-func handlingLimitAndOffset(c echo.Context) (int, int) {
+func HandlingLimitAndOffset(c echo.Context) (int, int) {
 	// Get query parameters with default values
 	limitStr := c.QueryParam("limit")
+	if limitStr == "" {
+		limitStr = "15" // Default value
+	}
 	offsetStr := c.QueryParam("offset")
+	if offsetStr == "" {
+		offsetStr = "0"
+	}
 
 	// Convert to integers with error handling
 	limit, err := strconv.Atoi(limitStr)

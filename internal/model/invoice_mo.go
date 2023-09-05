@@ -44,16 +44,29 @@ type InvoiceRespont struct {
 
 // -- invoice line
 type InvoiceLine struct {
-	ID        int       `json:"id" gorm:"primaryKey;autoIncrement"`
-	CreatedAt time.Time `json:"created_at"`
-	InvoiceID int       `gorm:"column:invoice_id;not null"`
-	Invoice   Invoice   `gorm:"foreignKey:invoice_id"`
-	ProductID int       `gorm:"column:product_id"` // Fixed column name
-	Product   Product   `gorm:"foreignKey:ProductID"`
-	Price     float64   `gorm:"column:price"`
-	Discount  float64   `gorm:"column:discount"`
-	Qty       float64   `gorm:"column:qty"`
-	Amount    float64   `gorm:"column:amount"`
-	CreatedBy string    `gorm:"column:created_by" json:"created_by"`
-	User      User      `gorm:"foreignKey:created_by"`
+	ID           int       `json:"id" gorm:"primaryKey;autoIncrement"`
+	CreatedAt    time.Time `json:"created_at"`
+	Price        float64   `gorm:"column:price" json:"price"`
+	Discount     float64   `gorm:"column:discount" json:"discount"`
+	Qty          float64   `gorm:"column:qty" json:"qty"`
+	Amount       float64   `gorm:"column:amount"`
+	IsPrecentage bool      `gorm:"column:isprecentage;default:false" json:"isprecentage"`
+	ProductID    int       `gorm:"column:product_id" json:"product_id"` // Fixed column name
+	Product      Product   `gorm:"foreignKey:ProductID"`
+	InvoiceID    int       `gorm:"column:invoice_id;not null" json:"invoice_id"`
+	Invoice      Invoice   `gorm:"foreignKey:invoice_id"`
+	CreatedBy    string    `gorm:"column:created_by" json:"created_by"`
+	User         User      `gorm:"foreignKey:created_by"`
+}
+
+type InvoiceLineRespont struct {
+	Invoice_id      int
+	Invoice_line_id int
+	Created_at      time.Time
+	Product_name    string
+	Product_id      int
+	Qty             float64
+	Price           float64
+	Amount          float64
+	Discount        float64
 }
