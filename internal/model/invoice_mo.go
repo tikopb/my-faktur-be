@@ -60,7 +60,7 @@ type InvoiceLine struct {
 }
 
 type InvoiceLineRespont struct {
-	Invoice         string
+	Invoice_id      int
 	Invoice_line_id int
 	Created_at      time.Time
 	Product_name    string
