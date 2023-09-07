@@ -1,0 +1,91 @@
+package payment
+
+import (
+	"bemyfaktur/internal/model"
+	"bemyfaktur/internal/model/constant"
+	"bemyfaktur/internal/repository/invoice"
+	"bemyfaktur/internal/repository/payment"
+	"errors"
+)
+
+type paymentUsecase struct {
+	paymentRepo payment.PaymentRepositoryinterface
+	invoiceRepo invoice.InvoiceRepositoryInterface
+}
+
+func GetUsecase(paymentRepo payment.PaymentRepositoryinterface, invoiceRepo invoice.InvoiceRepositoryInterface) PaymentUsecaseInterface {
+	return &paymentUsecase{
+		paymentRepo: paymentRepo,
+		invoiceRepo: invoiceRepo,
+	}
+}
+
+// ehader payment part
+// Createpayment implements PaymentUsecaseInterface.
+func (pu *paymentUsecase) Createpayment(request model.PaymentRequest) (model.PaymentRespont, error) {
+	return pu.paymentRepo.Create(request)
+}
+
+// Deletepayment implements PaymentUsecaseInterface.
+func (pu *paymentUsecase) Deletepayment(id int) (string, error) {
+	return pu.paymentRepo.Delete(id)
+}
+
+// Getpayment implements PaymentUsecaseInterface.
+func (pu *paymentUsecase) Getpayment(id int) (model.Payment, error) {
+	return pu.paymentRepo.Show(id)
+}
+
+// Indexpayment implements PaymentUsecaseInterface.
+func (pu *paymentUsecase) Indexpayment(limit int, offset int) ([]model.PaymentRespont, error) {
+	return pu.paymentRepo.Index(limit, offset)
+}
+
+// Updatedpayment implements PaymentUsecaseInterface.
+func (pu *paymentUsecase) Updatedpayment(id int, request model.PaymentRequest) (model.PaymentRespont, error) {
+	return pu.paymentRepo.Update(id, request)
+}
+
+// invoice line part
+// CreateInvoiceLine implements PaymentUsecaseInterface.
+func (pu *paymentUsecase) CreatePaymentLine(request model.PaymentLineRequest) (model.PaymentLineRespont, error) {
+	data := model.PaymentLineRespont{}
+	invoice, err := pu.invoiceRepo.Show(request.Invoice_id)
+	if err != nil {
+		return data, err
+	} else if invoice.Status != constant.InvoiceStatusComplete {
+		return data, errors.New("invoice not in completed")
+	}
+
+	//return value
+	return pu.paymentRepo.CreateLine(request)
+}
+
+// GetInvoiceLine implements PaymentUsecaseInterface.
+func (pu *paymentUsecase) GetPaymentLine(id int) (model.PaymentLine, error) {
+	return pu.paymentRepo.ShowLine(id)
+}
+
+// IndexLine implements PaymentUsecaseInterface.
+func (pu *paymentUsecase) IndexLine(limit int, offset int, paymentId int, q string) ([]model.PaymentLineRespont, error) {
+	return pu.paymentRepo.IndexLine(limit, offset, paymentId)
+}
+
+// UpdatedInvoiceLine implements PaymentUsecaseInterface.
+func (pu *paymentUsecase) UpdatedPaymentLine(id int, request model.PaymentLineRequest) (model.PaymentLineRespont, error) {
+	data := model.PaymentLineRespont{}
+	invoice, err := pu.invoiceRepo.Show(request.Invoice_id)
+	if err != nil {
+		return data, err
+	} else if invoice.Status != constant.InvoiceStatusComplete {
+		return data, errors.New("invoice not in completed")
+	}
+
+	//return value
+	return pu.paymentRepo.UpdateLine(id, request)
+}
+
+// DeleteInvoiceLine implements PaymentUsecaseInterface.
+func (pu *paymentUsecase) DeletePaymentLine(id int) (string, error) {
+	return pu.paymentRepo.DeleteLine(id)
+}

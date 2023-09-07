@@ -3,6 +3,7 @@ package rest
 import (
 	"bemyfaktur/internal/usecase/invoice"
 	"bemyfaktur/internal/usecase/partner"
+	"bemyfaktur/internal/usecase/payment"
 	"bemyfaktur/internal/usecase/product"
 	"strconv"
 
@@ -13,14 +14,16 @@ type handler struct {
 	partnerUsecase partner.Usecase
 	productUsecase product.ProductUsecaseInterface
 	invoiceUsecase invoice.InvoiceUsecaseInterface
+	paymentUsecase payment.PaymentUsecaseInterface
 }
 
-func NewHandler(partnerUsecase partner.Usecase, productUsecase product.ProductUsecaseInterface, invoiceUsecase invoice.InvoiceUsecaseInterface) *handler {
+func NewHandler(partnerUsecase partner.Usecase, productUsecase product.ProductUsecaseInterface, invoiceUsecase invoice.InvoiceUsecaseInterface, paymentUsecase payment.PaymentUsecaseInterface) *handler {
 
 	return &handler{
 		partnerUsecase: partnerUsecase,
 		productUsecase: productUsecase,
 		invoiceUsecase: invoiceUsecase,
+		paymentUsecase: paymentUsecase,
 	}
 }
 

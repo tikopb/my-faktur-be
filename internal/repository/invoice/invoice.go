@@ -97,7 +97,7 @@ func (ir *invoiceRepo) Index(limit int, offset int) ([]model.InvoiceRespont, err
 func (ir *invoiceRepo) Show(id int) (model.Invoice, error) {
 	var data model.Invoice
 
-	if err := ir.db.Preload("Invoice").Preload("Partner").Preload("User").First(&data, id).Error; err != nil {
+	if err := ir.db.Preload("Partner").Preload("User").First(&data, id).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return data, errors.New("data not found")
 		}

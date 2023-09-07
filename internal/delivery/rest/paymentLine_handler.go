@@ -9,33 +9,19 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func (h *handler) IndexInvoiceLine(c echo.Context) error {
-	//set limit and offset
+func (h *handler) IndexPaymentLine(c echo.Context) error {
+	//set param
 	limit, offset := HandlingLimitAndOffset(c)
-	invoiceIdParam := c.QueryParam("invoiceId")
-	invoiceId, err := strconv.Atoi(invoiceIdParam)
+	paymentIdParam := c.QueryParam("paymentid")
+	paymentId, err := strconv.Atoi(paymentIdParam)
 	q := c.QueryParam("q")
-
 	if err != nil {
 		return handleError(c, http.StatusInternalServerError, err)
 	}
 
-	data, err := h.invoiceUsecase.IndexLine(limit, offset, invoiceId, q)
+	data, err := h.paymentUsecase.IndexLine(limit, offset, paymentId, q)
 	if err != nil {
 		return handleError(c, http.StatusInternalServerError, err)
-	}
-	return c.JSON(http.StatusOK, map[string]interface{}{
-		"data": data,
-		"msg":  "get succsess",
-	})
-}
-
-func (h *handler) GetInvoiceLine(c echo.Context) error {
-	id := transformIdToInt(c)
-
-	data, err := h.invoiceUsecase.GetInvoiceLine(id)
-	if err != nil {
-		handleError(c, http.StatusInternalServerError, err)
 	}
 
 	return c.JSON(http.StatusOK, map[string]interface{}{
@@ -44,36 +30,30 @@ func (h *handler) GetInvoiceLine(c echo.Context) error {
 	})
 }
 
-func (h *handler) CreateInvoiceLine(c echo.Context) error {
-	var request model.InvoiceLine
-	err := json.NewDecoder(c.Request().Body).Decode(&request)
-	if err != nil {
-		return handleError(c, http.StatusInternalServerError, err)
-	}
+func (h *handler) GetPaymentLine(c echo.Context) error {
+	id := transformIdToInt(c)
 
-	data, err := h.invoiceUsecase.CreateInvoiceLine(request)
+	data, err := h.paymentUsecase.GetPaymentLine(id)
 	if err != nil {
 		return handleError(c, http.StatusInternalServerError, err)
 	}
 
 	return c.JSON(http.StatusOK, map[string]interface{}{
 		"data": data,
-		"msg":  "create succsess",
+		"msg":  "get siccsess",
 	})
 }
 
-func (h *handler) UpdatedInvoiceLine(c echo.Context) error {
-	//get param
-	id := transformIdToInt(c)
-	var request model.InvoiceLine
+func (h *handler) CreatePaymentLine(c echo.Context) error {
+	//set param
+	var request model.PaymentLineRequest
 	err := json.NewDecoder(c.Request().Body).Decode(&request)
 	if err != nil {
 		return handleError(c, http.StatusInternalServerError, err)
 	}
 
 	//run function
-
-	data, err := h.invoiceUsecase.UpdatedInvoiceLine(id, request, request.ProductID)
+	data, err := h.paymentUsecase.CreatePaymentLine(request)
 	if err != nil {
 		return handleError(c, http.StatusInternalServerError, err)
 	}
@@ -84,17 +64,38 @@ func (h *handler) UpdatedInvoiceLine(c echo.Context) error {
 	})
 }
 
-func (h *handler) DeleteInvoiceLine(c echo.Context) error {
-	//get param
+func (h *handler) UpdatePaymentLine(c echo.Context) error {
+	//set param
 	id := transformIdToInt(c)
+	var request model.PaymentLineRequest
+	err := json.NewDecoder(c.Request().Body).Decode(&request)
+	if err != nil {
+		return handleError(c, http.StatusInternalServerError, err)
+	}
 
-	data, err := h.invoiceUsecase.DeleteInvoiceLine(id)
+	//run function
+	data, err := h.paymentUsecase.UpdatedPaymentLine(id, request)
 	if err != nil {
 		return handleError(c, http.StatusInternalServerError, err)
 	}
 
 	return c.JSON(http.StatusOK, map[string]interface{}{
 		"data": data,
-		"msg":  "data deleted",
+		"msg":  "update succsess",
+	})
+}
+
+func (h *handler) DeletePaymentLine(c echo.Context) error {
+	//set param
+	id := transformIdToInt(c)
+
+	data, err := h.paymentUsecase.DeletePaymentLine(id)
+	if err != nil {
+		return handleError(c, http.StatusInternalServerError, err)
+	}
+
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"data": "data deleted" + data,
+		"msg":  "delete succsess",
 	})
 }
