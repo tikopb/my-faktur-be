@@ -8,38 +8,46 @@ import (
 
 // -- invoice
 type Invoice struct {
-	ID          int       `json:"id" gorm:"primaryKey;autoIncrement"`
-	CreatedAt   time.Time `gorm:"column:created_at"`
-	CreatedBy   string    `gorm:"column:created_by" json:"created_by"`
-	User        User      `gorm:"foreignKey:created_by"`
-	PartnerID   int       `json:"partner_id" gorm:"column:partner_id"`
-	Partner     Partner   `gorm:"foreignKey:partner_id"`
-	GrandTotal  float64   `gorm:"column:grand_total"`
-	Discount    float64   `json:"discount" gorm:"column:discount"`
-	BatchNo     string    `json:"batchno" gorm:"column:batch_no"`
-	InvoiceLine []InvoiceLine
-	Status      constant.InvoiceStatus
+	ID                int       `json:"id" gorm:"primaryKey;autoIncrement"`
+	CreatedAt         time.Time `gorm:"column:created_at"`
+	CreatedBy         string    `gorm:"column:created_by" json:"created_by"`
+	User              User      `gorm:"foreignKey:created_by"`
+	PartnerID         int       `json:"partner_id" gorm:"column:partner_id"`
+	Partner           Partner   `gorm:"foreignKey:partner_id"`
+	GrandTotal        float64   `gorm:"column:grand_total"`
+	Discount          float64   `json:"discount" gorm:"column:discount"`
+	BatchNo           string    `json:"batchno" gorm:"column:batch_no"`
+	InvoiceLine       []InvoiceLine
+	Status            constant.InvoiceStatus    `gorm:"column:status;default:DR"`
+	DocAction         constant.InvoiceDocAction `gorm:"column:docaction;default:DR"`
+	OustandingPayment float64                   `json:"oustanding" gorm:"column:oustanding_payment"`
+	DocumentNo        string                    `json:"documentno" gorm:"column:documentno;not null;unique"`
 }
 
 type InvoiceRequest struct {
-	CreatedAt  time.Time `json:"created_at"`
-	UserId     string    `json:"user_id"` //##@ until security module fixed
-	PartnerID  int       `json:"partner_id"`
-	GrandTotal float64   `json:"grand_total"`
-	Discount   float64   `json:"discount"`
-	BatchNo    string    `json:"batchno"`
-	Status     constant.InvoiceStatus
+	CreatedAt  time.Time                 `json:"created_at"`
+	UserId     string                    `json:"user_id"` //##@ until security module fixed
+	PartnerID  int                       `json:"partner_id"`
+	GrandTotal float64                   `json:"grand_total"`
+	Discount   float64                   `json:"discount"`
+	BatchNo    string                    `json:"batchno"`
+	Status     constant.InvoiceStatus    `json:"status"`
+	DocAction  constant.InvoiceDocAction `json:"docaction"`
+	DocumentNo string                    `json:"documentno"`
 }
 
 type InvoiceRespont struct {
-	ID         int       `json:"id"`
-	CreatedAt  time.Time `json:"created_at"`
-	GrandTotal float64   `json:"grand_total"`
-	Discount   float64   `json:"discount"`
-	BatchNo    string    `json:"batchno"`
-	Status     constant.InvoiceStatus
-	CreatedBy  User    `json:"createdby"`
-	Partner    Partner `json:"partner"`
+	ID                int       `json:"id"`
+	CreatedAt         time.Time `json:"created_at"`
+	GrandTotal        float64   `json:"grand_total"`
+	Discount          float64   `json:"discount"`
+	BatchNo           string    `json:"batchno"`
+	Status            constant.InvoiceStatus
+	DocAction         constant.InvoiceDocAction
+	CreatedBy         User    `json:"createdby"`
+	Partner           Partner `json:"partner"`
+	OustandingPayment float64 `json:"oustanding"`
+	DocumentNo        string  `json:"documentno"`
 }
 
 // -- invoice line
@@ -69,4 +77,12 @@ type InvoiceLineRespont struct {
 	Price           float64
 	Amount          float64
 	Discount        float64
+}
+
+func (Invoice) getTableName() string {
+	return "invoices"
+}
+
+func (InvoiceLine) getTableName() string {
+	return "invoice_lines"
 }

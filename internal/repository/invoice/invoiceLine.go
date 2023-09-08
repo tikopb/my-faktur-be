@@ -3,7 +3,6 @@ package invoice
 import (
 	"bemyfaktur/internal/model"
 	"errors"
-	"fmt"
 
 	"gorm.io/gorm"
 )
@@ -60,7 +59,6 @@ func (ir *invoiceRepo) IndexLine(limit int, offset int, invoiceId int, q string)
 
 	query += ` limit ? offset ?`
 
-	fmt.Println(query)
 	if q != "" {
 		if err := ir.db.Raw(query, invoiceId, q, limit, offset).Scan(&data).Error; err != nil {
 			return data, err

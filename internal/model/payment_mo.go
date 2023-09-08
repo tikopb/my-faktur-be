@@ -17,28 +17,33 @@ type Payment struct {
 	Discount    float64   `gorm:"column:discount"`
 	BatchNo     string    `json:"batchno" gorm:"column:batch_no"`
 	PaymentLine []PaymentLine
-	Status      constant.PaymentStatus `gorm:"column:status;default:DR"`
+	Status      constant.PaymentStatus    `gorm:"column:status;default:DR"`
+	DocAction   constant.InvoiceDocAction `gorm:"column:docaction;default:DR"`
+	DocumentNo  string                    `json:"documentno" gorm:"column:documentno;not null;unique"`
 }
 
 type PaymentRequest struct {
-	ID         int     `json:"id"`
-	CreatedBy  string  `json:"created_by"`
-	PartnerID  int     `json:"partner_id"`
-	GrandTotal float64 `json:"grand_total"`
-	Discount   float64 `json:"discount"`
-	BatchNo    string  `json:"batchno"`
-	Status     constant.PaymentStatus
+	ID         int                       `json:"id"`
+	CreatedBy  string                    `json:"created_by"`
+	PartnerID  int                       `json:"partner_id"`
+	GrandTotal float64                   `json:"grand_total"`
+	Discount   float64                   `json:"discount"`
+	BatchNo    string                    `json:"batchno"`
+	Status     constant.PaymentStatus    `json:"status"`
+	DoAction   constant.PaymentDocAction `json:"docaction"`
+	DocumentNo string                    `json:"documentno"`
 }
 
 type PaymentRespont struct {
-	ID           int     `json:"id"`
-	CreatedBy    string  `json:"created_by"`
-	PartnerID    int     `json:"partner_id"`
-	Partner_name string  `json:"partner_name"`
-	GrandTotal   float64 `json:"grand_total"`
-	Discount     float64 `json:"discount"`
-	BatchNo      string  `json:"batchno"`
-	Status       constant.PaymentStatus
+	ID           int                       `json:"id"`
+	CreatedBy    string                    `json:"created_by"`
+	PartnerID    int                       `json:"partner_id"`
+	Partner_name string                    `json:"partner_name"`
+	GrandTotal   float64                   `json:"grand_total"`
+	Discount     float64                   `json:"discount"`
+	BatchNo      string                    `json:"batchno"`
+	Status       constant.PaymentStatus    `json:"status"`
+	DoAction     constant.PaymentDocAction `json:"docaction"`
 	Partner      Partner
 }
 

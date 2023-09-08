@@ -120,9 +120,17 @@ func (ir *invoiceRepo) Update(id int, updatedInvoice model.Invoice) (model.Invoi
 	invoiceData.GrandTotal = updatedInvoice.GrandTotal
 	invoiceData.Discount = updatedInvoice.Discount
 	invoiceData.BatchNo = updatedInvoice.BatchNo
-	invoiceData.Status = updatedInvoice.Status
+
+	//validation docaction
+	if invoiceData.Status != updatedInvoice.Status {
+		err := ir.DocProcess(invoiceData)
+		if err != nil {
+			return data, err
+		}
+	}
 
 	//save the data
+	invoiceData.Status = updatedInvoice.Status
 	if err := ir.db.Save(&invoiceData).Error; err != nil {
 		return data, err
 	}
@@ -155,4 +163,8 @@ func (ir *invoiceRepo) ParsingInvoiceToInvoiceRequest(invoice model.Invoice) (mo
 	}
 
 	return data, nil
+}
+
+func (ir *invoiceRepo) getTableName() string {
+	return "invoices"
 }
