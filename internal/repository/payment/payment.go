@@ -2,6 +2,8 @@ package payment
 
 import (
 	"bemyfaktur/internal/model"
+	"bemyfaktur/internal/model/constant"
+	documentutil "bemyfaktur/internal/model/documentUtil"
 	"errors"
 	"time"
 
@@ -9,7 +11,15 @@ import (
 )
 
 type paymentRepo struct {
-	db *gorm.DB
+	db      *gorm.DB
+	docUtil documentutil.Repository
+}
+
+func GetRepository(db *gorm.DB, docUtil documentutil.Repository) PaymentRepositoryinterface {
+	return &paymentRepo{
+		db:      db,
+		docUtil: docUtil,
+	}
 }
 
 // Index implements PaymentRepositoryinterface.
@@ -47,6 +57,12 @@ func (pr *paymentRepo) Index(limit int, offset int) ([]model.PaymentRespont, err
 func (pr *paymentRepo) Create(payment model.PaymentRequest) (model.PaymentRespont, error) {
 	data := model.PaymentRespont{}
 
+	//init for documentno
+	documentno, err := pr.docUtil.GetDocumentNo(pr.getTableName())
+	if err != nil {
+		return data, err
+	}
+
 	paymentData := model.Payment{
 		CreatedAt:  time.Now(),
 		CreatedBy:  "1", //##@ UNTIL SECURIT model DONE!
@@ -54,6 +70,8 @@ func (pr *paymentRepo) Create(payment model.PaymentRequest) (model.PaymentRespon
 		GrandTotal: 0,
 		Discount:   payment.Discount,
 		BatchNo:    payment.BatchNo,
+		DocumentNo: documentno,
+		DocAction:  constant.PaymentDocActionDraft,
 	}
 
 	if err := pr.db.Create(&paymentData).Error; err != nil {
@@ -125,12 +143,6 @@ func (pr *paymentRepo) Delete(id int) (string, error) {
 	return batchNo, nil
 }
 
-func GetRepository(db *gorm.DB) PaymentRepositoryinterface {
-	return &paymentRepo{
-		db: db,
-	}
-}
-
 func (pr *paymentRepo) parsingPaymentToPaymentRespont(payment model.Payment) (model.PaymentRespont, error) {
 	data := model.PaymentRespont{}
 	dataPreload, err := pr.Show(payment.ID)
@@ -147,6 +159,12 @@ func (pr *paymentRepo) parsingPaymentToPaymentRespont(payment model.Payment) (mo
 		BatchNo:    dataPreload.BatchNo,
 		Status:     dataPreload.Status,
 		Partner:    dataPreload.Partner,
+		DocumentNo: dataPreload.DocumentNo,
+		Docaction:  dataPreload.DocAction,
 	}
 	return data, nil
+}
+
+func (ir *paymentRepo) getTableName() string {
+	return "payments"
 }

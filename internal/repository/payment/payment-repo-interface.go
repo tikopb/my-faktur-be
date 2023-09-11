@@ -16,4 +16,9 @@ type PaymentRepositoryinterface interface {
 	ShowLine(id int) (model.PaymentLine, error)
 	UpdateLine(id int, updatedPaymentLine model.PaymentLineRequest) (model.PaymentLineRespont, error)
 	DeleteLine(id int) (string, error)
+
+	//docValidation
+	DocProcess(data model.Payment) error
+	CompleteIT(data model.Payment) error
+	ReversedIt(data model.Payment) error
 }

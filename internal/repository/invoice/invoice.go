@@ -3,18 +3,21 @@ package invoice
 import (
 	"bemyfaktur/internal/model"
 	"bemyfaktur/internal/model/constant"
+	documentutil "bemyfaktur/internal/model/documentUtil"
 	"errors"
 
 	"gorm.io/gorm"
 )
 
 type invoiceRepo struct {
-	db *gorm.DB
+	db      *gorm.DB
+	docUtil documentutil.Repository
 }
 
-func GetRepository(db *gorm.DB) InvoiceRepositoryInterface {
+func GetRepository(db *gorm.DB, docUtil documentutil.Repository) InvoiceRepositoryInterface {
 	return &invoiceRepo{
-		db: db,
+		db:      db,
+		docUtil: docUtil,
 	}
 }
 
@@ -22,15 +25,24 @@ func GetRepository(db *gorm.DB) InvoiceRepositoryInterface {
 func (ir *invoiceRepo) Create(request model.InvoiceRequest, partner model.Partner) (model.InvoiceRespont, error) {
 	data := model.InvoiceRespont{}
 
+	//init for documentno
+	documentno, err := ir.docUtil.GetDocumentNo(ir.getTableName())
+	if err != nil {
+		return data, err
+	}
+
 	invoiceData := model.Invoice{
-		CreatedAt:   request.CreatedAt,
-		CreatedBy:   "1", //##@ UNTIL SECURIT model DONE!
-		PartnerID:   request.PartnerID,
-		GrandTotal:  request.GrandTotal,
-		Discount:    request.Discount,
-		BatchNo:     request.BatchNo,
-		InvoiceLine: []model.InvoiceLine{},
-		Status:      constant.InvoiceStatusDraft,
+		CreatedAt:         request.CreatedAt,
+		CreatedBy:         "1", //##@ UNTIL SECURIT model DONE!
+		PartnerID:         request.PartnerID,
+		GrandTotal:        request.GrandTotal,
+		Discount:          request.Discount,
+		BatchNo:           request.BatchNo,
+		InvoiceLine:       []model.InvoiceLine{},
+		Status:            constant.InvoiceStatusDraft,
+		DocumentNo:        documentno,
+		DocAction:         constant.InvoiceActionDraft,
+		OustandingPayment: 0,
 	}
 
 	if err := ir.db.Create(&invoiceData).Error; err != nil {
@@ -160,6 +172,7 @@ func (ir *invoiceRepo) ParsingInvoiceToInvoiceRequest(invoice model.Invoice) (mo
 		Status:     dataPreload.Status,
 		CreatedBy:  dataPreload.User,
 		Partner:    dataPreload.Partner,
+		DocumentNo: dataPreload.DocumentNo,
 	}
 
 	return data, nil
@@ -168,3 +181,13 @@ func (ir *invoiceRepo) ParsingInvoiceToInvoiceRequest(invoice model.Invoice) (mo
 func (ir *invoiceRepo) getTableName() string {
 	return "invoices"
 }
+
+// func (ir *invoiceRepo) getSearchParam() []string {
+// 	return []string{
+// 		"BatchNo",
+// 		"Status",
+// 		"Partner",
+// 		"OustandingPayment",
+// 		"DocumentNo",
+// 	}
+// }

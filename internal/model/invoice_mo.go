@@ -82,7 +82,3 @@ type InvoiceLineRespont struct {
 func (Invoice) getTableName() string {
 	return "invoices"
 }
-
-func (InvoiceLine) getTableName() string {
-	return "invoice_lines"
-}

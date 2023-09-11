@@ -18,7 +18,7 @@ type Payment struct {
 	BatchNo     string    `json:"batchno" gorm:"column:batch_no"`
 	PaymentLine []PaymentLine
 	Status      constant.PaymentStatus    `gorm:"column:status;default:DR"`
-	DocAction   constant.InvoiceDocAction `gorm:"column:docaction;default:DR"`
+	DocAction   constant.PaymentDocAction `gorm:"column:docaction;default:DR"`
 	DocumentNo  string                    `json:"documentno" gorm:"column:documentno;not null;unique"`
 }
 
@@ -45,6 +45,8 @@ type PaymentRespont struct {
 	Status       constant.PaymentStatus    `json:"status"`
 	DoAction     constant.PaymentDocAction `json:"docaction"`
 	Partner      Partner
+	DocumentNo   string
+	Docaction    constant.PaymentDocAction
 }
 
 type PaymentLine struct {

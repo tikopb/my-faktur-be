@@ -15,5 +15,6 @@ func seedDB(db *gorm.DB) {
 		&model.Product{},
 		&model.Payment{},
 		&model.PaymentLine{},
+		&model.DocumentNoTemp{},
 	)
 }
