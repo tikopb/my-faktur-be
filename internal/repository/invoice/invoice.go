@@ -42,7 +42,7 @@ func (ir *invoiceRepo) Create(request model.InvoiceRequest, partner model.Partne
 		Status:            constant.InvoiceStatusDraft,
 		DocumentNo:        documentno,
 		DocAction:         constant.InvoiceActionDraft,
-		OustandingPayment: 0,
+		OustandingPayment: request.GrandTotal,
 	}
 
 	if err := ir.db.Create(&invoiceData).Error; err != nil {
