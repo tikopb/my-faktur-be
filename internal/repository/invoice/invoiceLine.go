@@ -153,7 +153,7 @@ func (ir *invoiceRepo) AfterSave(request model.InvoiceLine) error {
 		SET grand_total = (SELECT coalesce(SUM(amount),0) FROM invoice_lines WHERE invoice_id = i.id)
 		WHERE i.id = ?;
 	`
-	err := ir.db.Raw(query, request.InvoiceID).Error
+	err := ir.db.Exec(query, request.InvoiceID).Error
 	if err != nil {
 		return err
 	}

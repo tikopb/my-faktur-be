@@ -28,7 +28,7 @@ func (pr *paymentRepo) CreateLine(paymentLine model.PaymentLineRequest) (model.P
 	}
 
 	//aftersave validation
-	err = pr.AfterSave(data)
+	err = pr.afterSave(data)
 	if err != nil {
 		return dataReturn, err
 	}
@@ -99,7 +99,7 @@ func (pr *paymentRepo) UpdateLine(id int, updatedPaymentLine model.PaymentLineRe
 	}
 
 	//aftersave validation
-	err = pr.AfterSave(paymentLineData)
+	err = pr.afterSave(paymentLineData)
 	if err != nil {
 		return data, err
 	}
@@ -125,7 +125,7 @@ func (pr *paymentRepo) DeleteLine(id int) (string, error) {
 	}
 
 	//aftersave validation
-	err = pr.AfterSave(data)
+	err = pr.afterSave(data)
 	if err != nil {
 		return "", err
 	}
@@ -141,11 +141,14 @@ func (pr *paymentRepo) parsingPaymentLineToRespont(paymentLine model.PaymentLine
 	}
 
 	data = model.PaymentLineRespont{
-		ID:         dataPreload.ID,
-		Price:      dataPreload.Price,
-		Amount:     dataPreload.Amount,
-		BatchNo:    dataPreload.Invoice.BatchNo,
-		Invoice_id: dataPreload.InvoiceID,
+		ID:           dataPreload.ID,
+		Price:        dataPreload.Price,
+		Amount:       dataPreload.Amount,
+		BatchNo:      dataPreload.Invoice.BatchNo,
+		Invoice_id:   dataPreload.InvoiceID,
+		Discount:     data.Discount,
+		IsPrecentage: data.IsPrecentage,
+		Payment:      data.Payment,
 	}
 
 	return data, nil
@@ -175,17 +178,15 @@ func (pr *paymentRepo) beforeSave(data model.PaymentLine) (model.PaymentLine, er
 	return data, nil
 }
 
-func (pr *paymentRepo) AfterSave(data model.PaymentLine) error {
+func (pr *paymentRepo) afterSave(data model.PaymentLine) error {
 
 	// after save update the oustanding payment invoice
 	query := `
 	update invoices as i
-	set oustanding_payment =
-		(i.grand_total - (select coalesce(SUM(price),0) from payment_lines as pl
-		where pl.invoice_id = i.id ), 0)
+	SET oustanding_payment = (i.grand_total - COALESCE((SELECT SUM(price) FROM payment_lines AS pl WHERE pl.invoice_id = i.id), 0))
 	where i.id = ?`
 
-	if err := pr.db.Raw(query, data.InvoiceID).Error; err != nil {
+	if err := pr.db.Exec(query, data.InvoiceID).Error; err != nil {
 		return err
 	}
 
@@ -196,7 +197,7 @@ func (pr *paymentRepo) AfterSave(data model.PaymentLine) error {
 		where p.id = ?
 	`
 
-	if err := pr.db.Raw(query, data.PaymentID).Error; err != nil {
+	if err := pr.db.Exec(query, data.PaymentID).Error; err != nil {
 		return err
 	}
 
