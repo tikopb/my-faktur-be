@@ -47,5 +47,36 @@ func (pr *paymentRepo) CompleteIT(data model.Payment) error {
 
 // ReversedIt implements PaymentRepositoryinterface.
 func (pr *paymentRepo) ReversedIt(data model.Payment) error {
+
+	//update line
+	query := `
+	update payment_lines set price = 0, amount = 0, discount = 0 where payment_id  = ? 
+	`
+	if err := pr.db.Raw(query, data.ID).Error; err != nil {
+		return err
+	}
+
+	//update header
+	data.GrandTotal = 0
+	data.Discount = 0
+
+	//update oustanding
+	query = `UPDATE invoices
+		SET oustanding_payment = (
+			SELECT SUM(il.amount)
+			FROM payment_lines il
+			WHERE il.invoice_id = invoices.id
+		)
+		WHERE invoices.id IN (
+			SELECT il.invoice_id
+			FROM payment_lines il
+			WHERE il.payment_id = ?
+		);
+	`
+
+	if err := pr.db.Raw(query, data.ID).Error; err != nil {
+		return err
+	}
+
 	return nil
 }

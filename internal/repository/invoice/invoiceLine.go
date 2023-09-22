@@ -3,21 +3,22 @@ package invoice
 import (
 	"bemyfaktur/internal/model"
 	"errors"
+	"fmt"
 
 	"gorm.io/gorm"
 )
 
 // CreateLine implements InvoiceRepositoryInterface.
-func (ir *invoiceRepo) CreateLine(invoice model.InvoiceLine) (model.InvoiceLine, error) {
+func (ir *invoiceRepo) CreateLine(request model.InvoiceLine) (model.InvoiceLine, error) {
 	data := model.InvoiceLine{
-		InvoiceID:    invoice.InvoiceID,
-		ProductID:    invoice.ProductID,
-		Price:        invoice.Price,
-		Discount:     invoice.Discount,
-		Qty:          invoice.Qty,
-		Amount:       ir.handlingAmount(invoice.Qty, invoice.Price, invoice.IsPrecentage, invoice.Discount),
+		InvoiceID:    request.InvoiceID,
+		ProductID:    request.ProductID,
+		Price:        request.Price,
+		Discount:     request.Discount,
+		Qty:          request.Qty,
+		Amount:       ir.handlingAmount(request.Qty, request.Price, request.IsPrecentage, request.Discount),
 		CreatedBy:    "1", //##@ until security module fixed
-		IsPrecentage: invoice.IsPrecentage,
+		IsPrecentage: request.IsPrecentage,
 	}
 
 	//saved data
@@ -26,7 +27,9 @@ func (ir *invoiceRepo) CreateLine(invoice model.InvoiceLine) (model.InvoiceLine,
 	}
 
 	//update the invoice header
-	go ir.updateInvoiceHeader(data.InvoiceID)
+	if err := ir.AfterSave(data); err != nil {
+		return data, err
+	}
 
 	return data, nil
 }
@@ -104,7 +107,7 @@ func (ir *invoiceRepo) UpdateLine(id int, updatedInvoiceLine model.InvoiceLine) 
 	}
 
 	//update the invoice header
-	go ir.updateInvoiceHeader(data.InvoiceID)
+	go ir.AfterSave(data)
 
 	return data, nil
 }
@@ -118,6 +121,11 @@ func (ir *invoiceRepo) DeleteLine(id int) (string, error) {
 
 	if err := ir.db.Delete(&data).Error; err != nil {
 		return "", err
+	}
+
+	err = ir.AfterSave(data)
+	if err != nil {
+		return "ERORR", err
 	}
 
 	return "data deleted", nil
@@ -137,12 +145,18 @@ func (ir *invoiceRepo) handlingAmount(qty float64, price float64, isPrecentage b
 	return amount
 }
 
-func (ir *invoiceRepo) updateInvoiceHeader(invoiceId int) {
+func (ir *invoiceRepo) AfterSave(request model.InvoiceLine) error {
+
 	//init the sql
-	sql := `
-		UPDATE invoices as i
-		SET grand_total = (SELECT SUM(amount) FROM invoice_lines WHERE invoice_id = i.id)
+	query := `
+		UPDATE invoices as i 
+		SET grand_total = (SELECT coalesce(SUM(amount),0) FROM invoice_lines WHERE invoice_id = i.id)
 		WHERE i.id = ?;
 	`
-	ir.db.Raw(sql, invoiceId)
+	err := ir.db.Raw(query, request.InvoiceID).Error
+	if err != nil {
+		return err
+	}
+	fmt.Println(err)
+	return nil
 }

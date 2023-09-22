@@ -2,10 +2,8 @@ package payment
 
 import (
 	"bemyfaktur/internal/model"
-	"bemyfaktur/internal/model/constant"
 	documentutil "bemyfaktur/internal/model/documentUtil"
 	"errors"
-	"time"
 
 	"gorm.io/gorm"
 )
@@ -64,14 +62,12 @@ func (pr *paymentRepo) Create(payment model.PaymentRequest) (model.PaymentRespon
 	}
 
 	paymentData := model.Payment{
-		CreatedAt:  time.Now(),
 		CreatedBy:  "1", //##@ UNTIL SECURIT model DONE!
 		PartnerID:  payment.PartnerID,
 		GrandTotal: 0,
-		Discount:   payment.Discount,
+		Discount:   0,
 		BatchNo:    payment.BatchNo,
 		DocumentNo: documentno,
-		DocAction:  constant.PaymentDocActionDraft,
 	}
 
 	if err := pr.db.Create(&paymentData).Error; err != nil {
@@ -110,10 +106,13 @@ func (pr *paymentRepo) Update(id int, updatedPayment model.PaymentRequest) (mode
 	}
 
 	paymentData.PartnerID = updatedPayment.PartnerID
-	paymentData.GrandTotal = updatedPayment.GrandTotal
+	//paymentData.GrandTotal = updatedPayment.GrandTotal
 	paymentData.Discount = updatedPayment.Discount
 	paymentData.BatchNo = updatedPayment.BatchNo
 	paymentData.Status = updatedPayment.Status
+
+	//handling Grand Total
+	paymentData = pr.handlingGrandTotal(paymentData)
 
 	//save the data
 	if err := pr.db.Save(&paymentData).Error; err != nil {
@@ -143,6 +142,15 @@ func (pr *paymentRepo) Delete(id int) (string, error) {
 	return batchNo, nil
 }
 
+func (pr *paymentRepo) handlingGrandTotal(data model.Payment) model.Payment {
+	if data.IsPrecentage {
+		data.GrandTotal = data.GrandTotal - (data.GrandTotal * data.Discount / 100)
+	} else {
+		data.GrandTotal = data.GrandTotal - data.Discount
+	}
+	return data
+}
+
 func (pr *paymentRepo) parsingPaymentToPaymentRespont(payment model.Payment) (model.PaymentRespont, error) {
 	data := model.PaymentRespont{}
 	dataPreload, err := pr.Show(payment.ID)
@@ -151,16 +159,17 @@ func (pr *paymentRepo) parsingPaymentToPaymentRespont(payment model.Payment) (mo
 	}
 
 	data = model.PaymentRespont{
-		ID:         dataPreload.ID,
-		CreatedBy:  dataPreload.User.Username,
-		PartnerID:  dataPreload.PartnerID,
-		GrandTotal: dataPreload.GrandTotal,
-		Discount:   dataPreload.Discount,
-		BatchNo:    dataPreload.BatchNo,
-		Status:     dataPreload.Status,
-		Partner:    dataPreload.Partner,
-		DocumentNo: dataPreload.DocumentNo,
-		Docaction:  dataPreload.DocAction,
+		ID:           dataPreload.ID,
+		CreatedBy:    dataPreload.User.Username,
+		PartnerID:    dataPreload.PartnerID,
+		GrandTotal:   dataPreload.GrandTotal,
+		Discount:     dataPreload.Discount,
+		BatchNo:      dataPreload.BatchNo,
+		Status:       dataPreload.Status,
+		Partner:      dataPreload.Partner,
+		DocumentNo:   dataPreload.DocumentNo,
+		DoAction:     dataPreload.DocAction,
+		IsPrecentage: data.IsPrecentage,
 	}
 	return data, nil
 }

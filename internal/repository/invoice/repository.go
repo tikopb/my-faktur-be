@@ -15,13 +15,13 @@ type InvoiceRepositoryInterface interface {
 
 	//Line
 	IndexLine(limit int, offset int, invoiceId int, q string) ([]model.InvoiceLineRespont, error)
-	CreateLine(invoice model.InvoiceLine) (model.InvoiceLine, error)
+	CreateLine(request model.InvoiceLine) (model.InvoiceLine, error)
 	ShowLine(id int) (model.InvoiceLine, error)
 	UpdateLine(id int, updatedInvoiceLine model.InvoiceLine) (model.InvoiceLine, error)
 	DeleteLine(id int) (string, error)
 
 	//docValidation
-	DocProcess(data model.Invoice) error
-	CompleteIT(data model.Invoice) error
-	ReversedIt(data model.Invoice) error
+	DocProcess(data model.Invoice, docaction string) (model.Invoice, error)
+	CompleteIT(data model.Invoice, docaction string) (model.Invoice, error)
+	ReversedIt(data model.Invoice, docaction string) (model.Invoice, error)
 }
