@@ -3,18 +3,21 @@ package invoice
 import (
 	"bemyfaktur/internal/model"
 	"bemyfaktur/internal/model/constant"
+	documentutil "bemyfaktur/internal/model/documentUtil"
 	"errors"
 
 	"gorm.io/gorm"
 )
 
 type invoiceRepo struct {
-	db *gorm.DB
+	db      *gorm.DB
+	docUtil documentutil.Repository
 }
 
-func GetRepository(db *gorm.DB) InvoiceRepositoryInterface {
+func GetRepository(db *gorm.DB, docUtil documentutil.Repository) InvoiceRepositoryInterface {
 	return &invoiceRepo{
-		db: db,
+		db:      db,
+		docUtil: docUtil,
 	}
 }
 
@@ -22,15 +25,24 @@ func GetRepository(db *gorm.DB) InvoiceRepositoryInterface {
 func (ir *invoiceRepo) Create(request model.InvoiceRequest, partner model.Partner) (model.InvoiceRespont, error) {
 	data := model.InvoiceRespont{}
 
+	//init for documentno
+	documentno, err := ir.docUtil.GetDocumentNo(ir.getTableName())
+	if err != nil {
+		return data, err
+	}
+
 	invoiceData := model.Invoice{
-		CreatedAt:   request.CreatedAt,
-		CreatedBy:   "1", //##@ UNTIL SECURIT model DONE!
-		PartnerID:   request.PartnerID,
-		GrandTotal:  request.GrandTotal,
-		Discount:    request.Discount,
-		BatchNo:     request.BatchNo,
-		InvoiceLine: []model.InvoiceLine{},
-		Status:      constant.InvoiceStatusDraft,
+		CreatedAt:         request.CreatedAt,
+		CreatedBy:         "1", //##@ UNTIL SECURIT model DONE!
+		PartnerID:         request.PartnerID,
+		BatchNo:           request.BatchNo,
+		InvoiceLine:       []model.InvoiceLine{},
+		Status:            constant.InvoiceStatusDraft, //every new document default as draft
+		DocumentNo:        documentno,
+		DocAction:         constant.InvoiceActionDraft,
+		OustandingPayment: 0,
+		Discount:          request.Discount,
+		IsPrecentage:      request.IsPrecentage,
 	}
 
 	if err := ir.db.Create(&invoiceData).Error; err != nil {
@@ -78,14 +90,17 @@ func (ir *invoiceRepo) Index(limit int, offset int) ([]model.InvoiceRespont, err
 		}
 
 		indexResponse := model.InvoiceRespont{
-			ID:         invoice.ID,
-			CreatedAt:  invoice.CreatedAt,
-			GrandTotal: invoice.GrandTotal,
-			Discount:   invoice.Discount,
-			BatchNo:    invoice.BatchNo,
-			Status:     invoice.Status,
-			CreatedBy:  dataPreload.Partner.User,
-			Partner:    dataPreload.Partner,
+			ID:                invoice.ID,
+			CreatedAt:         invoice.CreatedAt,
+			DocumentNo:        dataPreload.DocumentNo,
+			BatchNo:           invoice.BatchNo,
+			Status:            invoice.Status,
+			CreatedBy:         dataPreload.Partner.User,
+			Discount:          invoice.Discount,
+			IsPrecentage:      dataPreload.IsPrecentage,
+			GrandTotal:        invoice.GrandTotal,
+			OustandingPayment: invoice.OustandingPayment,
+			Partner:           dataPreload.Partner,
 		}
 		dataReturn = append(dataReturn, indexResponse)
 	}
@@ -117,10 +132,17 @@ func (ir *invoiceRepo) Update(id int, updatedInvoice model.Invoice) (model.Invoi
 	}
 
 	invoiceData.PartnerID = updatedInvoice.PartnerID
-	invoiceData.GrandTotal = updatedInvoice.GrandTotal
 	invoiceData.Discount = updatedInvoice.Discount
 	invoiceData.BatchNo = updatedInvoice.BatchNo
-	invoiceData.Status = updatedInvoice.Status
+
+	//handling Grand Total
+	invoiceData = ir.handlingGrandTotal(invoiceData)
+
+	//validation docaction
+	invoiceData, err = ir.DocProcess(invoiceData, string(updatedInvoice.DocAction))
+	if err != nil {
+		return data, err
+	}
 
 	//save the data
 	if err := ir.db.Save(&invoiceData).Error; err != nil {
@@ -144,15 +166,41 @@ func (ir *invoiceRepo) ParsingInvoiceToInvoiceRequest(invoice model.Invoice) (mo
 	}
 
 	data = model.InvoiceRespont{
-		ID:         dataPreload.ID,
-		CreatedAt:  dataPreload.CreatedAt,
-		GrandTotal: dataPreload.GrandTotal,
-		Discount:   dataPreload.Discount,
-		BatchNo:    dataPreload.BatchNo,
-		Status:     dataPreload.Status,
-		CreatedBy:  dataPreload.User,
-		Partner:    dataPreload.Partner,
+		ID:           dataPreload.ID,
+		CreatedAt:    dataPreload.CreatedAt,
+		GrandTotal:   dataPreload.GrandTotal,
+		Discount:     dataPreload.Discount,
+		BatchNo:      dataPreload.BatchNo,
+		Status:       dataPreload.Status,
+		CreatedBy:    dataPreload.User,
+		Partner:      dataPreload.Partner,
+		DocumentNo:   dataPreload.DocumentNo,
+		DocAction:    dataPreload.DocAction,
+		IsPrecentage: data.IsPrecentage,
 	}
 
 	return data, nil
 }
+
+func (pr *invoiceRepo) handlingGrandTotal(data model.Invoice) model.Invoice {
+	if data.IsPrecentage {
+		data.GrandTotal = data.GrandTotal - (data.GrandTotal * data.Discount / 100)
+	} else {
+		data.GrandTotal = data.GrandTotal - data.Discount
+	}
+	return data
+}
+
+func (ir *invoiceRepo) getTableName() string {
+	return "invoices"
+}
+
+// func (ir *invoiceRepo) getSearchParam() []string {
+// 	return []string{
+// 		"BatchNo",
+// 		"Status",
+// 		"Partner",
+// 		"OustandingPayment",
+// 		"DocumentNo",
+// 	}
+// }

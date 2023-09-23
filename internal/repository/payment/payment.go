@@ -2,14 +2,22 @@ package payment
 
 import (
 	"bemyfaktur/internal/model"
+	documentutil "bemyfaktur/internal/model/documentUtil"
 	"errors"
-	"time"
 
 	"gorm.io/gorm"
 )
 
 type paymentRepo struct {
-	db *gorm.DB
+	db      *gorm.DB
+	docUtil documentutil.Repository
+}
+
+func GetRepository(db *gorm.DB, docUtil documentutil.Repository) PaymentRepositoryinterface {
+	return &paymentRepo{
+		db:      db,
+		docUtil: docUtil,
+	}
 }
 
 // Index implements PaymentRepositoryinterface.
@@ -47,13 +55,19 @@ func (pr *paymentRepo) Index(limit int, offset int) ([]model.PaymentRespont, err
 func (pr *paymentRepo) Create(payment model.PaymentRequest) (model.PaymentRespont, error) {
 	data := model.PaymentRespont{}
 
+	//init for documentno
+	documentno, err := pr.docUtil.GetDocumentNo(pr.getTableName())
+	if err != nil {
+		return data, err
+	}
+
 	paymentData := model.Payment{
-		CreatedAt:  time.Now(),
 		CreatedBy:  "1", //##@ UNTIL SECURIT model DONE!
 		PartnerID:  payment.PartnerID,
 		GrandTotal: 0,
-		Discount:   payment.Discount,
+		Discount:   0,
 		BatchNo:    payment.BatchNo,
+		DocumentNo: documentno,
 	}
 
 	if err := pr.db.Create(&paymentData).Error; err != nil {
@@ -92,10 +106,22 @@ func (pr *paymentRepo) Update(id int, updatedPayment model.PaymentRequest) (mode
 	}
 
 	paymentData.PartnerID = updatedPayment.PartnerID
-	paymentData.GrandTotal = updatedPayment.GrandTotal
+	//paymentData.GrandTotal = updatedPayment.GrandTotal
 	paymentData.Discount = updatedPayment.Discount
+	paymentData.IsPrecentage = updatedPayment.IsPrecentage
 	paymentData.BatchNo = updatedPayment.BatchNo
-	paymentData.Status = updatedPayment.Status
+
+	//validate before save
+	paymentData, err = pr.BeforeSave(paymentData)
+	if err != nil {
+		return data, err
+	}
+
+	//validation docaction
+	paymentData, err = pr.DocProcess(paymentData, string(updatedPayment.DocAction))
+	if err != nil {
+		return data, err
+	}
 
 	//save the data
 	if err := pr.db.Save(&paymentData).Error; err != nil {
@@ -125,10 +151,30 @@ func (pr *paymentRepo) Delete(id int) (string, error) {
 	return batchNo, nil
 }
 
-func GetRepository(db *gorm.DB) PaymentRepositoryinterface {
-	return &paymentRepo{
-		db: db,
+func (pr *paymentRepo) BeforeSave(data model.Payment) (model.Payment, error) {
+	//change grand total to sum of line first!
+	var grandTotal float64 = 0
+	query := `
+    	select coalesce(sum(amount), 0) from payment_lines pl where payment_id = ?
+	`
+	if err := pr.db.Raw(query, data.ID).Scan(&grandTotal).Error; err != nil {
+		return data, err
 	}
+	data.GrandTotal = grandTotal
+
+	//run handling GrandTotal
+	data = pr.handlingGrandTotal(data)
+
+	return data, nil
+}
+
+func (pr *paymentRepo) handlingGrandTotal(data model.Payment) model.Payment {
+	if data.IsPrecentage {
+		data.GrandTotal = data.GrandTotal - (data.GrandTotal * data.Discount / 100)
+	} else {
+		data.GrandTotal = data.GrandTotal - data.Discount
+	}
+	return data
 }
 
 func (pr *paymentRepo) parsingPaymentToPaymentRespont(payment model.Payment) (model.PaymentRespont, error) {
@@ -139,14 +185,21 @@ func (pr *paymentRepo) parsingPaymentToPaymentRespont(payment model.Payment) (mo
 	}
 
 	data = model.PaymentRespont{
-		ID:         dataPreload.ID,
-		CreatedBy:  dataPreload.User.Username,
-		PartnerID:  dataPreload.PartnerID,
-		GrandTotal: dataPreload.GrandTotal,
-		Discount:   dataPreload.Discount,
-		BatchNo:    dataPreload.BatchNo,
-		Status:     dataPreload.Status,
-		Partner:    dataPreload.Partner,
+		ID:           dataPreload.ID,
+		CreatedBy:    dataPreload.User.Username,
+		PartnerID:    dataPreload.PartnerID,
+		GrandTotal:   dataPreload.GrandTotal,
+		Discount:     dataPreload.Discount,
+		BatchNo:      dataPreload.BatchNo,
+		Status:       dataPreload.Status,
+		Partner:      dataPreload.Partner,
+		DocumentNo:   dataPreload.DocumentNo,
+		DoAction:     dataPreload.DocAction,
+		IsPrecentage: data.IsPrecentage,
 	}
 	return data, nil
+}
+
+func (ir *paymentRepo) getTableName() string {
+	return "payments"
 }

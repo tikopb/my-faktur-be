@@ -8,3 +8,12 @@ const (
 	InvoiceStatusComplete  InvoiceStatus = "CO"
 	InvoiceStatusVoid      InvoiceStatus = "VO"
 )
+
+type InvoiceDocAction string
+
+const (
+	InvoiceActionDraft     InvoiceDocAction = "DR"
+	InvoiceActionProcessed InvoiceDocAction = "IP"
+	InvoiceActionComplete  InvoiceDocAction = "CO"
+	InvoiceActionVoid      InvoiceDocAction = "VO"
+)
