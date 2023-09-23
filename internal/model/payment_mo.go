@@ -31,7 +31,7 @@ type PaymentRequest struct {
 	Discount     float64                   `json:"discount"`
 	BatchNo      string                    `json:"batchno"`
 	Status       constant.PaymentStatus    `json:"status"`
-	DoAction     constant.PaymentDocAction `json:"docaction"`
+	DocAction    constant.PaymentDocAction `json:"docaction"`
 	DocumentNo   string                    `json:"documentno"`
 	IsPrecentage bool                      `json:"isprecentage"`
 }

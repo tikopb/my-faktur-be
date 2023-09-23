@@ -108,11 +108,20 @@ func (pr *paymentRepo) Update(id int, updatedPayment model.PaymentRequest) (mode
 	paymentData.PartnerID = updatedPayment.PartnerID
 	//paymentData.GrandTotal = updatedPayment.GrandTotal
 	paymentData.Discount = updatedPayment.Discount
+	paymentData.IsPrecentage = updatedPayment.IsPrecentage
 	paymentData.BatchNo = updatedPayment.BatchNo
-	paymentData.Status = updatedPayment.Status
 
-	//handling Grand Total
-	paymentData = pr.handlingGrandTotal(paymentData)
+	//validate before save
+	paymentData, err = pr.BeforeSave(paymentData)
+	if err != nil {
+		return data, err
+	}
+
+	//validation docaction
+	paymentData, err = pr.DocProcess(paymentData, string(updatedPayment.DocAction))
+	if err != nil {
+		return data, err
+	}
 
 	//save the data
 	if err := pr.db.Save(&paymentData).Error; err != nil {
@@ -140,6 +149,23 @@ func (pr *paymentRepo) Delete(id int) (string, error) {
 	}
 
 	return batchNo, nil
+}
+
+func (pr *paymentRepo) BeforeSave(data model.Payment) (model.Payment, error) {
+	//change grand total to sum of line first!
+	var grandTotal float64 = 0
+	query := `
+    	select coalesce(sum(amount), 0) from payment_lines pl where payment_id = ?
+	`
+	if err := pr.db.Raw(query, data.ID).Scan(&grandTotal).Error; err != nil {
+		return data, err
+	}
+	data.GrandTotal = grandTotal
+
+	//run handling GrandTotal
+	data = pr.handlingGrandTotal(data)
+
+	return data, nil
 }
 
 func (pr *paymentRepo) handlingGrandTotal(data model.Payment) model.Payment {

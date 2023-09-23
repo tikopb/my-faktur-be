@@ -6,23 +6,28 @@ import (
 )
 
 // DocProcess implements PaymentRepositoryinterface.
-func (pr *paymentRepo) DocProcess(data model.Payment) error {
+func (pr *paymentRepo) DocProcess(data model.Payment, docaction string) (model.Payment, error) {
 	var err error
 
-	switch data.DocAction {
-	case constant.PaymentDocActionComplete:
-		err = pr.CompleteIT(data)
-	case constant.PaymentDocActionProcessed:
-		err = nil
-	case constant.PaymentDocActionVoid:
-		err = pr.ReversedIt(data)
+	//if nothing change then dont do anything
+	if data.Status == constant.PaymentStatus(docaction) {
+		return data, nil
 	}
 
-	return err
+	switch docaction {
+	case "CO":
+		data, err = pr.CompleteIT(data, docaction)
+	case "IP":
+		err = nil
+	case "VO":
+		data, err = pr.ReversedIt(data, docaction)
+	}
+
+	return data, err
 }
 
 // CompleteIT implements PaymentRepositoryinterface.
-func (pr *paymentRepo) CompleteIT(data model.Payment) error {
+func (pr *paymentRepo) CompleteIT(data model.Payment, docaction string) (model.Payment, error) {
 	var err error
 
 	query := `UPDATE invoices
@@ -39,21 +44,24 @@ func (pr *paymentRepo) CompleteIT(data model.Payment) error {
 	`
 
 	if err = pr.db.Raw(query, data.ID).Error; err != nil {
-		return err
+		return data, err
 	}
 
-	return nil
+	data.Status = constant.PaymentStatus(docaction)
+	data.DocAction = constant.PaymentDocAction(docaction)
+
+	return data, nil
 }
 
 // ReversedIt implements PaymentRepositoryinterface.
-func (pr *paymentRepo) ReversedIt(data model.Payment) error {
+func (pr *paymentRepo) ReversedIt(data model.Payment, docaction string) (model.Payment, error) {
 
 	//update line
 	query := `
 	update payment_lines set price = 0, amount = 0, discount = 0 where payment_id  = ? 
 	`
 	if err := pr.db.Raw(query, data.ID).Error; err != nil {
-		return err
+		return data, err
 	}
 
 	//update header
@@ -75,8 +83,12 @@ func (pr *paymentRepo) ReversedIt(data model.Payment) error {
 	`
 
 	if err := pr.db.Raw(query, data.ID).Error; err != nil {
-		return err
+		return data, err
 	}
 
-	return nil
+	//change status
+	data.Status = constant.PaymentStatus(docaction)
+	data.DocAction = constant.PaymentDocAction(docaction)
+
+	return data, nil
 }
