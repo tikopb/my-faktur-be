@@ -3,6 +3,7 @@ package rest
 import (
 	"bemyfaktur/internal/model"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"strconv"
 
@@ -16,18 +17,15 @@ func (h *handler) IndexPaymentLine(c echo.Context) error {
 	paymentId, err := strconv.Atoi(paymentIdParam)
 	q := c.QueryParam("q")
 	if err != nil {
-		return handleError(c, http.StatusInternalServerError, err)
+		return handleError(c, http.StatusInternalServerError, err, meta, data)
 	}
 
 	data, err := h.paymentUsecase.IndexLine(limit, offset, paymentId, q)
 	if err != nil {
-		return handleError(c, http.StatusInternalServerError, err)
+		return handleError(c, http.StatusInternalServerError, err, meta, data)
 	}
 
-	return c.JSON(http.StatusOK, map[string]interface{}{
-		"data": data,
-		"msg":  "get succsess",
-	})
+	return handleError(c, http.StatusOK, errors.New("GET SUCCESS"), meta, data)
 }
 
 func (h *handler) GetPaymentLine(c echo.Context) error {
@@ -35,13 +33,10 @@ func (h *handler) GetPaymentLine(c echo.Context) error {
 
 	data, err := h.paymentUsecase.GetPaymentLine(id)
 	if err != nil {
-		return handleError(c, http.StatusInternalServerError, err)
+		return handleError(c, http.StatusInternalServerError, err, meta, data)
 	}
 
-	return c.JSON(http.StatusOK, map[string]interface{}{
-		"data": data,
-		"msg":  "get siccsess",
-	})
+	return handleError(c, http.StatusOK, errors.New("GET SUCCESS"), meta, data)
 }
 
 func (h *handler) CreatePaymentLine(c echo.Context) error {
@@ -49,19 +44,16 @@ func (h *handler) CreatePaymentLine(c echo.Context) error {
 	var request model.PaymentLineRequest
 	err := json.NewDecoder(c.Request().Body).Decode(&request)
 	if err != nil {
-		return handleError(c, http.StatusInternalServerError, err)
+		return handleError(c, http.StatusInternalServerError, err, meta, data)
 	}
 
 	//run function
 	data, err := h.paymentUsecase.CreatePaymentLine(request)
 	if err != nil {
-		return handleError(c, http.StatusInternalServerError, err)
+		return handleError(c, http.StatusInternalServerError, err, meta, data)
 	}
 
-	return c.JSON(http.StatusOK, map[string]interface{}{
-		"data": data,
-		"msg":  "create succsess",
-	})
+	return handleError(c, http.StatusOK, errors.New("CREATE SUCCESS"), meta, data)
 }
 
 func (h *handler) UpdatePaymentLine(c echo.Context) error {
@@ -70,19 +62,16 @@ func (h *handler) UpdatePaymentLine(c echo.Context) error {
 	var request model.PaymentLineRequest
 	err := json.NewDecoder(c.Request().Body).Decode(&request)
 	if err != nil {
-		return handleError(c, http.StatusInternalServerError, err)
+		return handleError(c, http.StatusInternalServerError, err, meta, data)
 	}
 
 	//run function
 	data, err := h.paymentUsecase.UpdatedPaymentLine(id, request)
 	if err != nil {
-		return handleError(c, http.StatusInternalServerError, err)
+		return handleError(c, http.StatusInternalServerError, err, meta, data)
 	}
 
-	return c.JSON(http.StatusOK, map[string]interface{}{
-		"data": data,
-		"msg":  "update succsess",
-	})
+	return handleError(c, http.StatusOK, errors.New("UPDATE SUCCESS"), meta, data)
 }
 
 func (h *handler) DeletePaymentLine(c echo.Context) error {
@@ -91,11 +80,8 @@ func (h *handler) DeletePaymentLine(c echo.Context) error {
 
 	data, err := h.paymentUsecase.DeletePaymentLine(id)
 	if err != nil {
-		return handleError(c, http.StatusInternalServerError, err)
+		return handleError(c, http.StatusInternalServerError, err, meta, data)
 	}
 
-	return c.JSON(http.StatusOK, map[string]interface{}{
-		"data": "data deleted" + data,
-		"msg":  "delete succsess",
-	})
+	return handleError(c, http.StatusOK, errors.New("DELETE SUCCESS"), meta, data)
 }

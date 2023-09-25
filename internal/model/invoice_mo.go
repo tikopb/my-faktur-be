@@ -83,6 +83,6 @@ type InvoiceLineRespont struct {
 	IsPrecentage    bool
 }
 
-func (Invoice) getTableName() string {
+func (Invoice) GetTableName() string {
 	return "invoices"
 }

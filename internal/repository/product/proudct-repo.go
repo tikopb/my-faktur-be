@@ -3,6 +3,7 @@ package product
 import (
 	"bemyfaktur/internal/model"
 	"errors"
+	"strings"
 
 	"gorm.io/gorm"
 )
@@ -37,12 +38,20 @@ func (pr *productRepo) Create(product model.Product) (model.ProductRespon, error
 }
 
 // Index implements Repository.
-func (pr *productRepo) Index(limit int, offset int) ([]model.Product, error) {
+func (pr *productRepo) Index(limit int, offset int, q string) ([]model.Product, error) {
 	data := []model.Product{}
 
-	if err := pr.db.Order("name").Limit(limit).Offset(offset).Find(&data).Error; err != nil {
-		return data, err
+	if q != "" {
+		q = "%" + strings.ToLower(q) + "%"
+		if err := pr.db.Where(" lower(name) like ? OR lower(description) = ? ", q, q).Order("name").Limit(limit).Offset(offset).Find(&data).Error; err != nil {
+			return data, err
+		}
+	} else {
+		if err := pr.db.Order("name").Limit(limit).Offset(offset).Find(&data).Error; err != nil {
+			return data, err
+		}
 	}
+
 	return data, nil
 }
 
@@ -55,6 +64,7 @@ func (pr *productRepo) Show(id int) (model.Product, error) {
 			return data, errors.New("data not found")
 		}
 	}
+
 	return data, nil
 }
 
