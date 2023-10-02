@@ -4,20 +4,23 @@ import (
 	"bemyfaktur/internal/model"
 	"bemyfaktur/internal/model/constant"
 	documentutil "bemyfaktur/internal/model/documentUtil"
+	pgUtil "bemyfaktur/internal/model/paginationUtil"
 	"errors"
 
 	"gorm.io/gorm"
 )
 
 type invoiceRepo struct {
-	db      *gorm.DB
-	docUtil documentutil.Repository
+	db         *gorm.DB
+	docUtil    documentutil.Repository
+	pgUtilRepo pgUtil.Repository
 }
 
-func GetRepository(db *gorm.DB, docUtil documentutil.Repository) InvoiceRepositoryInterface {
+func GetRepository(db *gorm.DB, docUtil documentutil.Repository, pgRepo pgUtil.Repository) InvoiceRepositoryInterface {
 	return &invoiceRepo{
-		db:      db,
-		docUtil: docUtil,
+		db:         db,
+		docUtil:    docUtil,
+		pgUtilRepo: pgRepo,
 	}
 }
 
@@ -74,11 +77,29 @@ func (ir *invoiceRepo) Delete(id int) (string, error) {
 }
 
 // Index implements InvoiceRepositoryInterface.
-func (ir *invoiceRepo) Index(limit int, offset int) ([]model.InvoiceRespont, error) {
+func (ir *invoiceRepo) Index(limit int, offset int, q string) ([]model.InvoiceRespont, error) {
 	data := []model.Invoice{}
 	dataReturn := []model.InvoiceRespont{}
-	if err := ir.db.Order("created_at DESC").Limit(limit).Offset(offset).Find(&data).Error; err != nil {
-		return dataReturn, err
+
+	//q param handler
+	if q != "" {
+		var invoices []model.Invoice
+		var partners []model.Partner
+		// query := " select i.* as invoice, p.* as partner from invoices i join partners p on i.partner_id = p.id " + ir.pgUtilRepo.HandlingPaginationWhere(model.GetSeatchParamInvoice(), q, "", "") + " order by i.created_at desc "
+		// if err := ir.db.Raw(query).Scan(&data).Error; err != nil {
+		// 	return dataReturn, err
+		// }
+		ir.db.Joins("JOIN order_products ON orders.id = order_products.order_id").
+			Joins("JOIN products ON order_products.product_id = products.id").
+			Where("products.name = ? OR orders.order_number = ?", q, q).
+			Find(&invoices).
+			Distinct().
+			Find(&partners)
+
+	} else {
+		if err := ir.db.Order("created_at DESC").Limit(limit).Offset(offset).Find(&data).Error; err != nil {
+			return dataReturn, err
+		}
 	}
 
 	for _, invoice := range data {
@@ -194,13 +215,3 @@ func (pr *invoiceRepo) handlingGrandTotal(data model.Invoice) model.Invoice {
 func (ir *invoiceRepo) getTableName() string {
 	return "invoices"
 }
-
-// func (ir *invoiceRepo) getSearchParam() []string {
-// 	return []string{
-// 		"BatchNo",
-// 		"Status",
-// 		"Partner",
-// 		"OustandingPayment",
-// 		"DocumentNo",
-// 	}
-// }

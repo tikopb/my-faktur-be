@@ -3,7 +3,7 @@ package invoice
 import "bemyfaktur/internal/model"
 
 type InvoiceUsecaseInterface interface {
-	IndexInvoice(limit int, offset int) ([]model.InvoiceRespont, error)
+	IndexInvoice(limit int, offset int, q string) ([]model.InvoiceRespont, error)
 	GetInvoice(id int) (model.Invoice, error)
 	CreateInvoice(request model.InvoiceRequest) (model.InvoiceRespont, error)
 	UpdatedInvoice(id int, request model.Invoice) (model.InvoiceRespont, error)

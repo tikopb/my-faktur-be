@@ -5,34 +5,28 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
-	"strconv"
 
 	"github.com/labstack/echo/v4"
 )
 
 func (h *handler) IndexInvoice(c echo.Context) error {
-	limitStr := c.QueryParam("limit")
-	if limitStr == "" {
-		limitStr = "15" // Default value
-	}
-	limit, err := strconv.Atoi(limitStr)
+	//set param
+	limit, offset := HandlingLimitAndOffset(c)
+
+	//get parameter
+	q := c.QueryParam("q")
+
+	data, err := h.invoiceUsecase.IndexInvoice(limit, offset, q)
 	if err != nil {
 		return handleError(c, http.StatusInternalServerError, err, meta, data)
 	}
 
-	offsetStr := c.QueryParam("offset")
-	if offsetStr == "" {
-		offsetStr = "0"
-	}
-	offset, err := strconv.Atoi(offsetStr)
-	if err != nil {
-		return handleError(c, http.StatusInternalServerError, err, meta, data)
-	}
-
-	data, err := h.invoiceUsecase.IndexInvoice(limit, offset)
-	if err != nil {
-		return handleError(c, http.StatusInternalServerError, err, meta, data)
-	}
+	//meta data field
+	// searchParams := model.GetSeatchParamInvoice()
+	// meta, err = h.PaginationUtil("invoices", searchParams, limit, offset, q)
+	// if err != nil {
+	// 	return handleError(c, http.StatusInternalServerError, err, meta, data)
+	// }
 
 	return handleError(c, http.StatusOK, errors.New("GET SUCCESS"), meta, data)
 }

@@ -16,8 +16,8 @@ func GetUsecase(partnerRepo partner.Repository) Usecase {
 }
 
 // GetPartner implements Usecase.
-func (m *partnerUsecase) IndexPartner() ([]model.Partner, error) {
-	return m.partnerRepo.Index()
+func (m *partnerUsecase) IndexPartner(limit int, offset int, q string) ([]model.Partner, error) {
+	return m.partnerRepo.Index(limit, offset, q)
 }
 
 // GetPartner implements Usecase.

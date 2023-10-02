@@ -2,19 +2,21 @@ package product
 
 import (
 	"bemyfaktur/internal/model"
+	pgUtil "bemyfaktur/internal/model/paginationUtil"
 	"errors"
-	"strings"
 
 	"gorm.io/gorm"
 )
 
 type productRepo struct {
-	db *gorm.DB
+	db         *gorm.DB
+	pgUtilRepo pgUtil.Repository
 }
 
-func GetRepository(db *gorm.DB) Repository {
+func GetRepository(db *gorm.DB, pgRepo pgUtil.Repository) Repository {
 	return &productRepo{
-		db: db,
+		db:         db,
+		pgUtilRepo: pgRepo,
 	}
 }
 
@@ -23,7 +25,7 @@ func (pr *productRepo) Create(product model.Product) (model.ProductRespon, error
 	data := model.ProductRespon{}
 	if err := pr.db.Create(&product).Error; err != nil {
 		if errors.Is(err, gorm.ErrDuplicatedKey) {
-			return data, errors.New("duplicatet data")
+			return data, errors.New("duplicate data")
 		}
 		return data, err
 	}
@@ -42,10 +44,12 @@ func (pr *productRepo) Index(limit int, offset int, q string) ([]model.Product, 
 	data := []model.Product{}
 
 	if q != "" {
-		q = "%" + strings.ToLower(q) + "%"
-		if err := pr.db.Where(" lower(name) like ? OR lower(description) = ? ", q, q).Order("name").Limit(limit).Offset(offset).Find(&data).Error; err != nil {
+		query := " select * from products " + pr.pgUtilRepo.HandlingPaginationWhere(model.GetSeatchParamProduct(), q, "", "")
+		// pr.GetSearchParam(q, limit, offset)
+		if err := pr.db.Raw(query).Scan(&data).Error; err != nil {
 			return data, err
 		}
+
 	} else {
 		if err := pr.db.Order("name").Limit(limit).Offset(offset).Find(&data).Error; err != nil {
 			return data, err

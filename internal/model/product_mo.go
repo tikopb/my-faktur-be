@@ -14,7 +14,7 @@ type ProductRespon struct {
 	IsActive    bool   `json:"isactive"`
 }
 
-func GetSeatchParam() []string {
+func GetSeatchParamProduct() []string {
 	searchParam := []string{"name", "description"}
 	return searchParam
 }

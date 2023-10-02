@@ -60,8 +60,8 @@ func (iu *invoiceUsecase) GetInvoice(id int) (model.Invoice, error) {
 }
 
 // IndexInvoice implements InvoiceUsecaseInterface.
-func (iu *invoiceUsecase) IndexInvoice(limit int, offset int) ([]model.InvoiceRespont, error) {
-	return iu.invoiceRepo.Index(limit, offset)
+func (iu *invoiceUsecase) IndexInvoice(limit int, offset int, q string) ([]model.InvoiceRespont, error) {
+	return iu.invoiceRepo.Index(limit, offset, q)
 }
 
 // UpdatedInvoice implements InvoiceUsecaseInterface.

@@ -4,16 +4,20 @@ import (
 	"bemyfaktur/internal/model"
 	"errors"
 
+	pgUtil "bemyfaktur/internal/model/paginationUtil"
+
 	"gorm.io/gorm"
 )
 
 type partnerRepo struct {
-	db *gorm.DB
+	db         *gorm.DB
+	pgUtilRepo pgUtil.Repository
 }
 
-func GetRepository(db *gorm.DB) Repository {
+func GetRepository(db *gorm.DB, pgRepo pgUtil.Repository) Repository {
 	return &partnerRepo{
-		db: db,
+		db:         db,
+		pgUtilRepo: pgRepo,
 	}
 }
 
@@ -34,11 +38,18 @@ func (pr *partnerRepo) Create(partner model.Partner) (model.PartnerRespon, error
 }
 
 // Index implements Repository.
-func (pr *partnerRepo) Index() ([]model.Partner, error) {
+func (pr *partnerRepo) Index(limit int, offset int, q string) ([]model.Partner, error) {
 	var data []model.Partner
 
-	if err := pr.db.Order("name").Find(&data).Error; err != nil {
-		return data, err
+	if q != "" {
+		query := " select * from partners " + pr.pgUtilRepo.HandlingPaginationWhere(model.GetSeatchParamPartner(), q, "", "")
+		if err := pr.db.Raw(query).Scan(&data).Error; err != nil {
+			return data, err
+		}
+	} else {
+		if err := pr.db.Order("name").Find(&data).Error; err != nil {
+			return data, err
+		}
 	}
 
 	return data, nil

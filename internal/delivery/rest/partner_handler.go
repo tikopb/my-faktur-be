@@ -12,16 +12,27 @@ import (
 )
 
 func (h *handler) IndexPartner(c echo.Context) error {
+	//set param
+	limit, offset := HandlingLimitAndOffset(c)
 
-	data, err := h.partnerUsecase.IndexPartner()
+	//get parameter
+	q := c.QueryParam("q")
+
+	data, err := h.partnerUsecase.IndexPartner(limit, offset, q)
 	if err != nil {
 		fmt.Printf("got error %s\n", err.Error())
 
 		return handleError(c, http.StatusInternalServerError, err, meta, data)
 	}
 
-	return handleError(c, http.StatusOK, errors.New("GET SUCCESS"), meta, data)
+	//meta data field
+	searchParams := model.GetSeatchParamPartner()
+	meta, err = h.PaginationUtil("partners", searchParams, limit, offset, q)
+	if err != nil {
+		return handleError(c, http.StatusInternalServerError, err, meta, data)
+	}
 
+	return handleError(c, http.StatusOK, errors.New("GET SUCCESS"), meta, data)
 }
 
 func (h *handler) GetPartner(c echo.Context) error {

@@ -17,7 +17,7 @@ import (
 	paymentUsecase "bemyfaktur/internal/usecase/payment"
 
 	documentutil "bemyfaktur/internal/model/documentUtil"
-	documentutilRepo "bemyfaktur/internal/model/documentUtil"
+	pgUtil "bemyfaktur/internal/model/paginationUtil"
 
 	"gorm.io/gorm"
 )
@@ -27,21 +27,23 @@ type Container struct {
 	ProductUsecase productUsecase.ProductUsecaseInterface
 	InvoiceUsecase invoiceUsecase.InvoiceUsecaseInterface
 	PaymentUsecase paymentUsecase.PaymentUsecaseInterface
-	DocumentUtil   documentutilRepo.Repository
+	DocumentUtil   documentutil.Repository
+	pgUtil         pgUtil.Repository
 }
 
 func NewContainer(db *gorm.DB) *Container {
 	documnetUtilRepo := documentutil.GetRepository(db)
+	pgUtilRepo := pgUtil.GetRepository(db)
 
-	partnerRepo := paRepository.GetRepository(db)
+	partnerRepo := paRepository.GetRepository(db, pgUtilRepo)
 	partnerUsecase := paUsecase.GetUsecase(partnerRepo)
 
-	productRepo := productReposiftory.GetRepository(db)
+	productRepo := productReposiftory.GetRepository(db, pgUtilRepo)
 	productUsecase := productUsecase.GetUsecase(productRepo)
 
 	userRepository := usrRepository.GetRepository(db)
 
-	invoiceRepo := invoiceReposiftory.GetRepository(db, documnetUtilRepo)
+	invoiceRepo := invoiceReposiftory.GetRepository(db, documnetUtilRepo, pgUtilRepo)
 	invoiceUsecase := invoiceUsecase.GetUsecase(invoiceRepo, partnerRepo, productRepo, userRepository)
 
 	paymentRepo := paymentRepository.GetRepository(db, documnetUtilRepo)

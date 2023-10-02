@@ -12,7 +12,7 @@ type Partner struct {
 	CNAmount  float64   `gorm:"column:cn_amount" json:"cn_amount"`
 	Isactive  bool      `gorm:"column:isactive" json:"isactive"`
 	Code      string    `gorm:"column:bp_code;unique;not null" json:"bpcode"`
-	Invoice   []Invoice `json:"invoice"`
+	//Invoice   []Invoice `json:"invoice"`
 }
 
 type PartnerRespon struct {
@@ -20,4 +20,9 @@ type PartnerRespon struct {
 	DNAmount float64 `json:"dn_amount"`
 	CNAmount float64 `json:"cn_amount"`
 	Isactive bool    `json:"isactive"`
+}
+
+func GetSeatchParamPartner() []string {
+	searchParam := []string{"name", "bp_code"}
+	return searchParam
 }

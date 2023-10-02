@@ -83,6 +83,7 @@ type InvoiceLineRespont struct {
 	IsPrecentage    bool
 }
 
-func (Invoice) GetTableName() string {
-	return "invoices"
+func GetSeatchParamInvoice() []string {
+	searchParam := []string{"batch_no", "documentno", "p.name"}
+	return searchParam
 }
