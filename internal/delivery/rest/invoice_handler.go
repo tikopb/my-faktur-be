@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"strings"
 
 	"github.com/labstack/echo/v4"
 )
@@ -15,6 +16,7 @@ func (h *handler) IndexInvoice(c echo.Context) error {
 
 	//get parameter
 	q := c.QueryParam("q")
+	q = strings.ToLower(q)
 
 	data, err := h.invoiceUsecase.IndexInvoice(limit, offset, q)
 	if err != nil {
@@ -22,11 +24,15 @@ func (h *handler) IndexInvoice(c echo.Context) error {
 	}
 
 	//meta data field
-	// searchParams := model.GetSeatchParamInvoice()
-	// meta, err = h.PaginationUtil("invoices", searchParams, limit, offset, q)
-	// if err != nil {
-	// 	return handleError(c, http.StatusInternalServerError, err, meta, data)
-	// }
+	count, err := h.invoiceUsecase.HandlingPagination(q, limit, offset)
+	if err != nil {
+		return handleError(c, http.StatusInternalServerError, err, meta, data)
+	}
+
+	meta, err = h.PaginationUtilWithJoinTable(int64(count), limit, offset)
+	if err != nil {
+		return handleError(c, http.StatusInternalServerError, err, meta, data)
+	}
 
 	return handleError(c, http.StatusOK, errors.New("GET SUCCESS"), meta, data)
 }

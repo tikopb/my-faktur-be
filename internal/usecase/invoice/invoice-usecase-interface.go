@@ -14,4 +14,6 @@ type InvoiceUsecaseInterface interface {
 	CreateInvoiceLine(request model.InvoiceLine) (model.InvoiceLine, error)
 	UpdatedInvoiceLine(id int, request model.InvoiceLine, productId int) (model.InvoiceLine, error)
 	DeleteInvoiceLine(id int) (string, error)
+
+	HandlingPagination(q string, limit int, offset int) (int64, error)
 }

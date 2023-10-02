@@ -24,4 +24,7 @@ type InvoiceRepositoryInterface interface {
 	DocProcess(data model.Invoice, docaction string) (model.Invoice, error)
 	CompleteIT(data model.Invoice, docaction string) (model.Invoice, error)
 	ReversedIt(data model.Invoice, docaction string) (model.Invoice, error)
+
+	//pagination
+	HandlingPaginationInvoice(q string, limit int, offset int) (int64, error)
 }

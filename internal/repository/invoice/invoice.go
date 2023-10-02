@@ -83,19 +83,9 @@ func (ir *invoiceRepo) Index(limit int, offset int, q string) ([]model.InvoiceRe
 
 	//q param handler
 	if q != "" {
-		var invoices []model.Invoice
-		var partners []model.Partner
-		// query := " select i.* as invoice, p.* as partner from invoices i join partners p on i.partner_id = p.id " + ir.pgUtilRepo.HandlingPaginationWhere(model.GetSeatchParamInvoice(), q, "", "") + " order by i.created_at desc "
-		// if err := ir.db.Raw(query).Scan(&data).Error; err != nil {
-		// 	return dataReturn, err
-		// }
-		ir.db.Joins("JOIN order_products ON orders.id = order_products.order_id").
-			Joins("JOIN products ON order_products.product_id = products.id").
-			Where("products.name = ? OR orders.order_number = ?", q, q).
-			Find(&invoices).
-			Distinct().
-			Find(&partners)
-
+		if err := ir.db.Joins("Partner", ir.db.Where(model.GetSeatchParamPartnerV2(q))).Where(model.GetSeatchParamInvoice(q)).Limit(limit).Offset(offset).Find(&data).Error; err != nil {
+			return dataReturn, err
+		}
 	} else {
 		if err := ir.db.Order("created_at DESC").Limit(limit).Offset(offset).Find(&data).Error; err != nil {
 			return dataReturn, err
@@ -214,4 +204,20 @@ func (pr *invoiceRepo) handlingGrandTotal(data model.Invoice) model.Invoice {
 
 func (ir *invoiceRepo) getTableName() string {
 	return "invoices"
+}
+
+func (ir *invoiceRepo) HandlingPaginationInvoice(q string, limit int, offset int) (int64, error) {
+	var count int64 = 0
+	data := model.Invoice{}
+	//q param handler
+	if q != "" {
+		if err := ir.db.Joins("Partner", ir.db.Where(model.GetSeatchParamPartnerV2(q))).Where(model.GetSeatchParamInvoice(q)).Find(&data).Count(&count).Error; err != nil {
+			return count, err
+		}
+	} else {
+		if err := ir.db.Order("created_at DESC").Limit(limit).Offset(offset).Find(&data).Count(&count).Error; err != nil {
+			return count, err
+		}
+	}
+	return count, nil
 }

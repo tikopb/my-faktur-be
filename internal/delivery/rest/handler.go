@@ -27,10 +27,10 @@ type handler struct {
 }
 
 type pagination struct {
-	Current_page int `json:"current_page"`
-	Total_page   int `json:"total_page"`
-	Per_page     int `json:"per_page"`
-	Total_data   int `json:"total_data"`
+	Current_page int   `json:"current_page"`
+	Total_page   int   `json:"total_page"`
+	Per_page     int   `json:"per_page"`
+	Total_data   int64 `json:"total_data"`
 }
 
 type handlerRespont struct {
@@ -123,7 +123,7 @@ func (h *handler) PaginationUtil(tabelName string, searchParam []string, limit i
 	//get count data total with where variabel
 	query := ` select count(id) as count from ` + tabelName
 
-	var count int
+	var count int64
 	if q != "" {
 		query = query + param
 		if err := h.db.Raw(query).Scan(&count).Error; err != nil {
@@ -160,4 +160,17 @@ func (h *handler) HandlingPaginationWhere(searchParam []string, q string) string
 
 	param = " where " + param
 	return param
+}
+
+func (p *handler) PaginationUtilWithJoinTable(count int64, limit int, offset int) (pagination, error) {
+	meta := pagination{}
+
+	totalPage := math.Ceil(float64(count) / float64(limit))
+	//set meta data
+	meta.Current_page = offset + 1
+	meta.Total_page = int(totalPage)
+	meta.Per_page = limit
+	meta.Total_data = count
+
+	return meta, nil
 }

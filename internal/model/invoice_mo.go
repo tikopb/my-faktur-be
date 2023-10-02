@@ -83,7 +83,10 @@ type InvoiceLineRespont struct {
 	IsPrecentage    bool
 }
 
-func GetSeatchParamInvoice() []string {
-	searchParam := []string{"batch_no", "documentno", "p.name"}
-	return searchParam
+func GetSeatchParamInvoice(q string) string {
+	//searchParam := []string{"batch_no", "documentno", "p.name"}
+	q = "'%" + q + "%'"
+	value := " lower(batch_no)  LIKE " + q + " OR lower(documentno) LIKE " + q
+
+	return value
 }

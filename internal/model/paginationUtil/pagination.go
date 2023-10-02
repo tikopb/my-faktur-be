@@ -9,10 +9,10 @@ import (
 )
 
 type Pagination struct {
-	Current_page int `json:"current_page"`
-	Total_page   int `json:"total_page"`
-	Per_page     int `json:"per_page"`
-	Total_data   int `json:"total_data"`
+	Current_page int   `json:"current_page"`
+	Total_page   int   `json:"total_page"`
+	Per_page     int   `json:"per_page"`
+	Total_data   int64 `json:"total_data"`
 }
 
 type Repository interface {
@@ -44,7 +44,7 @@ func (p *paginationUtilRepo) PaginationUtil(tabelName string, searchParam []stri
 	//get count data total with where variabel
 	query := ` select count(id) as count from ` + tabelName
 
-	var count int
+	var count int64
 	if q != "" {
 		query = query + param
 		if err := p.db.Raw(query).Scan(&count).Error; err != nil {
@@ -97,4 +97,17 @@ func (p *paginationUtilRepo) HandlingPaginationWhere(searchParam []string, q str
 	}
 
 	return param
+}
+
+func (p *paginationUtilRepo) PaginationUtilWithJoinTable(count int64, offset int, limit int) (Pagination, error) {
+	meta := Pagination{}
+
+	totalPage := math.Ceil(float64(count) / float64(limit))
+	//set meta data
+	meta.Current_page = offset + 1
+	meta.Total_page = int(totalPage)
+	meta.Per_page = limit
+	meta.Total_data = count
+
+	return meta, nil
 }
