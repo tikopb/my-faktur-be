@@ -29,7 +29,7 @@ func (h *handler) IndexInvoice(c echo.Context) error {
 		return handleError(c, http.StatusInternalServerError, err, meta, data)
 	}
 
-	meta, err = h.PaginationUtilWithJoinTable(int64(count), limit, offset)
+	meta, err = h.pgUtilRepo.PaginationUtilWithJoinTable(int64(count), limit, offset)
 	if err != nil {
 		return handleError(c, http.StatusInternalServerError, err, meta, data)
 	}

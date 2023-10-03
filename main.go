@@ -15,7 +15,7 @@ func main() {
 	db := database.GetDb()
 
 	container := usecase.NewContainer(db)
-	h := rest.NewHandler(container.PartnerUsecase, container.ProductUsecase, container.InvoiceUsecase, container.PaymentUsecase, db)
+	h := rest.NewHandler(container.PartnerUsecase, container.ProductUsecase, container.InvoiceUsecase, container.PaymentUsecase, container.PgUtil, db)
 
 	rest.LoadRoutes(e, h)
 	//after all set, push the start

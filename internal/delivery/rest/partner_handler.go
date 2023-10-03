@@ -27,7 +27,7 @@ func (h *handler) IndexPartner(c echo.Context) error {
 
 	//meta data field
 	searchParams := model.GetSeatchParamPartner()
-	meta, err = h.PaginationUtil("partners", searchParams, limit, offset, q)
+	meta, err = h.pgUtilRepo.PaginationUtil("products", searchParams, limit, offset, q, "", "")
 	if err != nil {
 		return handleError(c, http.StatusInternalServerError, err, meta, data)
 	}

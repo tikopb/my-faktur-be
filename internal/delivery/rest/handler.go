@@ -5,10 +5,10 @@ import (
 	"bemyfaktur/internal/usecase/partner"
 	"bemyfaktur/internal/usecase/payment"
 	"bemyfaktur/internal/usecase/product"
-	"fmt"
-	"math"
+
 	"strconv"
-	"strings"
+
+	pgUtil "bemyfaktur/internal/model/paginationUtil"
 
 	"github.com/labstack/echo/v4"
 	"gorm.io/gorm"
@@ -24,13 +24,7 @@ type handler struct {
 	invoiceUsecase invoice.InvoiceUsecaseInterface
 	paymentUsecase payment.PaymentUsecaseInterface
 	db             *gorm.DB
-}
-
-type pagination struct {
-	Current_page int   `json:"current_page"`
-	Total_page   int   `json:"total_page"`
-	Per_page     int   `json:"per_page"`
-	Total_data   int64 `json:"total_data"`
+	pgUtilRepo     pgUtil.Repository
 }
 
 type handlerRespont struct {
@@ -40,13 +34,14 @@ type handlerRespont struct {
 	Data    interface{} `json:"data"`
 }
 
-func NewHandler(partnerUsecase partner.Usecase, productUsecase product.ProductUsecaseInterface, invoiceUsecase invoice.InvoiceUsecaseInterface, paymentUsecase payment.PaymentUsecaseInterface, db *gorm.DB) *handler {
+func NewHandler(partnerUsecase partner.Usecase, productUsecase product.ProductUsecaseInterface, invoiceUsecase invoice.InvoiceUsecaseInterface, paymentUsecase payment.PaymentUsecaseInterface, pgRepo pgUtil.Repository, db *gorm.DB) *handler {
 
 	return &handler{
 		partnerUsecase: partnerUsecase,
 		productUsecase: productUsecase,
 		invoiceUsecase: invoiceUsecase,
 		paymentUsecase: paymentUsecase,
+		pgUtilRepo:     pgRepo,
 		db:             db,
 	}
 }
@@ -106,71 +101,4 @@ func HandlingLimitAndOffset(c echo.Context) (int, int) {
 
 	// Return the values
 	return limit, offset
-}
-
-// ===== PAGINATION TOOLS =====
-// master class pagination
-func (h *handler) PaginationUtil(tabelName string, searchParam []string, limit int, offset int, q string) (pagination, error) {
-	meta := pagination{}
-	param := ""
-	q = strings.ToLower(q)
-
-	//if searching where is not null then execute for where prosees
-	if q != "" && len(searchParam) > 0 {
-		param = h.HandlingPaginationWhere(searchParam, q)
-	}
-
-	//get count data total with where variabel
-	query := ` select count(id) as count from ` + tabelName
-
-	var count int64
-	if q != "" {
-		query = query + param
-		if err := h.db.Raw(query).Scan(&count).Error; err != nil {
-			return meta, err
-		}
-	} else {
-		if err := h.db.Raw(query).Scan(&count).Error; err != nil {
-			fmt.Println(query)
-			return meta, err
-		}
-	}
-
-	totalPage := math.Ceil(float64(count) / float64(limit))
-
-	//set meta data
-	meta.Current_page = offset + 1
-	meta.Total_page = int(totalPage)
-	meta.Per_page = limit
-	meta.Total_data = count
-
-	return meta, nil
-}
-
-func (h *handler) HandlingPaginationWhere(searchParam []string, q string) string {
-	//execute looping param
-	var param string
-	for i, searchparam := range searchParam {
-		if i == len(searchParam)-1 {
-			param += "lower(" + searchparam + ") like '%" + q + "%'"
-		} else {
-			param += "lower(" + searchparam + ") like '%" + q + "%' OR "
-		}
-	}
-
-	param = " where " + param
-	return param
-}
-
-func (p *handler) PaginationUtilWithJoinTable(count int64, limit int, offset int) (pagination, error) {
-	meta := pagination{}
-
-	totalPage := math.Ceil(float64(count) / float64(limit))
-	//set meta data
-	meta.Current_page = offset + 1
-	meta.Total_page = int(totalPage)
-	meta.Per_page = limit
-	meta.Total_data = count
-
-	return meta, nil
 }

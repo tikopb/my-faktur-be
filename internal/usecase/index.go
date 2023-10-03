@@ -28,7 +28,7 @@ type Container struct {
 	InvoiceUsecase invoiceUsecase.InvoiceUsecaseInterface
 	PaymentUsecase paymentUsecase.PaymentUsecaseInterface
 	DocumentUtil   documentutil.Repository
-	pgUtil         pgUtil.Repository
+	PgUtil         pgUtil.Repository
 }
 
 func NewContainer(db *gorm.DB) *Container {
@@ -54,5 +54,7 @@ func NewContainer(db *gorm.DB) *Container {
 		ProductUsecase: productUsecase,
 		InvoiceUsecase: invoiceUsecase,
 		PaymentUsecase: paymentUsecase,
+		DocumentUtil:   documnetUtilRepo,
+		PgUtil:         pgUtilRepo,
 	}
 }

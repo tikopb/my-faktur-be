@@ -17,6 +17,7 @@ type Pagination struct {
 
 type Repository interface {
 	PaginationUtil(tabelName string, searchParam []string, limit int, offset int, q string, startDate string, endDate string) (Pagination, error)
+	PaginationUtilWithJoinTable(count int64, limit int, offset int) (Pagination, error)
 	HandlingPaginationWhere(searchParam []string, q string, startDate string, endDate string) string
 }
 
@@ -99,7 +100,7 @@ func (p *paginationUtilRepo) HandlingPaginationWhere(searchParam []string, q str
 	return param
 }
 
-func (p *paginationUtilRepo) PaginationUtilWithJoinTable(count int64, offset int, limit int) (Pagination, error) {
+func (p *paginationUtilRepo) PaginationUtilWithJoinTable(count int64, limit int, offset int) (Pagination, error) {
 	meta := Pagination{}
 
 	totalPage := math.Ceil(float64(count) / float64(limit))
