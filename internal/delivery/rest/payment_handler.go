@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"strings"
 
 	"github.com/labstack/echo/v4"
 )
@@ -14,7 +15,22 @@ func (h *handler) IndexPayment(c echo.Context) error {
 	//set param
 	limit, offset := HandlingLimitAndOffset(c)
 
-	data, err := h.paymentUsecase.Indexpayment(limit, offset)
+	//get parameter
+	q := c.QueryParam("q")
+	q = strings.ToLower(q)
+
+	data, err := h.paymentUsecase.Indexpayment(limit, offset, q)
+	if err != nil {
+		return handleError(c, http.StatusInternalServerError, err, meta, data)
+	}
+
+	//meta data field
+	count, err := h.paymentUsecase.HandlingPagination(q, limit, offset)
+	if err != nil {
+		return handleError(c, http.StatusInternalServerError, err, meta, data)
+	}
+
+	meta, err = h.pgUtilRepo.PaginationUtilWithJoinTable(int64(count), limit, offset)
 	if err != nil {
 		return handleError(c, http.StatusInternalServerError, err, meta, data)
 	}

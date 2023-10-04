@@ -1,6 +1,7 @@
 package model
 
 import (
+	"strconv"
 	"time"
 
 	"bemyfaktur/internal/model/constant"
@@ -84,9 +85,26 @@ type InvoiceLineRespont struct {
 }
 
 func GetSeatchParamInvoice(q string) string {
-	//searchParam := []string{"batch_no", "documentno", "p.name"}
+	var value string
 	q = "'%" + q + "%'"
-	value := " lower(batch_no)  LIKE " + q + " OR lower(documentno) LIKE " + q
+	if IsIntegerVariable(q) {
+		value = " lower(batch_no)  LIKE " + q + " OR lower(documentno) LIKE " + q + " OR grand_total::TEXT LIKE " + q
+	} else {
+		value = " lower(batch_no)  LIKE " + q + " OR lower(documentno) LIKE " + q
+	}
+
+	return value
+}
+
+func GetSeatchParamInvoiceLine(q string, invoiceId int) string {
+	id := strconv.Itoa(invoiceId)
+	value := " invoice_id = " + id
+	if IsIntegerVariable(q) {
+		q = "'%" + q + "%'"
+		value = value + " lower(batch_no)  LIKE " + q + " OR lower(documentno) LIKE " + q + " OR grand_total::TEXT LIKE " + q
+	} else {
+		value = value + ""
+	}
 
 	return value
 }

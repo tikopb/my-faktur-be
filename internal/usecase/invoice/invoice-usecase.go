@@ -146,7 +146,7 @@ func (iu *invoiceUsecase) validateProductIsActive(id int) bool {
 }
 
 func (iu *invoiceUsecase) HandlingPagination(q string, limit int, offset int) (int64, error) {
-	count, err := iu.invoiceRepo.HandlingPaginationInvoice(q, limit, offset)
+	count, err := iu.invoiceRepo.HandlingPagination(q, limit, offset)
 	if err != nil {
 		return 0, err
 	}

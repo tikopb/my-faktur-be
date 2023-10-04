@@ -32,7 +32,7 @@ type Container struct {
 }
 
 func NewContainer(db *gorm.DB) *Container {
-	documnetUtilRepo := documentutil.GetRepository(db)
+	documentUtilRepo := documentutil.GetRepository(db)
 	pgUtilRepo := pgUtil.GetRepository(db)
 
 	partnerRepo := paRepository.GetRepository(db, pgUtilRepo)
@@ -43,10 +43,10 @@ func NewContainer(db *gorm.DB) *Container {
 
 	userRepository := usrRepository.GetRepository(db)
 
-	invoiceRepo := invoiceReposiftory.GetRepository(db, documnetUtilRepo, pgUtilRepo)
+	invoiceRepo := invoiceReposiftory.GetRepository(db, documentUtilRepo, pgUtilRepo)
 	invoiceUsecase := invoiceUsecase.GetUsecase(invoiceRepo, partnerRepo, productRepo, userRepository)
 
-	paymentRepo := paymentRepository.GetRepository(db, documnetUtilRepo)
+	paymentRepo := paymentRepository.GetRepository(db, documentUtilRepo, pgUtilRepo)
 	paymentUsecase := paymentUsecase.GetUsecase(paymentRepo, invoiceRepo)
 
 	return &Container{
@@ -54,7 +54,7 @@ func NewContainer(db *gorm.DB) *Container {
 		ProductUsecase: productUsecase,
 		InvoiceUsecase: invoiceUsecase,
 		PaymentUsecase: paymentUsecase,
-		DocumentUtil:   documnetUtilRepo,
+		DocumentUtil:   documentUtilRepo,
 		PgUtil:         pgUtilRepo,
 	}
 }

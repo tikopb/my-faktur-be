@@ -38,36 +38,13 @@ func (ir *invoiceRepo) CreateLine(request model.InvoiceLine) (model.InvoiceLine,
 func (ir *invoiceRepo) IndexLine(limit int, offset int, invoiceId int, q string) ([]model.InvoiceLineRespont, error) {
 	data := []model.InvoiceLineRespont{}
 
-	query := `
-        SELECT 
-            i.id AS invoice_id, 
-            il.id AS invoice_line_id, 
-            il.created_at AS invoice_line_created_at, 
-            p.name AS product_name, 
-			p.id as product_id,
-			il.qty,
-            il.price, 
-            il.amount, 
-            il.discount 
-        FROM invoice_lines il
-        JOIN invoices i ON il.invoice_id = i.id
-        JOIN products p ON il.product_id = p.id
-        WHERE il.invoice_id = ? 
-    `
+	//q param handler
 	if q != "" {
-		query += `
-			and p.name = ?
-		`
-	}
-
-	query += ` limit ? offset ?`
-
-	if q != "" {
-		if err := ir.db.Raw(query, invoiceId, q, limit, offset).Scan(&data).Error; err != nil {
+		if err := ir.db.Joins("Product", ir.db.Where(model.GetSeatchParamPartnerV2(q))).Where(model.GetSeatchParamInvoiceLine(q, invoiceId)).Limit(limit).Offset(offset).Find(&data).Error; err != nil {
 			return data, err
 		}
 	} else {
-		if err := ir.db.Raw(query, invoiceId, limit, offset).Scan(&data).Error; err != nil {
+		if err := ir.db.Preload("Product").Where(model.GetSeatchParamInvoiceLine(q, invoiceId)).Find(&data).Error; err != nil {
 			return data, err
 		}
 	}

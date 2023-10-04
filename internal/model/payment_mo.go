@@ -84,3 +84,16 @@ type PaymentLineRespont struct {
 	Payment      Payment
 	IsPrecentage bool `json:"isprecentage"`
 }
+
+func GetSeatchParamPayment(q string) string {
+	//searchParam := []string{"batch_no", "documentno", "p.name"}
+	var value string
+	q = "'%" + q + "%'"
+	if IsIntegerVariable(q) {
+		value = " lower(batch_no)  LIKE " + q + " OR lower(documentno) LIKE " + q + " OR grand_total::TEXT LIKE " + q
+	} else {
+		value = " lower(batch_no)  LIKE " + q + " OR lower(documentno) LIKE " + q
+	}
+
+	return value
+}

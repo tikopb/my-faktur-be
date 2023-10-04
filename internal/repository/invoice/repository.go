@@ -26,5 +26,5 @@ type InvoiceRepositoryInterface interface {
 	ReversedIt(data model.Invoice, docaction string) (model.Invoice, error)
 
 	//pagination
-	HandlingPaginationInvoice(q string, limit int, offset int) (int64, error)
+	HandlingPagination(q string, limit int, offset int) (int64, error)
 }

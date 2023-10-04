@@ -206,7 +206,7 @@ func (ir *invoiceRepo) getTableName() string {
 	return "invoices"
 }
 
-func (ir *invoiceRepo) HandlingPaginationInvoice(q string, limit int, offset int) (int64, error) {
+func (ir *invoiceRepo) HandlingPagination(q string, limit int, offset int) (int64, error) {
 	var count int64 = 0
 	data := model.Invoice{}
 	//q param handler
