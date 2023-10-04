@@ -37,6 +37,7 @@ func (ir *invoiceRepo) CreateLine(request model.InvoiceLine) (model.InvoiceLine,
 // IndexLine implements InvoiceRepositoryInterface.
 func (ir *invoiceRepo) IndexLine(limit int, offset int, invoiceId int, q string) ([]model.InvoiceLineRespont, error) {
 	data := []model.InvoiceLineRespont{}
+	invoiceLine := []model.InvoiceLine{}
 
 	//q param handler
 	if q != "" {
@@ -44,9 +45,25 @@ func (ir *invoiceRepo) IndexLine(limit int, offset int, invoiceId int, q string)
 			return data, err
 		}
 	} else {
-		if err := ir.db.Preload("Product").Where(model.GetSeatchParamInvoiceLine(q, invoiceId)).Find(&data).Error; err != nil {
+		if err := ir.db.Preload("Product").Where(model.GetSeatchParamInvoiceLine("", invoiceId)).Find(&invoiceLine).Error; err != nil {
 			return data, err
 		}
+	}
+
+	for _, line := range invoiceLine {
+		indexResponse := model.InvoiceLineRespont{
+			Invoice_id:      line.ID,
+			Invoice_line_id: line.InvoiceID,
+			Created_at:      line.CreatedAt,
+			Product_name:    line.Product.Name,
+			Product_id:      line.Product.ID,
+			Qty:             line.Qty,
+			Price:           line.Price,
+			Amount:          line.Amount,
+			Discount:        line.Discount,
+			IsPrecentage:    line.IsPrecentage,
+		}
+		data = append(data, indexResponse)
 	}
 
 	return data, nil
@@ -136,4 +153,20 @@ func (ir *invoiceRepo) AfterSave(request model.InvoiceLine) error {
 	}
 	fmt.Println(err)
 	return nil
+}
+
+func (ir *invoiceRepo) HandlingPaginationLine(q string, limit int, offset int, paymentID int) (int64, error) {
+	var count int64 = 0
+	data := model.InvoiceLine{}
+	//q param handler
+	if q != "" {
+		if err := ir.db.Joins("Product", ir.db.Where(model.GetSeatchParamProductV2(q))).Where(model.GetSeatchParamInvoiceLine(q, paymentID)).Find(&data).Count(&count).Error; err != nil {
+			return count, err
+		}
+	} else {
+		if err := ir.db.Where(model.GetSeatchParamInvoiceLine("", paymentID)).Find(&data).Count(&count).Error; err != nil {
+			return count, err
+		}
+	}
+	return count, nil
 }

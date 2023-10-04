@@ -98,3 +98,11 @@ func (pu *paymentUsecase) HandlingPagination(q string, limit int, offset int) (i
 
 	return count, nil
 }
+
+func (pu *paymentUsecase) HandlingPaginationLine(q string, limit int, offset int, paymentID int) (int64, error) {
+	count, err := pu.paymentRepo.HandlingPaginationLine(q, limit, offset, paymentID)
+	if err != nil {
+		return 0, err
+	}
+	return count, nil
+}

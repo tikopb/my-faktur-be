@@ -153,3 +153,11 @@ func (iu *invoiceUsecase) HandlingPagination(q string, limit int, offset int) (i
 
 	return count, nil
 }
+
+func (iu *invoiceUsecase) HandlingPaginationLine(q string, limit int, offset int, invoiceId int) (int64, error) {
+	count, err := iu.invoiceRepo.HandlingPaginationLine(q, limit, offset, invoiceId)
+	if err != nil {
+		return 0, err
+	}
+	return count, nil
+}

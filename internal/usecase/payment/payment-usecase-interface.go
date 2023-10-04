@@ -16,4 +16,5 @@ type PaymentUsecaseInterface interface {
 	DeletePaymentLine(id int) (string, error)
 
 	HandlingPagination(q string, limit int, offset int) (int64, error)
+	HandlingPaginationLine(q string, limit int, offset int, paymentID int) (int64, error)
 }

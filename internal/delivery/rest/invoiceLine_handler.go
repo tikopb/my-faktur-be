@@ -25,6 +25,18 @@ func (h *handler) IndexInvoiceLine(c echo.Context) error {
 	if err != nil {
 		return handleError(c, http.StatusInternalServerError, err, meta, data)
 	}
+
+	//meta data field
+	count, err := h.invoiceUsecase.HandlingPaginationLine(q, limit, offset, invoiceId)
+	if err != nil {
+		return handleError(c, http.StatusInternalServerError, err, meta, data)
+	}
+
+	meta, err = h.pgUtilRepo.PaginationUtilWithJoinTable(int64(count), limit, offset)
+	if err != nil {
+		return handleError(c, http.StatusInternalServerError, err, meta, data)
+	}
+
 	return handleError(c, http.StatusOK, errors.New("GET SUCCESS"), meta, data)
 
 }

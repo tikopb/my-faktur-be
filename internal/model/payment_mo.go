@@ -1,6 +1,7 @@
 package model
 
 import (
+	"strconv"
 	"time"
 
 	"bemyfaktur/internal/model/constant"
@@ -81,8 +82,8 @@ type PaymentLineRespont struct {
 	BatchNo      string  `json:"batchno"`
 	Invoice_id   int     `json:"invoice_id"`
 	Discount     float64 `json:"discount"`
+	IsPrecentage bool    `json:"isprecentage"`
 	Payment      Payment
-	IsPrecentage bool `json:"isprecentage"`
 }
 
 func GetSeatchParamPayment(q string) string {
@@ -93,6 +94,19 @@ func GetSeatchParamPayment(q string) string {
 		value = " lower(batch_no)  LIKE " + q + " OR lower(documentno) LIKE " + q + " OR grand_total::TEXT LIKE " + q
 	} else {
 		value = " lower(batch_no)  LIKE " + q + " OR lower(documentno) LIKE " + q
+	}
+
+	return value
+}
+
+func GetSeatchParamPaymentLine(q string, paymentID int) string {
+	id := strconv.Itoa(paymentID)
+	value := " payment_id = " + id
+	if IsIntegerVariable(q) {
+		q = "'%" + q + "%'"
+		value = value + " amount::TEXT LIKE " + q + " price::TEXT LIKE " + q
+	} else {
+		value = value + ""
 	}
 
 	return value

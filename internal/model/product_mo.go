@@ -21,7 +21,6 @@ func GetSeatchParamProduct() []string {
 
 // searching for join table with other model
 func GetSeatchParamProductV2(q string) string {
-	value := " lower(batch_no)  LIKE " + q + " OR lower(documentno) LIKE " + q
-
+	value := " lower(name)  LIKE " + q + " OR lower(description) LIKE " + q
 	return value
 }

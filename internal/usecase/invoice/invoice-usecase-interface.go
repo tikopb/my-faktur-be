@@ -16,4 +16,5 @@ type InvoiceUsecaseInterface interface {
 	DeleteInvoiceLine(id int) (string, error)
 
 	HandlingPagination(q string, limit int, offset int) (int64, error)
+	HandlingPaginationLine(q string, limit int, offset int, invoiceId int) (int64, error)
 }
