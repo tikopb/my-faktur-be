@@ -1,6 +1,7 @@
 package model
 
 import (
+	"strconv"
 	"time"
 
 	"bemyfaktur/internal/model/constant"
@@ -83,6 +84,27 @@ type InvoiceLineRespont struct {
 	IsPrecentage    bool
 }
 
-func (Invoice) getTableName() string {
-	return "invoices"
+func GetSeatchParamInvoice(q string) string {
+	var value string
+	q = "'%" + q + "%'"
+	if IsIntegerVariable(q) {
+		value = " lower(batch_no)  LIKE " + q + " OR lower(documentno) LIKE " + q + " OR grand_total::TEXT LIKE " + q
+	} else {
+		value = " lower(batch_no)  LIKE " + q + " OR lower(documentno) LIKE " + q
+	}
+
+	return value
+}
+
+func GetSeatchParamInvoiceLine(q string, invoiceId int) string {
+	id := strconv.Itoa(invoiceId)
+	value := " invoice_id = " + id
+	if IsIntegerVariable(q) {
+		q = "'%" + q + "%'"
+		value = value + " lower(batch_no)  LIKE " + q + " OR lower(documentno) LIKE " + q + " OR grand_total::TEXT LIKE " + q
+	} else {
+		value = value + ""
+	}
+
+	return value
 }

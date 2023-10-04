@@ -3,29 +3,40 @@ package payment
 import (
 	"bemyfaktur/internal/model"
 	documentutil "bemyfaktur/internal/model/documentUtil"
+	pgUtil "bemyfaktur/internal/model/paginationUtil"
 	"errors"
 
 	"gorm.io/gorm"
 )
 
 type paymentRepo struct {
-	db      *gorm.DB
-	docUtil documentutil.Repository
+	db         *gorm.DB
+	docUtil    documentutil.Repository
+	pgUtilRepo pgUtil.Repository
 }
 
-func GetRepository(db *gorm.DB, docUtil documentutil.Repository) PaymentRepositoryinterface {
+func GetRepository(db *gorm.DB, docUtil documentutil.Repository, pgRepo pgUtil.Repository) PaymentRepositoryinterface {
 	return &paymentRepo{
-		db:      db,
-		docUtil: docUtil,
+		db:         db,
+		docUtil:    docUtil,
+		pgUtilRepo: pgRepo,
 	}
 }
 
 // Index implements PaymentRepositoryinterface.
-func (pr *paymentRepo) Index(limit int, offset int) ([]model.PaymentRespont, error) {
+func (pr *paymentRepo) Index(limit int, offset int, q string) ([]model.PaymentRespont, error) {
 	data := []model.Payment{}
 	dataReturn := []model.PaymentRespont{}
-	if err := pr.db.Order("created_at DESC").Limit(limit).Offset(offset).Find(&data).Error; err != nil {
-		return dataReturn, err
+
+	//q param handler
+	if q != "" {
+		if err := pr.db.Joins("Partner", pr.db.Where(model.GetSeatchParamPartnerV2(q))).Where(model.GetSeatchParamPayment(q)).Limit(limit).Offset(offset).Find(&data).Error; err != nil {
+			return dataReturn, err
+		}
+	} else {
+		if err := pr.db.Order("created_at DESC").Limit(limit).Offset(offset).Find(&data).Error; err != nil {
+			return dataReturn, err
+		}
 	}
 
 	for _, payment := range data {
@@ -43,7 +54,10 @@ func (pr *paymentRepo) Index(limit int, offset int) ([]model.PaymentRespont, err
 			Discount:     dataPreload.Discount,
 			BatchNo:      dataPreload.BatchNo,
 			Status:       dataPreload.Status,
+			DoAction:     dataPreload.DoAction,
 			Partner:      dataPreload.Partner,
+			DocumentNo:   dataPreload.DocumentNo,
+			IsPrecentage: dataPreload.IsPrecentage,
 		}
 		dataReturn = append(dataReturn, indexResponse)
 	}
@@ -196,10 +210,27 @@ func (pr *paymentRepo) parsingPaymentToPaymentRespont(payment model.Payment) (mo
 		DocumentNo:   dataPreload.DocumentNo,
 		DoAction:     dataPreload.DocAction,
 		IsPrecentage: data.IsPrecentage,
+		Partner_name: data.Partner.Name,
 	}
 	return data, nil
 }
 
-func (ir *paymentRepo) getTableName() string {
+func (pr *paymentRepo) getTableName() string {
 	return "payments"
+}
+
+func (pr *paymentRepo) HandlingPagination(q string, limit int, offset int) (int64, error) {
+	var count int64 = 0
+	data := model.Invoice{}
+	//q param handler
+	if q != "" {
+		if err := pr.db.Joins("Partner", pr.db.Where(model.GetSeatchParamPartnerV2(q))).Where(model.GetSeatchParamPayment(q)).Find(&data).Count(&count).Error; err != nil {
+			return count, err
+		}
+	} else {
+		if err := pr.db.Order("created_at DESC").Limit(limit).Offset(offset).Find(&data).Count(&count).Error; err != nil {
+			return count, err
+		}
+	}
+	return count, nil
 }

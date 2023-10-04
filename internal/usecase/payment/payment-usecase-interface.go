@@ -3,7 +3,7 @@ package payment
 import "bemyfaktur/internal/model"
 
 type PaymentUsecaseInterface interface {
-	Indexpayment(limit int, offset int) ([]model.PaymentRespont, error)
+	Indexpayment(limit int, offset int, q string) ([]model.PaymentRespont, error)
 	Getpayment(id int) (model.Payment, error)
 	Createpayment(request model.PaymentRequest) (model.PaymentRespont, error)
 	Updatedpayment(id int, request model.PaymentRequest) (model.PaymentRespont, error)
@@ -14,4 +14,7 @@ type PaymentUsecaseInterface interface {
 	CreatePaymentLine(request model.PaymentLineRequest) (model.PaymentLineRespont, error)
 	UpdatedPaymentLine(id int, request model.PaymentLineRequest) (model.PaymentLineRespont, error)
 	DeletePaymentLine(id int) (string, error)
+
+	HandlingPagination(q string, limit int, offset int) (int64, error)
+	HandlingPaginationLine(q string, limit int, offset int, paymentID int) (int64, error)
 }

@@ -7,7 +7,7 @@ import (
 type InvoiceRepositoryInterface interface {
 
 	//Header
-	Index(limit int, offset int) ([]model.InvoiceRespont, error)
+	Index(limit int, offset int, q string) ([]model.InvoiceRespont, error)
 	Create(invoice model.InvoiceRequest, partner model.Partner) (model.InvoiceRespont, error)
 	Show(id int) (model.Invoice, error)
 	Update(id int, updatedInvoice model.Invoice) (model.InvoiceRespont, error)
@@ -24,4 +24,8 @@ type InvoiceRepositoryInterface interface {
 	DocProcess(data model.Invoice, docaction string) (model.Invoice, error)
 	CompleteIT(data model.Invoice, docaction string) (model.Invoice, error)
 	ReversedIt(data model.Invoice, docaction string) (model.Invoice, error)
+
+	//pagination
+	HandlingPagination(q string, limit int, offset int) (int64, error)
+	HandlingPaginationLine(q string, limit int, offset int, invoiceId int) (int64, error)
 }

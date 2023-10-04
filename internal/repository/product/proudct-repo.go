@@ -2,18 +2,21 @@ package product
 
 import (
 	"bemyfaktur/internal/model"
+	pgUtil "bemyfaktur/internal/model/paginationUtil"
 	"errors"
 
 	"gorm.io/gorm"
 )
 
 type productRepo struct {
-	db *gorm.DB
+	db         *gorm.DB
+	pgUtilRepo pgUtil.Repository
 }
 
-func GetRepository(db *gorm.DB) Repository {
+func GetRepository(db *gorm.DB, pgRepo pgUtil.Repository) Repository {
 	return &productRepo{
-		db: db,
+		db:         db,
+		pgUtilRepo: pgRepo,
 	}
 }
 
@@ -22,7 +25,7 @@ func (pr *productRepo) Create(product model.Product) (model.ProductRespon, error
 	data := model.ProductRespon{}
 	if err := pr.db.Create(&product).Error; err != nil {
 		if errors.Is(err, gorm.ErrDuplicatedKey) {
-			return data, errors.New("duplicatet data")
+			return data, errors.New("duplicate data")
 		}
 		return data, err
 	}
@@ -37,12 +40,22 @@ func (pr *productRepo) Create(product model.Product) (model.ProductRespon, error
 }
 
 // Index implements Repository.
-func (pr *productRepo) Index(limit int, offset int) ([]model.Product, error) {
+func (pr *productRepo) Index(limit int, offset int, q string) ([]model.Product, error) {
 	data := []model.Product{}
 
-	if err := pr.db.Order("name").Limit(limit).Offset(offset).Find(&data).Error; err != nil {
-		return data, err
+	if q != "" {
+		query := " select * from products " + pr.pgUtilRepo.HandlingPaginationWhere(model.GetSeatchParamProduct(), q, "", "")
+		// pr.GetSearchParam(q, limit, offset)
+		if err := pr.db.Raw(query).Scan(&data).Error; err != nil {
+			return data, err
+		}
+
+	} else {
+		if err := pr.db.Order("name").Limit(limit).Offset(offset).Find(&data).Error; err != nil {
+			return data, err
+		}
 	}
+
 	return data, nil
 }
 
@@ -55,6 +68,7 @@ func (pr *productRepo) Show(id int) (model.Product, error) {
 			return data, errors.New("data not found")
 		}
 	}
+
 	return data, nil
 }
 

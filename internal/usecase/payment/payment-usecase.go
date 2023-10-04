@@ -37,8 +37,8 @@ func (pu *paymentUsecase) Getpayment(id int) (model.Payment, error) {
 }
 
 // Indexpayment implements PaymentUsecaseInterface.
-func (pu *paymentUsecase) Indexpayment(limit int, offset int) ([]model.PaymentRespont, error) {
-	return pu.paymentRepo.Index(limit, offset)
+func (pu *paymentUsecase) Indexpayment(limit int, offset int, q string) ([]model.PaymentRespont, error) {
+	return pu.paymentRepo.Index(limit, offset, q)
 }
 
 // Updatedpayment implements PaymentUsecaseInterface.
@@ -88,4 +88,21 @@ func (pu *paymentUsecase) UpdatedPaymentLine(id int, request model.PaymentLineRe
 // DeleteInvoiceLine implements PaymentUsecaseInterface.
 func (pu *paymentUsecase) DeletePaymentLine(id int) (string, error) {
 	return pu.paymentRepo.DeleteLine(id)
+}
+
+func (pu *paymentUsecase) HandlingPagination(q string, limit int, offset int) (int64, error) {
+	count, err := pu.paymentRepo.HandlingPagination(q, limit, offset)
+	if err != nil {
+		return 0, err
+	}
+
+	return count, nil
+}
+
+func (pu *paymentUsecase) HandlingPaginationLine(q string, limit int, offset int, paymentID int) (int64, error) {
+	count, err := pu.paymentRepo.HandlingPaginationLine(q, limit, offset, paymentID)
+	if err != nil {
+		return 0, err
+	}
+	return count, nil
 }

@@ -203,3 +203,19 @@ func (pr *paymentRepo) afterSave(data model.PaymentLine) error {
 
 	return nil
 }
+
+func (pr *paymentRepo) HandlingPaginationLine(q string, limit int, offset int, paymentID int) (int64, error) {
+	var count int64 = 0
+	data := model.Invoice{}
+	//q param handler
+	if q != "" {
+		if err := pr.db.Joins("Partner", pr.db.Where(model.GetSeatchParamPartnerV2(q))).Where(model.GetSeatchParamPaymentLine(q, paymentID)).Find(&data).Count(&count).Error; err != nil {
+			return count, err
+		}
+	} else {
+		if err := pr.db.Order("created_at DESC").Where(model.GetSeatchParamPaymentLine(q, paymentID)).Find(&data).Count(&count).Error; err != nil {
+			return count, err
+		}
+	}
+	return count, nil
+}

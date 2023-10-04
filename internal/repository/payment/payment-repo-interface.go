@@ -5,7 +5,7 @@ import (
 )
 
 type PaymentRepositoryinterface interface {
-	Index(limit int, offset int) ([]model.PaymentRespont, error)
+	Index(limit int, offset int, q string) ([]model.PaymentRespont, error)
 	Create(payment model.PaymentRequest) (model.PaymentRespont, error)
 	Show(id int) (model.Payment, error)
 	Update(id int, updatedPayment model.PaymentRequest) (model.PaymentRespont, error)
@@ -24,4 +24,8 @@ type PaymentRepositoryinterface interface {
 	DocProcess(data model.Payment, docaction string) (model.Payment, error)
 	CompleteIT(data model.Payment, docaction string) (model.Payment, error)
 	ReversedIt(data model.Payment, docaction string) (model.Payment, error)
+
+	//pagination handling
+	HandlingPagination(q string, limit int, offset int) (int64, error)
+	HandlingPaginationLine(q string, limit int, offset int, paymentID int) (int64, error)
 }

@@ -4,20 +4,23 @@ import (
 	"bemyfaktur/internal/model"
 	"bemyfaktur/internal/model/constant"
 	documentutil "bemyfaktur/internal/model/documentUtil"
+	pgUtil "bemyfaktur/internal/model/paginationUtil"
 	"errors"
 
 	"gorm.io/gorm"
 )
 
 type invoiceRepo struct {
-	db      *gorm.DB
-	docUtil documentutil.Repository
+	db         *gorm.DB
+	docUtil    documentutil.Repository
+	pgUtilRepo pgUtil.Repository
 }
 
-func GetRepository(db *gorm.DB, docUtil documentutil.Repository) InvoiceRepositoryInterface {
+func GetRepository(db *gorm.DB, docUtil documentutil.Repository, pgRepo pgUtil.Repository) InvoiceRepositoryInterface {
 	return &invoiceRepo{
-		db:      db,
-		docUtil: docUtil,
+		db:         db,
+		docUtil:    docUtil,
+		pgUtilRepo: pgRepo,
 	}
 }
 
@@ -74,11 +77,19 @@ func (ir *invoiceRepo) Delete(id int) (string, error) {
 }
 
 // Index implements InvoiceRepositoryInterface.
-func (ir *invoiceRepo) Index(limit int, offset int) ([]model.InvoiceRespont, error) {
+func (ir *invoiceRepo) Index(limit int, offset int, q string) ([]model.InvoiceRespont, error) {
 	data := []model.Invoice{}
 	dataReturn := []model.InvoiceRespont{}
-	if err := ir.db.Order("created_at DESC").Limit(limit).Offset(offset).Find(&data).Error; err != nil {
-		return dataReturn, err
+
+	//q param handler
+	if q != "" {
+		if err := ir.db.Joins("Partner", ir.db.Where(model.GetSeatchParamPartnerV2(q))).Where(model.GetSeatchParamInvoice(q)).Limit(limit).Offset(offset).Find(&data).Error; err != nil {
+			return dataReturn, err
+		}
+	} else {
+		if err := ir.db.Order("created_at DESC").Limit(limit).Offset(offset).Find(&data).Error; err != nil {
+			return dataReturn, err
+		}
 	}
 
 	for _, invoice := range data {
@@ -195,12 +206,18 @@ func (ir *invoiceRepo) getTableName() string {
 	return "invoices"
 }
 
-// func (ir *invoiceRepo) getSearchParam() []string {
-// 	return []string{
-// 		"BatchNo",
-// 		"Status",
-// 		"Partner",
-// 		"OustandingPayment",
-// 		"DocumentNo",
-// 	}
-// }
+func (ir *invoiceRepo) HandlingPagination(q string, limit int, offset int) (int64, error) {
+	var count int64 = 0
+	data := model.Invoice{}
+	//q param handler
+	if q != "" {
+		if err := ir.db.Joins("Partner", ir.db.Where(model.GetSeatchParamPartnerV2(q))).Where(model.GetSeatchParamInvoice(q)).Find(&data).Count(&count).Error; err != nil {
+			return count, err
+		}
+	} else {
+		if err := ir.db.Order("created_at DESC").Limit(limit).Offset(offset).Find(&data).Count(&count).Error; err != nil {
+			return count, err
+		}
+	}
+	return count, nil
+}

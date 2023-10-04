@@ -5,42 +5,66 @@ import (
 	"bemyfaktur/internal/usecase/partner"
 	"bemyfaktur/internal/usecase/payment"
 	"bemyfaktur/internal/usecase/product"
-	"math"
+
 	"strconv"
+
+	pgUtil "bemyfaktur/internal/model/paginationUtil"
 
 	"github.com/labstack/echo/v4"
 	"gorm.io/gorm"
 )
+
+// Declare meta and data at the package level
+var meta interface{}
+var data interface{}
 
 type handler struct {
 	partnerUsecase partner.Usecase
 	productUsecase product.ProductUsecaseInterface
 	invoiceUsecase invoice.InvoiceUsecaseInterface
 	paymentUsecase payment.PaymentUsecaseInterface
+	db             *gorm.DB
+	pgUtilRepo     pgUtil.Repository
 }
 
-type pagination struct {
-	Page       int
-	Limit      int
-	Total_page int
-	Offset     int
+type handlerRespont struct {
+	Status  int
+	Message string
+	Meta    interface{} `json:"meta"`
+	Data    interface{} `json:"data"`
 }
 
-func NewHandler(partnerUsecase partner.Usecase, productUsecase product.ProductUsecaseInterface, invoiceUsecase invoice.InvoiceUsecaseInterface, paymentUsecase payment.PaymentUsecaseInterface) *handler {
+func NewHandler(partnerUsecase partner.Usecase, productUsecase product.ProductUsecaseInterface, invoiceUsecase invoice.InvoiceUsecaseInterface, paymentUsecase payment.PaymentUsecaseInterface, pgRepo pgUtil.Repository, db *gorm.DB) *handler {
 
 	return &handler{
 		partnerUsecase: partnerUsecase,
 		productUsecase: productUsecase,
 		invoiceUsecase: invoiceUsecase,
 		paymentUsecase: paymentUsecase,
+		pgUtilRepo:     pgRepo,
+		db:             db,
 	}
 }
 
-func handleError(c echo.Context, statusCode int, err error) error {
-	return c.JSON(statusCode, map[string]interface{}{
-		"error": err.Error(),
-		"msg":   "internal error" + err.Error(),
-	})
+func handleError(c echo.Context, statusCode int, err error, meta interface{}, data interface{}) error {
+	var response handlerRespont
+	if statusCode != 200 {
+		response = handlerRespont{
+			Status:  statusCode,
+			Message: "internal error: " + err.Error(),
+			Meta:    meta,
+			Data:    data,
+		}
+	} else {
+		response = handlerRespont{
+			Status:  statusCode,
+			Message: "PROCESS SUCCESS: " + err.Error(),
+			Meta:    meta,
+			Data:    data,
+		}
+	}
+
+	return c.JSON(statusCode, response)
 }
 
 func transformIdToInt(c echo.Context) int {
@@ -77,37 +101,4 @@ func HandlingLimitAndOffset(c echo.Context) (int, int) {
 
 	// Return the values
 	return limit, offset
-}
-
-func PaginationUtil(tabelName string, searchParam []string, db *gorm.DB, limit int, offset int) pagination {
-	meta := pagination{}
-
-	//#run query for pagination
-	//execute looping param
-	var param string
-	if len(searchParam) > 0 {
-		for _, searchparam := range searchParam {
-			param = searchparam + ","
-		}
-	}
-
-	//get count data total with where variabel
-	query := `
-		select count(id) as countData from invoices i 
-	`
-	if len(searchParam) > 0 {
-		query += `where = ?,`
-	}
-	var count int
-	db.Raw(query, tabelName, param).Scan(&count)
-
-	totalPage := math.Ceil(float64(count) / float64(limit))
-
-	//set meta data
-	meta.Limit = limit
-	meta.Offset = offset
-	meta.Total_page = int(totalPage)
-	meta.Page = offset
-
-	return meta
 }

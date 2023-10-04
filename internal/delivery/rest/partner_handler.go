@@ -3,6 +3,7 @@ package rest
 import (
 	"bemyfaktur/internal/model"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -11,19 +12,27 @@ import (
 )
 
 func (h *handler) IndexPartner(c echo.Context) error {
+	//set param
+	limit, offset := HandlingLimitAndOffset(c)
 
-	data, err := h.partnerUsecase.IndexPartner()
+	//get parameter
+	q := c.QueryParam("q")
+
+	data, err := h.partnerUsecase.IndexPartner(limit, offset, q)
 	if err != nil {
 		fmt.Printf("got error %s\n", err.Error())
 
-		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
-			"error": err.Error(),
-		})
+		return handleError(c, http.StatusInternalServerError, err, meta, data)
 	}
 
-	return c.JSON(http.StatusOK, map[string]interface{}{
-		"data": data,
-	})
+	//meta data field
+	searchParams := model.GetSeatchParamPartner()
+	meta, err = h.pgUtilRepo.PaginationUtil("products", searchParams, limit, offset, q, "", "")
+	if err != nil {
+		return handleError(c, http.StatusInternalServerError, err, meta, data)
+	}
+
+	return handleError(c, http.StatusOK, errors.New("GET SUCCESS"), meta, data)
 }
 
 func (h *handler) GetPartner(c echo.Context) error {
@@ -37,23 +46,18 @@ func (h *handler) GetPartner(c echo.Context) error {
 	if err != nil {
 		fmt.Printf("got error %s\n", err.Error())
 
-		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
-			"error": err.Error(),
-		})
+		return handleError(c, http.StatusInternalServerError, err, meta, data)
 	}
 
-	return c.JSON(http.StatusOK, map[string]interface{}{
-		"data": data,
-	})
+	return handleError(c, http.StatusOK, errors.New("GET SUCCESS"), meta, data)
+
 }
 
 func (h *handler) CreatePartner(c echo.Context) error {
 	var request model.Partner
 	err := json.NewDecoder(c.Request().Body).Decode(&request)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
-			"error": err.Error(),
-		})
+		return handleError(c, http.StatusInternalServerError, err, meta, data)
 	}
 	data, err := h.partnerUsecase.CreatePartner(request)
 	if err != nil {
@@ -62,9 +66,8 @@ func (h *handler) CreatePartner(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, map[string]interface{}{
-		"data": data,
-	})
+	return handleError(c, http.StatusOK, errors.New("CREATE "+data.Name+" SUCCESS"), meta, data)
+
 }
 
 func (h *handler) UpdatedPartner(c echo.Context) error {
@@ -79,23 +82,16 @@ func (h *handler) UpdatedPartner(c echo.Context) error {
 	var request model.Partner
 	err = json.NewDecoder(c.Request().Body).Decode(&request)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
-			"error": err.Error(),
-		})
+		return handleError(c, http.StatusInternalServerError, err, meta, data)
 	}
 
 	data, err := h.partnerUsecase.UpdatedPartner(Id, request)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
-			"error": err.Error(),
-		})
+		return handleError(c, http.StatusInternalServerError, err, meta, data)
 	}
 
 	//return value
-	return c.JSON(http.StatusOK, map[string]interface{}{
-		"data": data,
-		"msg":  "dataUpdated",
-	})
+	return handleError(c, http.StatusOK, errors.New("Update "+data.Name+" SUCCESS"), meta, data)
 }
 
 func (h *handler) DeletePartner(c echo.Context) error {
@@ -108,13 +104,10 @@ func (h *handler) DeletePartner(c echo.Context) error {
 
 	data, err := h.partnerUsecase.Deletepartner(Id)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
-			"error": err.Error(),
-		})
+		return handleError(c, http.StatusInternalServerError, err, meta, data)
 	}
 
 	//return value
-	return c.JSON(http.StatusOK, map[string]interface{}{
-		"data": data,
-	})
+	return handleError(c, http.StatusOK, errors.New("DELETE SUCCESS"), meta, data)
+
 }

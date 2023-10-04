@@ -13,3 +13,14 @@ type ProductRespon struct {
 	Description string `json:"description"`
 	IsActive    bool   `json:"isactive"`
 }
+
+func GetSeatchParamProduct() []string {
+	searchParam := []string{"name", "description"}
+	return searchParam
+}
+
+// searching for join table with other model
+func GetSeatchParamProductV2(q string) string {
+	value := " lower(name)  LIKE " + q + " OR lower(description) LIKE " + q
+	return value
+}

@@ -60,8 +60,8 @@ func (iu *invoiceUsecase) GetInvoice(id int) (model.Invoice, error) {
 }
 
 // IndexInvoice implements InvoiceUsecaseInterface.
-func (iu *invoiceUsecase) IndexInvoice(limit int, offset int) ([]model.InvoiceRespont, error) {
-	return iu.invoiceRepo.Index(limit, offset)
+func (iu *invoiceUsecase) IndexInvoice(limit int, offset int, q string) ([]model.InvoiceRespont, error) {
+	return iu.invoiceRepo.Index(limit, offset, q)
 }
 
 // UpdatedInvoice implements InvoiceUsecaseInterface.
@@ -143,4 +143,21 @@ func (iu *invoiceUsecase) validateProductIsActive(id int) bool {
 		return true
 	}
 	return false
+}
+
+func (iu *invoiceUsecase) HandlingPagination(q string, limit int, offset int) (int64, error) {
+	count, err := iu.invoiceRepo.HandlingPagination(q, limit, offset)
+	if err != nil {
+		return 0, err
+	}
+
+	return count, nil
+}
+
+func (iu *invoiceUsecase) HandlingPaginationLine(q string, limit int, offset int, invoiceId int) (int64, error) {
+	count, err := iu.invoiceRepo.HandlingPaginationLine(q, limit, offset, invoiceId)
+	if err != nil {
+		return 0, err
+	}
+	return count, nil
 }
