@@ -1,6 +1,8 @@
 package rest
 
 import (
+	"bemyfaktur/internal/model"
+	"encoding/json"
 	"errors"
 	"net/http"
 
@@ -16,4 +18,34 @@ func (h *handler) Getuser(c echo.Context) error {
 	}
 
 	return handleError(c, http.StatusOK, errors.New("GET SUCCESS"), meta, data)
+}
+
+func (h *handler) RegisterUser(c echo.Context) error {
+	var request model.RegisterRequest
+	err := json.NewDecoder(c.Request().Body).Decode(&request)
+	if err != nil {
+		return handleError(c, http.StatusInternalServerError, err, meta, data)
+	}
+
+	userData, err := h.authUsecase.RegisterUser(request)
+	if err != nil {
+		return handleError(c, http.StatusInternalServerError, err, meta, data)
+	}
+
+	return handleError(c, http.StatusOK, err, meta, userData)
+}
+
+func (h *handler) Login(c echo.Context) error {
+	var request model.LoginRequest
+	err := json.NewDecoder(c.Request().Body).Decode(&request)
+	if err != nil {
+		return handleError(c, http.StatusInternalServerError, err, meta, data)
+	}
+
+	sessionData, err := h.authUsecase.Login(request)
+	if err != nil {
+		return handleError(c, http.StatusInternalServerError, err, meta, data)
+	}
+
+	return handleError(c, http.StatusOK, err, meta, sessionData)
 }

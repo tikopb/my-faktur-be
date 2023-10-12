@@ -4,6 +4,11 @@ import "github.com/labstack/echo/v4"
 
 func LoadRoutes(e *echo.Echo, handler *handler) {
 
+	//userAuth
+	userGroup := e.Group("/user")
+	userGroup.POST("/register", handler.RegisterUser)
+	userGroup.POST("/login", handler.Login)
+
 	//partner
 	partnerGroup := e.Group("/partner")
 	partnerGroup.GET("", handler.IndexPartner)
@@ -51,7 +56,5 @@ func LoadRoutes(e *echo.Echo, handler *handler) {
 	paymentGroupLine.POST("", handler.CreatePaymentLine)
 	paymentGroupLine.PUT("/:id", handler.UpdatePaymentLine)
 	paymentGroupLine.DELETE("/:id", handler.DeletePaymentLine)
-	userGroup := e.Group("/user")
-	userGroup.GET("/:id", handler.Getuser)
 
 }

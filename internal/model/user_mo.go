@@ -9,6 +9,18 @@ type User struct {
 	FullName  string    `gorm:"column:full_name" json:"full_name"`
 	CreatedAt time.Time `gorm:"column:created_at" json:"created_at"`
 	IsActive  bool      `gorm:"column:isactive" json:"isactive"`
-	// Invoice   []Invoice
-	// Partner   []Partner
+}
+
+type RegisterRequest struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+}
+
+type LoginRequest struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+}
+
+type UserSession struct {
+	JWTToken string `json:"jwt_token"`
 }

@@ -5,7 +5,6 @@ import (
 	"bemyfaktur/internal/repository/invoice"
 	"bemyfaktur/internal/repository/partner"
 	"bemyfaktur/internal/repository/product"
-	"bemyfaktur/internal/repository/user"
 	"errors"
 )
 
@@ -13,15 +12,15 @@ type invoiceUsecase struct {
 	invoiceRepo invoice.InvoiceRepositoryInterface
 	partnerRepo partner.Repository
 	productRepo product.Repository
-	userRepo    user.Repository
+	//userRepo    user.Repository
 }
 
-func GetUsecase(invoiceRepo invoice.InvoiceRepositoryInterface, partnerRepo partner.Repository, productRepo product.Repository, userRepo user.Repository) InvoiceUsecaseInterface {
+func GetUsecase(invoiceRepo invoice.InvoiceRepositoryInterface, partnerRepo partner.Repository, productRepo product.Repository) InvoiceUsecaseInterface {
 	return &invoiceUsecase{
 		invoiceRepo: invoiceRepo,
 		partnerRepo: partnerRepo,
 		productRepo: productRepo,
-		userRepo:    userRepo,
+		//userRepo:    userRepo,
 	}
 }
 
@@ -40,11 +39,11 @@ func (iu *invoiceUsecase) CreateInvoice(request model.InvoiceRequest) (model.Inv
 		return data, errors.New("partner not exist")
 	}
 
-	//Get user
-	userData, err := iu.userRepo.Show("1") //##@ UNTIL SECURITY MODULE DONE
-	if err != nil || !userData.IsActive {
-		return data, errors.New("user not activated")
-	}
+	// //Get user
+	// userData, err := iu.userRepo.Show("1") //##@ UNTIL SECURITY MODULE DONE
+	// if err != nil || !userData.IsActive {
+	// 	return data, errors.New("user not activated")
+	// }
 
 	return iu.invoiceRepo.Create(request, partnerData)
 }

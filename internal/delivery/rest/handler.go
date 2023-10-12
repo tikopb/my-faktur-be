@@ -1,6 +1,7 @@
 package rest
 
 import (
+	"bemyfaktur/internal/usecase/auth"
 	"bemyfaktur/internal/usecase/invoice"
 	"bemyfaktur/internal/usecase/partner"
 	"bemyfaktur/internal/usecase/payment"
@@ -23,6 +24,7 @@ type handler struct {
 	productUsecase product.ProductUsecaseInterface
 	invoiceUsecase invoice.InvoiceUsecaseInterface
 	paymentUsecase payment.PaymentUsecaseInterface
+	authUsecase    auth.Usecase
 	db             *gorm.DB
 	pgUtilRepo     pgUtil.Repository
 }
@@ -34,13 +36,14 @@ type handlerRespont struct {
 	Data    interface{} `json:"data"`
 }
 
-func NewHandler(partnerUsecase partner.Usecase, productUsecase product.ProductUsecaseInterface, invoiceUsecase invoice.InvoiceUsecaseInterface, paymentUsecase payment.PaymentUsecaseInterface, pgRepo pgUtil.Repository, db *gorm.DB) *handler {
+func NewHandler(partnerUsecase partner.Usecase, productUsecase product.ProductUsecaseInterface, invoiceUsecase invoice.InvoiceUsecaseInterface, paymentUsecase payment.PaymentUsecaseInterface, pgRepo pgUtil.Repository, authUsecase auth.Usecase, db *gorm.DB) *handler {
 
 	return &handler{
 		partnerUsecase: partnerUsecase,
 		productUsecase: productUsecase,
 		invoiceUsecase: invoiceUsecase,
 		paymentUsecase: paymentUsecase,
+		authUsecase:    authUsecase,
 		pgUtilRepo:     pgRepo,
 		db:             db,
 	}
