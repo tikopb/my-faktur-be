@@ -6,6 +6,7 @@ import (
 	"bemyfaktur/internal/usecase/partner"
 	"bemyfaktur/internal/usecase/payment"
 	"bemyfaktur/internal/usecase/product"
+	"net/http"
 
 	"strconv"
 
@@ -51,7 +52,8 @@ func NewHandler(partnerUsecase partner.Usecase, productUsecase product.ProductUs
 
 func handleError(c echo.Context, statusCode int, err error, meta interface{}, data interface{}) error {
 	var response handlerRespont
-	if statusCode != 200 {
+
+	if statusCode != http.StatusOK {
 		response = handlerRespont{
 			Status:  statusCode,
 			Message: "internal error: " + err.Error(),

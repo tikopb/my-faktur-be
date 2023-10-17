@@ -32,7 +32,7 @@ func (h *handler) RegisterUser(c echo.Context) error {
 		return handleError(c, http.StatusInternalServerError, err, meta, data)
 	}
 
-	return handleError(c, http.StatusOK, err, meta, userData)
+	return handleError(c, 200, errors.New("REGISTER SUCCESS"), meta, userData)
 }
 
 func (h *handler) Login(c echo.Context) error {
@@ -47,5 +47,5 @@ func (h *handler) Login(c echo.Context) error {
 		return handleError(c, http.StatusInternalServerError, err, meta, data)
 	}
 
-	return handleError(c, http.StatusOK, err, meta, sessionData)
+	return handleError(c, http.StatusOK, errors.New("AUTHORIZED"), meta, sessionData)
 }

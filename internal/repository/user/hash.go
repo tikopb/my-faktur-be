@@ -33,10 +33,9 @@ func (ur *userRepo) GenerateUserHash(password string) (hash string, err error) {
 	b64Hash := ur.encrypt(argonHash)
 	b64Salt := base64.RawStdEncoding.EncodeToString(salt)
 
-	encodedHash := fmt.Sprintf(cryptFormat, argon2.Version, ur.memory, ur.time, ur.parallelism, b64Hash, b64Salt)
+	encodedHash := fmt.Sprintf(cryptFormat, argon2.Version, ur.memory, ur.time, ur.parallelism, b64Salt, b64Hash)
 
 	return encodedHash, nil
-
 }
 
 func (ur *userRepo) encrypt(text []byte) string {

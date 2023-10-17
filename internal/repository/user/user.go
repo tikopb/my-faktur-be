@@ -89,10 +89,15 @@ func (ur *userRepo) GetUserData(username string) (model.User, error) {
 }
 
 // VerifyLogin implements Repository.
-func (*userRepo) VerifyLogin(username string, password string, userData model.User) (bool, error) {
+func (ur *userRepo) VerifyLogin(username string, password string, userData model.User) (bool, error) {
 	if username != userData.Username {
 		return false, nil
 	}
 
-	panic("unimplemented")
+	verified, err := ur.comparePassword(password, userData.Hash)
+	if err != nil {
+		return false, err
+	}
+
+	return verified, nil
 }

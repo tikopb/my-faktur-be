@@ -24,6 +24,7 @@ import (
 	"crypto/rand"
 	"crypto/rsa"
 
+	"github.com/spf13/viper"
 	"gorm.io/gorm"
 )
 
@@ -53,11 +54,12 @@ func NewContainer(db *gorm.DB) *Container {
 	paymentRepo := paymentRepository.GetRepository(db, documentUtilRepo, pgUtilRepo)
 	paymentUsecase := paymentUsecase.GetUsecase(paymentRepo, invoiceRepo)
 
+	secret := GetEnv("key_secret")
 	signKey, err := rsa.GenerateKey(rand.Reader, 4096)
 	if err != nil {
 		panic(err)
 	}
-	userRepo, err := userRepo.GetRepository(db, "AES256Key-32Characters1234567890", 1, 64*1024, 4, 32, signKey, 60*time.Second)
+	userRepo, err := userRepo.GetRepository(db, secret, 1, 64*1024, 4, 32, signKey, 60*time.Second)
 	if err != nil {
 		panic("errorr repo")
 	}
@@ -72,4 +74,17 @@ func NewContainer(db *gorm.DB) *Container {
 		AuthUsecase:    authUsecase,
 		PgUtil:         pgUtilRepo,
 	}
+}
+
+func GetEnv(param string) string {
+	var value string
+
+	viper.SetConfigFile(".env")
+	err := viper.ReadInConfig()
+	if err != nil {
+		panic("config environment not found!")
+	}
+
+	value = viper.GetString("key_secret")
+	return value
 }
