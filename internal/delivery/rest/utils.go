@@ -1,4 +1,4 @@
-package auth
+package rest
 
 import (
 	"bemyfaktur/internal/model"
@@ -16,6 +16,6 @@ func GetSessionData(r *http.Request) (model.UserSession, error) {
 	accessString := splitString[1]
 
 	return model.UserSession{
-		JWTToken: accessString,
+		AccessToken: accessString,
 	}, nil
 }

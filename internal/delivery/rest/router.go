@@ -1,8 +1,11 @@
 package rest
 
-import "github.com/labstack/echo/v4"
+import (
+	"github.com/labstack/echo/v4"
+)
 
 func LoadRoutes(e *echo.Echo, handler *handler) {
+	authMiddleware := GetAuthMiddleware(handler.authUsecase)
 
 	//userAuth
 	userGroup := e.Group("/user")
@@ -11,7 +14,7 @@ func LoadRoutes(e *echo.Echo, handler *handler) {
 
 	//partner
 	partnerGroup := e.Group("/partner")
-	partnerGroup.GET("", handler.IndexPartner)
+	partnerGroup.GET("", handler.IndexPartner, authMiddleware.CheckAuth)
 	partnerGroup.GET("/:id", handler.GetPartner)
 	partnerGroup.POST("", handler.CreatePartner)
 	partnerGroup.PUT("/:id", handler.UpdatedPartner)

@@ -22,5 +22,15 @@ type LoginRequest struct {
 }
 
 type UserSession struct {
-	JWTToken string `json:"jwt_token"`
+	//JWTToken     string `json:"jwt_token"`
+	AccessToken  string `json:"access_token"`
+	RefreshToken string `json:"refresh_token"`
+}
+
+type RefreshSession struct {
+	RefreshToken string `json:"refresh_token"`
+}
+
+type AccessToken struct {
+	AccessToken string `json:"access_token"`
 }
