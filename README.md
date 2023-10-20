@@ -6,24 +6,24 @@ This app is a vital backend component of My-Faktur app, employing Go programming
 
 To run this project, you will need to add the following environment variables to your .env file
 
-### database setup
+### Database Setup
 
-`db_host`
-`db_port`
-`db_user`
-`db_password`
-`db_dbname`
-`db_sslmode`
+- `db_host`
+- `db_port`
+- `db_user`
+- `db_password`
+- `db_dbname`
+- `db_sslmode`
 
-### Auth Setup
+### Authentication Setup
 
-`key_secret (set in 32 character! without $ or #)`
-`accessTimeout (in second)`
-`refreshTimeout (in second)`
+- `key_secret` (a 32-character secret, excluding $ or #)
+- `accessTimeout` (in seconds)
+- `refreshTimeout` (in seconds)
 
-### port app use
+### Port Configuration
 
-`be_port`
+- `be_port` (the port on which the app will run)
 
 ## Installation
 
