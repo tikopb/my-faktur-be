@@ -69,6 +69,7 @@ for start the app
     <td>JWT</td>
   </tr>
 </table>
+
 ---
 
 ## Authors
