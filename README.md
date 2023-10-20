@@ -47,14 +47,28 @@ for start the app
 
 ### Program Tech Stack
 
-<img src="https://cdn.worldvectorlogo.com/logos/golang-1.svg" alt="Golang Logo" width="45" height="25"> Go-Language
-
-<img src="https://echo.labstack.com/img/logo-light.svg" alt="Golang Logo" width="65" height="25"> Echo Framework
-
-<img src="https://e7.pngegg.com/pngimages/173/36/png-clipart-postgresql-logo-computer-software-database-open-source-s-text-head.png" alt="Golang Logo" width="45" height="45"> Postgresql
-
-<img src="https://cdn.worldvectorlogo.com/logos/jwtio-json-web-token.svg" alt="Golang Logo" width="65" height="65"> Jwt
-
+<table>
+  <tr>
+    <th>Logo</th>
+    <th>Technology/Framework</th>
+  </tr>
+  <tr>
+    <td><img src="https://cdn.worldvectorlogo.com/logos/golang-1.svg" alt="Golang Logo" width="45" height="25"></td>
+    <td>Go Language</td>
+  </tr>
+  <tr>
+    <td><img src="https://echo.labstack.com/img/logo-light.svg" alt="Echo Logo" width="65" height="25"></td>
+    <td>Echo Framework</td>
+  </tr>
+  <tr>
+    <td><img src="https://e7.pngegg.com/pngimages/173/36/png-clipart-postgresql-logo-computer-software-database-open-source-s-text-head.png" alt="PostgreSQL Logo" width="45" height="45"></td>
+    <td>PostgreSQL</td>
+  </tr>
+  <tr>
+    <td><img src="https://cdn.worldvectorlogo.com/logos/jwtio-json-web-token.svg" alt="JWT Logo" width="65" height="65"></td>
+    <td>JWT</td>
+  </tr>
+</table>
 ---
 
 ## Authors
