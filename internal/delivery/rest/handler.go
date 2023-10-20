@@ -1,10 +1,12 @@
 package rest
 
 import (
+	"bemyfaktur/internal/usecase/auth"
 	"bemyfaktur/internal/usecase/invoice"
 	"bemyfaktur/internal/usecase/partner"
 	"bemyfaktur/internal/usecase/payment"
 	"bemyfaktur/internal/usecase/product"
+	"net/http"
 
 	"strconv"
 
@@ -23,6 +25,7 @@ type handler struct {
 	productUsecase product.ProductUsecaseInterface
 	invoiceUsecase invoice.InvoiceUsecaseInterface
 	paymentUsecase payment.PaymentUsecaseInterface
+	authUsecase    auth.Usecase
 	db             *gorm.DB
 	pgUtilRepo     pgUtil.Repository
 }
@@ -34,13 +37,14 @@ type handlerRespont struct {
 	Data    interface{} `json:"data"`
 }
 
-func NewHandler(partnerUsecase partner.Usecase, productUsecase product.ProductUsecaseInterface, invoiceUsecase invoice.InvoiceUsecaseInterface, paymentUsecase payment.PaymentUsecaseInterface, pgRepo pgUtil.Repository, db *gorm.DB) *handler {
+func NewHandler(partnerUsecase partner.Usecase, productUsecase product.ProductUsecaseInterface, invoiceUsecase invoice.InvoiceUsecaseInterface, paymentUsecase payment.PaymentUsecaseInterface, pgRepo pgUtil.Repository, authUsecase auth.Usecase, db *gorm.DB) *handler {
 
 	return &handler{
 		partnerUsecase: partnerUsecase,
 		productUsecase: productUsecase,
 		invoiceUsecase: invoiceUsecase,
 		paymentUsecase: paymentUsecase,
+		authUsecase:    authUsecase,
 		pgUtilRepo:     pgRepo,
 		db:             db,
 	}
@@ -48,7 +52,8 @@ func NewHandler(partnerUsecase partner.Usecase, productUsecase product.ProductUs
 
 func handleError(c echo.Context, statusCode int, err error, meta interface{}, data interface{}) error {
 	var response handlerRespont
-	if statusCode != 200 {
+
+	if statusCode != http.StatusOK {
 		response = handlerRespont{
 			Status:  statusCode,
 			Message: "internal error: " + err.Error(),

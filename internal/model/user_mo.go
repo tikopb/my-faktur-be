@@ -9,6 +9,27 @@ type User struct {
 	FullName  string    `gorm:"column:full_name" json:"full_name"`
 	CreatedAt time.Time `gorm:"column:created_at" json:"created_at"`
 	IsActive  bool      `gorm:"column:isactive" json:"isactive"`
-	// Invoice   []Invoice
-	// Partner   []Partner
+}
+
+type RegisterRequest struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+}
+
+type LoginRequest struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+}
+
+type UserSession struct {
+	AccessToken  string `json:"access_token"`
+	RefreshToken string `json:"refresh_token"`
+}
+
+type RefreshSession struct {
+	RefreshToken string `json:"refresh_token"`
+}
+
+type AccessToken struct {
+	AccessToken string `json:"access_token"`
 }
