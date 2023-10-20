@@ -93,7 +93,7 @@ func (ur *userRepo) generateAccessToken(userID string) (string, error) {
 }
 
 func (ur *userRepo) generateRefreshToken(userID string) (string, error) {
-	refreshTokenExp := time.Now().Add(48 * time.Hour).Unix()
+	refreshTokenExp := time.Now().Add(ur.refreshTimeout).Unix()
 	refreshClaims := RefreshClaims{
 		jwt.StandardClaims{
 			ExpiresAt: refreshTokenExp,

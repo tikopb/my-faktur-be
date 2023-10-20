@@ -11,15 +11,16 @@ import (
 )
 
 type userRepo struct {
-	db          *gorm.DB
-	gcm         cipher.AEAD
-	time        uint32
-	memory      uint32
-	parallelism uint8
-	keyLen      uint32
-	secret      string
-	signKey     *rsa.PrivateKey
-	accessExp   time.Duration
+	db             *gorm.DB
+	gcm            cipher.AEAD
+	time           uint32
+	memory         uint32
+	parallelism    uint8
+	keyLen         uint32
+	secret         string
+	signKey        *rsa.PrivateKey
+	accessExp      time.Duration
+	refreshTimeout time.Duration
 }
 
 func GetRepository(
@@ -30,6 +31,7 @@ func GetRepository(
 	parallelism uint8,
 	signKey *rsa.PrivateKey,
 	accessExp time.Duration,
+	refreshTimeout time.Duration,
 ) (Repository, error) {
 	block, err := aes.NewCipher([]byte(secret))
 	if err != nil {
@@ -42,15 +44,16 @@ func GetRepository(
 	}
 
 	return &userRepo{
-		db:          db,
-		gcm:         gcm,
-		time:        time,
-		memory:      memory,
-		parallelism: parallelism,
-		keyLen:      keyLen,
-		secret:      secret,
-		signKey:     signKey,
-		accessExp:   accessExp,
+		db:             db,
+		gcm:            gcm,
+		time:           time,
+		memory:         memory,
+		parallelism:    parallelism,
+		keyLen:         keyLen,
+		secret:         secret,
+		signKey:        signKey,
+		accessExp:      accessExp,
+		refreshTimeout: refreshTimeout,
 	}, nil
 }
 

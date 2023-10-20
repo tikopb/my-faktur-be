@@ -12,6 +12,7 @@ import (
 func (h *handler) Getuser(c echo.Context) error {
 	Id := transformIdToInt(c)
 
+	meta = nil
 	data, err := h.productUsecase.GetProduct(Id)
 	if err != nil {
 		return handleError(c, http.StatusInternalServerError, err, meta, data)
@@ -27,6 +28,7 @@ func (h *handler) RegisterUser(c echo.Context) error {
 		return handleError(c, http.StatusInternalServerError, err, meta, data)
 	}
 
+	meta = nil
 	userData, err := h.authUsecase.RegisterUser(request)
 	if err != nil {
 		return handleError(c, http.StatusInternalServerError, err, meta, data)
@@ -42,6 +44,7 @@ func (h *handler) Login(c echo.Context) error {
 		return handleError(c, http.StatusInternalServerError, err, meta, data)
 	}
 
+	meta = nil
 	sessionData, err := h.authUsecase.Login(request)
 	if err != nil {
 		return handleError(c, http.StatusInternalServerError, err, meta, data)
@@ -57,6 +60,7 @@ func (h *handler) RefreshSession(c echo.Context) error {
 		return handleError(c, http.StatusInternalServerError, err, meta, data)
 	}
 
+	meta = nil
 	sessionData, err := h.authUsecase.RefreshToken(request)
 	if err != nil {
 		return handleError(c, http.StatusInternalServerError, err, meta, data)

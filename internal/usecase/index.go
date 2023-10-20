@@ -59,7 +59,7 @@ func NewContainer(db *gorm.DB) *Container {
 	if err != nil {
 		panic(err)
 	}
-	userRepo, err := userRepo.GetRepository(db, secret, 1, 64*1024, 4, 32, signKey, 60*time.Second)
+	userRepo, err := userRepo.GetRepository(db, secret, 1, 64*1024, 4, 32, signKey, 60*time.Second, 48*time.Hour)
 	if err != nil {
 		panic("errorr repo")
 	}
