@@ -6,7 +6,7 @@ This app is a vital backend component of My-Faktur app, employing Go programming
 
 To run this project, you will need to add the following environment variables to your .env file
 
-database setup
+### database setup
 
 `db_host`
 `db_port`
@@ -14,9 +14,14 @@ database setup
 `db_password`
 `db_dbname`
 `db_sslmode`
-`key_secret set in 32 character! without $ or #`
 
-port app use
+### Auth Setup
+
+`key_secret (set in 32 character! without $ or #)`
+`accessTimeout (in second)`
+`refreshTimeout (in second)`
+
+### port app use
 
 `be_port`
 
@@ -24,7 +29,7 @@ port app use
 
 Install my-projec
 
-prepare the database first use .env for setup
+prepare the database on postgresqk first use .env for setup
 
 ```bash
   run go install
@@ -37,6 +42,20 @@ first before use
 ```
 
 for start the app
+
+---
+
+### Program Tech Stack
+
+<img src="https://cdn.worldvectorlogo.com/logos/golang-1.svg" alt="Golang Logo" width="45" height="25"> Go-Language
+
+<img src="https://echo.labstack.com/img/logo-light.svg" alt="Golang Logo" width="65" height="25"> Echo Framework
+
+<img src="https://e7.pngegg.com/pngimages/173/36/png-clipart-postgresql-logo-computer-software-database-open-source-s-text-head.png" alt="Golang Logo" width="45" height="45"> Postgresql
+
+<img src="https://cdn.worldvectorlogo.com/logos/jwtio-json-web-token.svg" alt="Golang Logo" width="65" height="65"> Jwt
+
+---
 
 ## Authors
 
