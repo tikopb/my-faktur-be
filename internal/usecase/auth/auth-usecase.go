@@ -52,6 +52,23 @@ func (au *authStruct) Login(request model.LoginRequest) (model.UserSession, erro
 	return userSession, nil
 }
 
+// Refresh Token implements Usecase.
+func (au *authStruct) RefreshToken(userSession model.UserSession) (model.UserSession, error) {
+
+	userID, err := au.userRepo.CheckRefreshToken(userSession)
+	if err != nil {
+		return model.UserSession{}, err
+	}
+
+	//generate of token access and refresh token with refres token as variabel
+	userSession, err = au.userRepo.CreateUserSession(userID)
+	if err != nil {
+		return model.UserSession{}, err
+	}
+
+	return userSession, nil
+}
+
 // RegisterUser implements Usecase.
 func (au *authStruct) RegisterUser(request model.RegisterRequest) (model.User, error) {
 	userRegistered, err := au.userRepo.CheckRegistered(request.Username)

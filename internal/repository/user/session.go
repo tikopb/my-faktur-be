@@ -25,7 +25,7 @@ func (ur *userRepo) CreateUserSession(userID string) (model.UserSession, error) 
 	}
 
 	//generate refresh token first and saving into refresh claims
-	refreshToken, err := ur.GenerateRefreshToken(userID)
+	refreshToken, err := ur.generateRefreshToken(userID)
 	if err != nil {
 		return model.UserSession{}, err
 	}
@@ -92,7 +92,7 @@ func (ur *userRepo) generateAccessToken(userID string) (string, error) {
 	return accessJwt.SignedString(ur.signKey)
 }
 
-func (ur *userRepo) GenerateRefreshToken(userID string) (string, error) {
+func (ur *userRepo) generateRefreshToken(userID string) (string, error) {
 	refreshTokenExp := time.Now().Add(48 * time.Hour).Unix()
 	refreshClaims := RefreshClaims{
 		jwt.StandardClaims{

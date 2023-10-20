@@ -49,3 +49,18 @@ func (h *handler) Login(c echo.Context) error {
 
 	return handleError(c, http.StatusOK, errors.New("AUTHORIZED"), meta, sessionData)
 }
+
+func (h *handler) RefreshSession(c echo.Context) error {
+	var request model.UserSession
+	err := json.NewDecoder(c.Request().Body).Decode(&request)
+	if err != nil {
+		return handleError(c, http.StatusInternalServerError, err, meta, data)
+	}
+
+	sessionData, err := h.authUsecase.RefreshToken(request)
+	if err != nil {
+		return handleError(c, http.StatusInternalServerError, err, meta, data)
+	}
+
+	return handleError(c, http.StatusOK, errors.New("AUTHORIZED"), meta, sessionData)
+}
