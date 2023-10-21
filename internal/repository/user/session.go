@@ -3,6 +3,7 @@ package user
 import (
 	"bemyfaktur/internal/model"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/golang-jwt/jwt"
@@ -15,6 +16,15 @@ type Claims struct {
 type RefreshClaims struct {
 	jwt.StandardClaims
 }
+
+type LogOutSession struct {
+	AccessToken  string
+	RefreshToken string
+	Created      time.Time
+}
+
+var LogOutSessionArrrayMemory []LogOutSession
+var RoutineRunning bool = false
 
 // CreateUserSession implements Repository.
 func (ur *userRepo) CreateUserSession(userID string) (model.UserSession, error) {
@@ -38,6 +48,12 @@ func (ur *userRepo) CreateUserSession(userID string) (model.UserSession, error) 
 
 // CheckSession implements Repository.
 func (ur *userRepo) CheckSession(data model.UserSession) (userID string, err error) {
+
+	//cek logout token session first!
+	if ur.checkLogOutSession(data) {
+		return "", errors.New("access token expired/invalid")
+	}
+
 	accessToken, err := jwt.ParseWithClaims(data.AccessToken, &Claims{}, func(token *jwt.Token) (interface{}, error) {
 		return &ur.signKey.PublicKey, nil
 	})
@@ -59,6 +75,12 @@ func (ur *userRepo) CheckSession(data model.UserSession) (userID string, err err
 }
 
 func (ur *userRepo) CheckRefreshToken(data model.UserSession) (userID string, err error) {
+
+	//cek logout token session first!
+	if ur.checkLogOutSession(data) {
+		return "", errors.New("access token expired/invalid")
+	}
+
 	refreshToken, err := jwt.ParseWithClaims(data.RefreshToken, &RefreshClaims{}, func(token *jwt.Token) (interface{}, error) {
 		return &ur.signKey.PublicKey, nil
 	})
@@ -104,4 +126,60 @@ func (ur *userRepo) generateRefreshToken(userID string) (string, error) {
 	refreshJwt := jwt.NewWithClaims(jwt.GetSigningMethod("RS256"), refreshClaims)
 
 	return refreshJwt.SignedString(ur.signKey)
+}
+
+func (ur *userRepo) LogOut(data model.UserSession) {
+	logOutData := LogOutSession{
+		AccessToken:  data.AccessToken,
+		RefreshToken: data.RefreshToken,
+		Created:      time.Now(),
+	}
+
+	// Append the LogOutSession data to the LogOutSessionArrrayMemory slice
+	LogOutSessionArrrayMemory = append(LogOutSessionArrrayMemory, logOutData)
+}
+
+func (ur *userRepo) checkLogOutSession(data model.UserSession) bool {
+	for _, session := range LogOutSessionArrrayMemory {
+		if session.AccessToken == data.AccessToken || session.RefreshToken == data.RefreshToken {
+			return true
+		}
+	}
+
+	// The UserSession doesn't exist in LogOutSessionArrrayMemory
+	if !RoutineRunning {
+		go ur.CleanupSessions()
+		RoutineRunning = true
+	}
+	return false
+}
+
+// func to clean the loutseesion after 2 hour of running
+func (ur *userRepo) CleanupSessions() {
+	var sessions []LogOutSession
+
+	for {
+		// Lock sessions for writing
+		var updatedSessions []LogOutSession
+
+		// Check each session and remove sessions older than 2 hours
+		for _, session := range sessions {
+			if time.Since(session.Created) <= 2*time.Hour {
+				updatedSessions = append(updatedSessions, session)
+			}
+		}
+
+		// Update the sessions
+		sessions = updatedSessions
+
+		// Unlock sessions
+
+		fmt.Println("Cleanup completed. Current sessions:")
+		for _, session := range sessions {
+			fmt.Println(session)
+		}
+
+		// Sleep for 1 hour before the next cleanup
+		time.Sleep(time.Hour)
+	}
 }
