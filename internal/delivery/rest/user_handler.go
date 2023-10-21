@@ -68,3 +68,16 @@ func (h *handler) RefreshSession(c echo.Context) error {
 
 	return handleError(c, http.StatusOK, errors.New("AUTHORIZED"), meta, sessionData)
 }
+
+func (h *handler) LogOut(c echo.Context) error {
+	var request model.UserSession
+	err := json.NewDecoder(c.Request().Body).Decode(&request)
+	if err != nil {
+		return handleError(c, http.StatusInternalServerError, err, meta, data)
+	}
+
+	meta = nil
+	h.authUsecase.LogOutUser(request)
+
+	return handleError(c, http.StatusOK, errors.New("LOG OUT SUCCESS"), meta, request)
+}

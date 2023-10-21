@@ -95,3 +95,7 @@ func (au *authStruct) RegisterUser(request model.RegisterRequest) (model.User, e
 
 	return userData, nil
 }
+
+func (au *authStruct) LogOutUser(request model.UserSession) {
+	au.userRepo.LogOut(request)
+}

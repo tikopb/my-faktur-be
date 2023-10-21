@@ -7,4 +7,5 @@ type Usecase interface {
 	Login(request model.LoginRequest) (model.UserSession, error)
 	CheckSession(sessionData model.UserSession) (userID string, err error)
 	RefreshToken(userSession model.UserSession) (model.UserSession, error)
+	LogOutUser(request model.UserSession)
 }
