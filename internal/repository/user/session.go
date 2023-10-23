@@ -183,3 +183,25 @@ func (ur *userRepo) CleanupSessions() {
 		time.Sleep(time.Hour)
 	}
 }
+
+func (ur *userRepo) GetuserIdFromClaims(accesstoken string) (string, error) {
+
+	accessToken, err := jwt.ParseWithClaims(accesstoken, &Claims{}, func(token *jwt.Token) (interface{}, error) {
+		return &ur.signKey.PublicKey, nil
+	})
+
+	if err != nil {
+		return "", errors.New("access token expired/invalid")
+	}
+
+	accessTokenClaims, ok := accessToken.Claims.(*Claims)
+	if !ok {
+		return "", errors.New("unauthorized")
+	}
+
+	if accessToken.Valid {
+		return accessTokenClaims.Subject, nil
+	}
+
+	return "", errors.New("unauthorized")
+}

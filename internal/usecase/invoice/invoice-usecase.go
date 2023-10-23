@@ -20,15 +20,10 @@ func GetUsecase(invoiceRepo invoice.InvoiceRepositoryInterface, partnerRepo part
 		invoiceRepo: invoiceRepo,
 		partnerRepo: partnerRepo,
 		productRepo: productRepo,
-		//userRepo:    userRepo,
 	}
 }
 
 // CreateInvoice implements InvoiceUsecaseInterface.
-/**
-definition of done
-a. validate User
-*/
 func (iu *invoiceUsecase) CreateInvoice(request model.InvoiceRequest) (model.InvoiceRespont, error) {
 	//# Get all data First
 	data := model.InvoiceRespont{}

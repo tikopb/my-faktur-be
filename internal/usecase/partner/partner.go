@@ -26,8 +26,16 @@ func (m *partnerUsecase) GetPartner(id int) (model.Partner, error) {
 }
 
 // CreatePartner implements Partner_Usecase.
-func (m *partnerUsecase) CreatePartner(request model.Partner) (model.PartnerRespon, error) {
-	data, err := m.partnerRepo.Create(request)
+func (m *partnerUsecase) CreatePartner(request model.Partner, userID string) (model.PartnerRespon, error) {
+	partner := model.Partner{
+		Name:      request.Name,
+		CreatedBy: userID,
+		DNAmount:  request.DNAmount,
+		CNAmount:  request.CNAmount,
+		Isactive:  true,
+		Code:      request.Code,
+	}
+	data, err := m.partnerRepo.Create(partner)
 	return data, err
 }
 

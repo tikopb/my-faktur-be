@@ -10,6 +10,8 @@ import (
 
 	"strconv"
 
+	midUtil "bemyfaktur/internal/delivery/auth"
+
 	pgUtil "bemyfaktur/internal/model/paginationUtil"
 
 	"github.com/labstack/echo/v4"
@@ -28,6 +30,7 @@ type handler struct {
 	authUsecase    auth.Usecase
 	db             *gorm.DB
 	pgUtilRepo     pgUtil.Repository
+	middleware     midUtil.MidlewareInterface
 }
 
 type handlerRespont struct {
@@ -37,7 +40,7 @@ type handlerRespont struct {
 	Data    interface{} `json:"data"`
 }
 
-func NewHandler(partnerUsecase partner.Usecase, productUsecase product.ProductUsecaseInterface, invoiceUsecase invoice.InvoiceUsecaseInterface, paymentUsecase payment.PaymentUsecaseInterface, pgRepo pgUtil.Repository, authUsecase auth.Usecase, db *gorm.DB) *handler {
+func NewHandler(partnerUsecase partner.Usecase, productUsecase product.ProductUsecaseInterface, invoiceUsecase invoice.InvoiceUsecaseInterface, paymentUsecase payment.PaymentUsecaseInterface, pgRepo pgUtil.Repository, authUsecase auth.Usecase, middleware midUtil.MidlewareInterface, db *gorm.DB) *handler {
 
 	return &handler{
 		partnerUsecase: partnerUsecase,
@@ -47,6 +50,7 @@ func NewHandler(partnerUsecase partner.Usecase, productUsecase product.ProductUs
 		authUsecase:    authUsecase,
 		pgUtilRepo:     pgRepo,
 		db:             db,
+		middleware:     middleware,
 	}
 }
 
