@@ -59,7 +59,13 @@ func (h *handler) CreateInvoiceLine(c echo.Context) error {
 		return handleError(c, http.StatusInternalServerError, err, meta, data)
 	}
 
-	data, err := h.invoiceUsecase.CreateInvoiceLine(request)
+	//getUserId
+	userId, err := h.middleware.GetuserId(c.Request())
+	if err != nil {
+		return handleError(c, http.StatusInternalServerError, err, meta, data)
+	}
+
+	data, err := h.invoiceUsecase.CreateInvoiceLine(request, userId)
 	if err != nil {
 		return handleError(c, http.StatusInternalServerError, err, meta, data)
 	}

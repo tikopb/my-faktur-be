@@ -15,7 +15,7 @@ func main() {
 	db := database.GetDb()
 
 	container := usecase.NewContainer(db)
-	h := rest.NewHandler(container.PartnerUsecase, container.ProductUsecase, container.InvoiceUsecase, container.PaymentUsecase, container.PgUtil, container.AuthUsecase, db)
+	h := rest.NewHandler(container.PartnerUsecase, container.ProductUsecase, container.InvoiceUsecase, container.PaymentUsecase, container.PgUtil, container.AuthUsecase, container.Middleware, db)
 
 	rest.LoadRoutes(e, h)
 

@@ -17,7 +17,7 @@ func (ir *invoiceRepo) CreateLine(request model.InvoiceLine) (model.InvoiceLine,
 		Discount:     request.Discount,
 		Qty:          request.Qty,
 		Amount:       ir.handlingAmount(request.Qty, request.Price, request.IsPrecentage, request.Discount),
-		CreatedBy:    "1", //##@ until security module fixed
+		CreatedBy:    request.CreatedBy,
 		IsPrecentage: request.IsPrecentage,
 	}
 

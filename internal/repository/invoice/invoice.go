@@ -36,7 +36,7 @@ func (ir *invoiceRepo) Create(request model.InvoiceRequest, partner model.Partne
 
 	invoiceData := model.Invoice{
 		CreatedAt:         request.CreatedAt,
-		CreatedBy:         "1", //##@ UNTIL SECURIT model DONE!
+		CreatedBy:         request.CreatedBy,
 		PartnerID:         request.PartnerID,
 		BatchNo:           request.BatchNo,
 		InvoiceLine:       []model.InvoiceLine{},

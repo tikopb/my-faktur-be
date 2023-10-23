@@ -20,16 +20,11 @@ func GetUsecase(invoiceRepo invoice.InvoiceRepositoryInterface, partnerRepo part
 		invoiceRepo: invoiceRepo,
 		partnerRepo: partnerRepo,
 		productRepo: productRepo,
-		//userRepo:    userRepo,
 	}
 }
 
 // CreateInvoice implements InvoiceUsecaseInterface.
-/**
-definition of done
-a. validate User
-*/
-func (iu *invoiceUsecase) CreateInvoice(request model.InvoiceRequest) (model.InvoiceRespont, error) {
+func (iu *invoiceUsecase) CreateInvoice(request model.InvoiceRequest, userID string) (model.InvoiceRespont, error) {
 	//# Get all data First
 	data := model.InvoiceRespont{}
 
@@ -39,12 +34,8 @@ func (iu *invoiceUsecase) CreateInvoice(request model.InvoiceRequest) (model.Inv
 		return data, errors.New("partner not exist")
 	}
 
-	// //Get user
-	// userData, err := iu.userRepo.Show("1") //##@ UNTIL SECURITY MODULE DONE
-	// if err != nil || !userData.IsActive {
-	// 	return data, errors.New("user not activated")
-	// }
-
+	//setCreatedBy
+	request.CreatedBy = userID
 	return iu.invoiceRepo.Create(request, partnerData)
 }
 
@@ -74,9 +65,11 @@ DOD (Definition Of Done)
 */
 func (iu *invoiceUsecase) UpdatedInvoice(id int, request model.Invoice) (model.InvoiceRespont, error) {
 	data := model.InvoiceRespont{}
+
+	//get and set partner
 	partnerData, err := iu.partnerRepo.Show(request.PartnerID)
 	if err != nil || !partnerData.Isactive {
-		return data, errors.New("partner not exist")
+		return data, errors.New("partner not exist or partnet not active")
 	}
 
 	return iu.invoiceRepo.Update(id, request)
@@ -85,7 +78,10 @@ func (iu *invoiceUsecase) UpdatedInvoice(id int, request model.Invoice) (model.I
 //-- invoice line part
 
 // CreateInvoiceLine implements InvoiceUsecaseInterface.
-func (iu *invoiceUsecase) CreateInvoiceLine(request model.InvoiceLine) (model.InvoiceLine, error) {
+func (iu *invoiceUsecase) CreateInvoiceLine(request model.InvoiceLine, userId string) (model.InvoiceLine, error) {
+	//set createdby
+	request.CreatedBy = userId
+
 	data := model.InvoiceLine{}
 	if !iu.validateProductIsActive(request.ProductID) {
 		return data, errors.New("product is not activated")

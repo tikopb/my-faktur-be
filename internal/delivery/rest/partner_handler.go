@@ -55,11 +55,18 @@ func (h *handler) GetPartner(c echo.Context) error {
 
 func (h *handler) CreatePartner(c echo.Context) error {
 	var request model.Partner
-	err := json.NewDecoder(c.Request().Body).Decode(&request)
+
+	//getUserId
+	userId, err := h.middleware.GetuserId(c.Request())
 	if err != nil {
 		return handleError(c, http.StatusInternalServerError, err, meta, data)
 	}
-	data, err := h.partnerUsecase.CreatePartner(request)
+
+	err = json.NewDecoder(c.Request().Body).Decode(&request)
+	if err != nil {
+		return handleError(c, http.StatusInternalServerError, err, meta, data)
+	}
+	data, err := h.partnerUsecase.CreatePartner(request, userId)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
 			"erorr": err.Error(),

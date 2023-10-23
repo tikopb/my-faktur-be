@@ -73,6 +73,7 @@ type PaymentLineRequest struct {
 	Price        float64 `json:"price"`
 	Discount     float64 `json:"discount"`
 	IsPrecentage bool    `json:"isprecentage"`
+	CreatedBy    string  `json :"-"`
 }
 
 type PaymentLineRespont struct {

@@ -21,6 +21,8 @@ import (
 	userRepo "bemyfaktur/internal/repository/user"
 	authUsecase "bemyfaktur/internal/usecase/auth"
 
+	midUtil "bemyfaktur/internal/delivery/auth"
+
 	"crypto/rand"
 	"crypto/rsa"
 
@@ -36,6 +38,7 @@ type Container struct {
 	DocumentUtil   documentutil.Repository
 	AuthUsecase    authUsecase.Usecase
 	PgUtil         pgUtil.Repository
+	Middleware     midUtil.MidlewareInterface
 }
 
 func NewContainer(db *gorm.DB) *Container {
@@ -65,6 +68,8 @@ func NewContainer(db *gorm.DB) *Container {
 	}
 	authUsecase := authUsecase.GetUsecase(userRepo)
 
+	middleware := midUtil.GetAuthMiddleware(authUsecase)
+
 	return &Container{
 		PartnerUsecase: partnerUsecase,
 		ProductUsecase: productUsecase,
@@ -73,6 +78,7 @@ func NewContainer(db *gorm.DB) *Container {
 		DocumentUtil:   documentUtilRepo,
 		AuthUsecase:    authUsecase,
 		PgUtil:         pgUtilRepo,
+		Middleware:     middleware,
 	}
 }
 

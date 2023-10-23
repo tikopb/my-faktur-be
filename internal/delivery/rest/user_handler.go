@@ -79,5 +79,5 @@ func (h *handler) LogOut(c echo.Context) error {
 	meta = nil
 	h.authUsecase.LogOutUser(request)
 
-	return handleError(c, http.StatusOK, errors.New("LOG OUT SUCCESS"), meta, request)
+	return handleError(c, http.StatusOK, errors.New("LOG OUT SUCCESS"), meta, nil)
 }
