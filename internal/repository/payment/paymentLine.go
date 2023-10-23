@@ -11,9 +11,9 @@ func (pr *paymentRepo) CreateLine(paymentLine model.PaymentLineRequest) (model.P
 		PaymentID:    paymentLine.PaymentID,
 		Price:        paymentLine.Price,
 		Discount:     paymentLine.Discount,
-		CreatedBy:    "1", //##@ until the process security done deveop
 		InvoiceID:    paymentLine.Invoice_id,
 		IsPrecentage: paymentLine.IsPrecentage,
+		CreatedBy:    paymentLine.CreatedBy,
 	}
 
 	//beforesave validation

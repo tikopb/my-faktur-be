@@ -45,16 +45,24 @@ func (h *handler) GetProduct(c echo.Context) error {
 
 func (h *handler) CreateProduct(c echo.Context) error {
 	var request model.Product
-	err := json.NewDecoder(c.Request().Body).Decode(&request)
+
+	//getUserId
+	userId, err := h.middleware.GetuserId(c.Request())
 	if err != nil {
 		return handleError(c, http.StatusInternalServerError, err, meta, data)
 	}
 
-	data, err := h.productUsecase.CreateProduct(request)
+	err = json.NewDecoder(c.Request().Body).Decode(&request)
 	if err != nil {
 		return handleError(c, http.StatusInternalServerError, err, meta, data)
 	}
 
+	data, err := h.productUsecase.CreateProduct(request, userId)
+	if err != nil {
+		return handleError(c, http.StatusInternalServerError, err, meta, data)
+	}
+
+	meta = nil
 	return handleError(c, http.StatusCreated, errors.New("CREATE "+data.Name+" SUCCESS"), meta, data)
 }
 

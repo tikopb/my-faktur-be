@@ -58,8 +58,14 @@ func (h *handler) CreatePaymentLine(c echo.Context) error {
 		return handleError(c, http.StatusInternalServerError, err, meta, data)
 	}
 
+	//getUserId
+	userId, err := h.middleware.GetuserId(c.Request())
+	if err != nil {
+		return handleError(c, http.StatusInternalServerError, err, meta, data)
+	}
+
 	//run function
-	data, err := h.paymentUsecase.CreatePaymentLine(request)
+	data, err := h.paymentUsecase.CreatePaymentLine(request, userId)
 	if err != nil {
 		return handleError(c, http.StatusInternalServerError, err, meta, data)
 	}

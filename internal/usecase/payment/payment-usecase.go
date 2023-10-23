@@ -22,7 +22,8 @@ func GetUsecase(paymentRepo payment.PaymentRepositoryinterface, invoiceRepo invo
 
 // ehader payment part
 // Createpayment implements PaymentUsecaseInterface.
-func (pu *paymentUsecase) Createpayment(request model.PaymentRequest) (model.PaymentRespont, error) {
+func (pu *paymentUsecase) Createpayment(request model.PaymentRequest, userId string) (model.PaymentRespont, error) {
+	request.CreatedBy = userId
 	return pu.paymentRepo.Create(request)
 }
 
@@ -48,7 +49,7 @@ func (pu *paymentUsecase) Updatedpayment(id int, request model.PaymentRequest) (
 
 // invoice line part
 // CreateInvoiceLine implements PaymentUsecaseInterface.
-func (pu *paymentUsecase) CreatePaymentLine(request model.PaymentLineRequest) (model.PaymentLineRespont, error) {
+func (pu *paymentUsecase) CreatePaymentLine(request model.PaymentLineRequest, userId string) (model.PaymentLineRespont, error) {
 	data := model.PaymentLineRespont{}
 	invoice, err := pu.invoiceRepo.Show(request.Invoice_id)
 	if err != nil {
@@ -56,6 +57,8 @@ func (pu *paymentUsecase) CreatePaymentLine(request model.PaymentLineRequest) (m
 	} else if invoice.Status != constant.InvoiceStatusComplete {
 		return data, errors.New("invoice not in completed")
 	}
+
+	request.CreatedBy = userId
 
 	//return value
 	return pu.paymentRepo.CreateLine(request)

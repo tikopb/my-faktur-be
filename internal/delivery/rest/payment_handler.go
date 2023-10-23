@@ -56,7 +56,13 @@ func (h *handler) CreatePayment(c echo.Context) error {
 		return handleError(c, http.StatusInternalServerError, err, meta, data)
 	}
 
-	data, err := h.paymentUsecase.Createpayment(request)
+	//getUserId
+	userId, err := h.middleware.GetuserId(c.Request())
+	if err != nil {
+		return handleError(c, http.StatusInternalServerError, err, meta, data)
+	}
+
+	data, err := h.paymentUsecase.Createpayment(request, userId)
 	if err != nil {
 		return handleError(c, http.StatusInternalServerError, err, meta, data)
 	}

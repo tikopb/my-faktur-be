@@ -76,7 +76,7 @@ func (pr *paymentRepo) Create(payment model.PaymentRequest) (model.PaymentRespon
 	}
 
 	paymentData := model.Payment{
-		CreatedBy:  "1", //##@ UNTIL SECURIT model DONE!
+		CreatedBy:  payment.CreatedBy,
 		PartnerID:  payment.PartnerID,
 		GrandTotal: 0,
 		Discount:   0,
