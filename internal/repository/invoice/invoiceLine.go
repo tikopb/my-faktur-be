@@ -96,7 +96,7 @@ func (ir *invoiceRepo) UpdateLine(id int, updatedInvoiceLine model.InvoiceLine) 
 	data.Qty = updatedInvoiceLine.Qty
 	data.Amount = ir.handlingAmount(updatedInvoiceLine.Qty, updatedInvoiceLine.Price, updatedInvoiceLine.IsPrecentage, updatedInvoiceLine.Discount)
 
-	if err := ir.db.Save(&data).Error; err != nil {
+	if err := ir.db.Updates(&data).Error; err != nil {
 		return data, err
 	}
 

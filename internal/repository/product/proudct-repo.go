@@ -87,7 +87,7 @@ func (pr *productRepo) Update(id int, updatedProduct model.Product) (model.Produ
 	data.IsActive = updatedProduct.User.IsActive
 
 	//inisiate data udpated system
-	if err := pr.db.Save(&data).Error; err != nil {
+	if err := pr.db.Updates(&data).Error; err != nil {
 		return dataUpdated, err
 	}
 

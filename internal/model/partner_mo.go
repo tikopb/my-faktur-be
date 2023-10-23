@@ -17,6 +17,7 @@ type Partner struct {
 
 type PartnerRespon struct {
 	Name     string  `json:"name"`
+	Code     string  `json:"bpcode"`
 	DNAmount float64 `json:"dn_amount"`
 	CNAmount float64 `json:"cn_amount"`
 	Isactive bool    `json:"isactive"`

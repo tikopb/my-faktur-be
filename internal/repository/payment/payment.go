@@ -138,7 +138,7 @@ func (pr *paymentRepo) Update(id int, updatedPayment model.PaymentRequest) (mode
 	}
 
 	//save the data
-	if err := pr.db.Save(&paymentData).Error; err != nil {
+	if err := pr.db.Updates(&paymentData).Error; err != nil {
 		return data, err
 	}
 

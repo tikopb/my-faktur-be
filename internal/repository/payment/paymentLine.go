@@ -94,7 +94,7 @@ func (pr *paymentRepo) UpdateLine(id int, updatedPaymentLine model.PaymentLineRe
 	paymentLineData.InvoiceID = updatedPaymentLine.Invoice_id
 
 	//save the data
-	if err := pr.db.Save(&paymentLineData).Error; err != nil {
+	if err := pr.db.Updates(&paymentLineData).Error; err != nil {
 		return data, err
 	}
 

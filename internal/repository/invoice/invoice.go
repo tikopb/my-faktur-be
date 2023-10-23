@@ -156,7 +156,7 @@ func (ir *invoiceRepo) Update(id int, updatedInvoice model.Invoice) (model.Invoi
 	}
 
 	//save the data
-	if err := ir.db.Save(&invoiceData).Error; err != nil {
+	if err := ir.db.Updates(&invoiceData).Error; err != nil {
 		return data, err
 	}
 
