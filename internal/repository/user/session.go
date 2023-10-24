@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt"
+	"github.com/sirupsen/logrus"
 )
 
 type Claims struct {
@@ -173,8 +174,7 @@ func (ur *userRepo) CleanupSessions() {
 		sessions = updatedSessions
 
 		// Unlock sessions
-
-		fmt.Println("Cleanup completed. Current sessions:")
+		logrus.Info("Cleanup completed. Current sessions")
 		for _, session := range sessions {
 			fmt.Println(session)
 		}

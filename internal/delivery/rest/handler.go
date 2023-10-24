@@ -15,6 +15,7 @@ import (
 	pgUtil "bemyfaktur/internal/model/paginationUtil"
 
 	"github.com/labstack/echo/v4"
+	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
 
@@ -110,4 +111,24 @@ func HandlingLimitAndOffset(c echo.Context) (int, int) {
 
 	// Return the values
 	return limit, offset
+}
+
+func WriteLogErorr(msg string, err error) {
+	formatter := &logrus.TextFormatter{
+		FullTimestamp:   true,
+		TimestampFormat: "2006-01-02 15:04:05",
+	}
+	logrus.SetFormatter(formatter)
+	logrus.WithFields(logrus.Fields{
+		"err": err,
+	}).Error(msg, err.Error())
+}
+
+func WriteLogInfo(msg string) {
+	formatter := &logrus.TextFormatter{
+		FullTimestamp:   true,
+		TimestampFormat: "2006-01-02 15:04:05",
+	}
+	logrus.SetFormatter(formatter)
+	logrus.Info(msg)
 }

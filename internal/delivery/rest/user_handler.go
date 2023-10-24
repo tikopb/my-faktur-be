@@ -15,6 +15,7 @@ func (h *handler) Getuser(c echo.Context) error {
 	meta = nil
 	data, err := h.productUsecase.GetProduct(Id)
 	if err != nil {
+		WriteLogErorr("[delivery][rest][user_handler][Getuser] Get user failed", err)
 		return handleError(c, http.StatusInternalServerError, err, meta, data)
 	}
 
@@ -25,12 +26,14 @@ func (h *handler) RegisterUser(c echo.Context) error {
 	var request model.RegisterRequest
 	err := json.NewDecoder(c.Request().Body).Decode(&request)
 	if err != nil {
+		WriteLogErorr("[delivery][rest][user_handler][RegisterUser] register failed ", err)
 		return handleError(c, http.StatusInternalServerError, err, meta, data)
 	}
 
 	meta = nil
 	userData, err := h.authUsecase.RegisterUser(request)
 	if err != nil {
+		WriteLogErorr("[delivery][rest][user_handler][RegisterUser] register failed ", err)
 		return handleError(c, http.StatusInternalServerError, err, meta, data)
 	}
 
@@ -41,15 +44,19 @@ func (h *handler) Login(c echo.Context) error {
 	var request model.LoginRequest
 	err := json.NewDecoder(c.Request().Body).Decode(&request)
 	if err != nil {
+		WriteLogErorr("[delivery][rest][user_handler][Login] ", err)
 		return handleError(c, http.StatusInternalServerError, err, meta, data)
 	}
 
 	meta = nil
 	sessionData, err := h.authUsecase.Login(request)
 	if err != nil {
+		WriteLogErorr("[delivery][rest][user_handler][Login] ", err)
 		return handleError(c, http.StatusInternalServerError, err, meta, data)
 	}
 
+	msg := "[delivery][rest][user_handler][Login] LOGIN SUCCESS " + sessionData.UserInformation.Username
+	WriteLogInfo(msg)
 	return handleError(c, http.StatusOK, errors.New("AUTHORIZED"), meta, sessionData)
 }
 
@@ -57,15 +64,19 @@ func (h *handler) RefreshSession(c echo.Context) error {
 	var request model.UserSession
 	err := json.NewDecoder(c.Request().Body).Decode(&request)
 	if err != nil {
+		WriteLogErorr("[delivery][rest][user_handler][RefreshSession] ", err)
 		return handleError(c, http.StatusInternalServerError, err, meta, data)
 	}
 
+	//clear the meta
 	meta = nil
 	sessionData, err := h.authUsecase.RefreshToken(request)
 	if err != nil {
 		return handleError(c, http.StatusInternalServerError, err, meta, data)
 	}
 
+	msg := "[delivery][rest][user_handler][RefreshSession] Refresh SUCCESS "
+	WriteLogInfo(msg)
 	return handleError(c, http.StatusOK, errors.New("AUTHORIZED"), meta, sessionData)
 }
 
@@ -79,5 +90,7 @@ func (h *handler) LogOut(c echo.Context) error {
 	meta = nil
 	h.authUsecase.LogOutUser(request)
 
+	msg := "[delivery][rest][user_handler][RefreshSession] log out success"
+	WriteLogInfo(msg)
 	return handleError(c, http.StatusOK, errors.New("LOG OUT SUCCESS"), meta, nil)
 }

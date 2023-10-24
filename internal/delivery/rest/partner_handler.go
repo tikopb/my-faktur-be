@@ -21,6 +21,7 @@ func (h *handler) IndexPartner(c echo.Context) error {
 	data, err := h.partnerUsecase.IndexPartner(limit, offset, q)
 	if err != nil {
 		fmt.Printf("got error %s\n", err.Error())
+		WriteLogErorr("[delivery][rest][IndexPartner] ", err)
 
 		return handleError(c, http.StatusInternalServerError, err, meta, data)
 	}
@@ -29,6 +30,7 @@ func (h *handler) IndexPartner(c echo.Context) error {
 	searchParams := model.GetSeatchParamPartner()
 	meta, err = h.pgUtilRepo.PaginationUtil("partners", searchParams, limit, offset, q, "", "")
 	if err != nil {
+		WriteLogErorr("[delivery][rest][IndexPartner] ", err)
 		return handleError(c, http.StatusInternalServerError, err, meta, data)
 	}
 
@@ -44,8 +46,7 @@ func (h *handler) GetPartner(c echo.Context) error {
 
 	data, err := h.partnerUsecase.GetPartner(Id)
 	if err != nil {
-		fmt.Printf("got error %s\n", err.Error())
-
+		WriteLogErorr("[delivery][rest][GetPartner] ", err)
 		return handleError(c, http.StatusInternalServerError, err, meta, data)
 	}
 
@@ -64,13 +65,13 @@ func (h *handler) CreatePartner(c echo.Context) error {
 
 	err = json.NewDecoder(c.Request().Body).Decode(&request)
 	if err != nil {
+		WriteLogErorr("[delivery][rest][CreatePartner] ", err)
 		return handleError(c, http.StatusInternalServerError, err, meta, data)
 	}
 	data, err := h.partnerUsecase.CreatePartner(request, userId)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
-			"erorr": err.Error(),
-		})
+		WriteLogErorr("[delivery][rest][CreatePartner] ", err)
+		return handleError(c, http.StatusInternalServerError, err, meta, data)
 	}
 
 	return handleError(c, http.StatusOK, errors.New("CREATE "+data.Name+" SUCCESS"), meta, data)
@@ -89,11 +90,13 @@ func (h *handler) UpdatedPartner(c echo.Context) error {
 	var request model.Partner
 	err = json.NewDecoder(c.Request().Body).Decode(&request)
 	if err != nil {
+		WriteLogErorr("[delivery][rest][UpdatedPartner] ", err)
 		return handleError(c, http.StatusInternalServerError, err, meta, data)
 	}
 
 	data, err := h.partnerUsecase.UpdatedPartner(Id, request)
 	if err != nil {
+		WriteLogErorr("[delivery][rest][UpdatedPartner] ", err)
 		return handleError(c, http.StatusInternalServerError, err, meta, data)
 	}
 
@@ -111,6 +114,7 @@ func (h *handler) DeletePartner(c echo.Context) error {
 
 	data, err := h.partnerUsecase.Deletepartner(Id)
 	if err != nil {
+		WriteLogErorr("[delivery][rest][DeletePartner] ", err)
 		return handleError(c, http.StatusInternalServerError, err, meta, data)
 	}
 

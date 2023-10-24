@@ -82,9 +82,10 @@ func (pr *partnerRepo) Update(id int, updatedPartner model.Partner) (model.Partn
 	data.DNAmount = updatedPartner.DNAmount
 	data.CNAmount = updatedPartner.CNAmount
 	data.Isactive = updatedPartner.Isactive
+	data.Code = updatedPartner.Code
 
 	//save the data
-	if err := pr.db.Save(&data).Error; err != nil {
+	if err := pr.db.Updates(&data).Error; err != nil {
 		return dataUpdated, err
 	}
 
