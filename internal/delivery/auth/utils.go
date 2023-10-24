@@ -20,6 +20,7 @@ func (am *authMiddleware) GetSessionData(r *http.Request) (model.UserSession, er
 	}, nil
 }
 
+// function getting userId information base on token
 func (am *authMiddleware) GetuserId(r *http.Request) (string, error) {
 	sessionData, err := am.GetSessionData(r)
 	if err != nil {

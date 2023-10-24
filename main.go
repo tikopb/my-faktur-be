@@ -3,6 +3,7 @@ package main
 import (
 	"bemyfaktur/internal/database"
 
+	"bemyfaktur/internal/delivery/logger"
 	"bemyfaktur/internal/delivery/rest"
 
 	"bemyfaktur/internal/usecase"
@@ -11,6 +12,7 @@ import (
 )
 
 func main() {
+	logger.Init()
 	e := echo.New()
 	db := database.GetDb()
 

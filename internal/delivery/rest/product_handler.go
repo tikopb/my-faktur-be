@@ -18,6 +18,7 @@ func (h *handler) IndexProduct(c echo.Context) error {
 
 	data, err := h.productUsecase.IndexProduct(limit, offset, q)
 	if err != nil {
+		WriteLogErorr("[delivery][rest][product_handler][IndexProduct] ", err)
 		return handleError(c, http.StatusInternalServerError, err, meta, data)
 	}
 
@@ -26,6 +27,7 @@ func (h *handler) IndexProduct(c echo.Context) error {
 
 	meta, err = h.pgUtilRepo.PaginationUtil("products", searchParams, limit, offset, q, "", "")
 	if err != nil {
+		WriteLogErorr("[delivery][rest][product_handler][IndexProduct] ", err)
 		return handleError(c, http.StatusInternalServerError, err, meta, data)
 	}
 
@@ -37,6 +39,7 @@ func (h *handler) GetProduct(c echo.Context) error {
 
 	data, err := h.productUsecase.GetProduct(Id)
 	if err != nil {
+		WriteLogErorr("[delivery][rest][product_handler][IndexProduct] ", err)
 		return handleError(c, http.StatusInternalServerError, err, meta, data)
 	}
 
@@ -49,16 +52,19 @@ func (h *handler) CreateProduct(c echo.Context) error {
 	//getUserId
 	userId, err := h.middleware.GetuserId(c.Request())
 	if err != nil {
+		WriteLogErorr("[delivery][rest][product_handler][CreateProduct] ", err)
 		return handleError(c, http.StatusInternalServerError, err, meta, data)
 	}
 
 	err = json.NewDecoder(c.Request().Body).Decode(&request)
 	if err != nil {
+		WriteLogErorr("[delivery][rest][product_handler][CreateProduct] ", err)
 		return handleError(c, http.StatusInternalServerError, err, meta, data)
 	}
 
 	data, err := h.productUsecase.CreateProduct(request, userId)
 	if err != nil {
+		WriteLogErorr("[delivery][rest][product_handler][CreateProduct] ", err)
 		return handleError(c, http.StatusInternalServerError, err, meta, data)
 	}
 
@@ -74,11 +80,13 @@ func (h *handler) UpdatedProduct(c echo.Context) error {
 	//run function
 	err := json.NewDecoder(c.Request().Body).Decode(&request)
 	if err != nil {
+		WriteLogErorr("[delivery][rest][product_handler][UpdatedProduct] ", err)
 		return handleError(c, http.StatusInternalServerError, err, meta, data)
 	}
 
 	data, err := h.productUsecase.UpdatedProduct(Id, request)
 	if err != nil {
+		WriteLogErorr("[delivery][rest][product_handler][UpdatedProduct] ", err)
 		return handleError(c, http.StatusInternalServerError, err, meta, data)
 	}
 
@@ -91,6 +99,7 @@ func (h *handler) DeleteProduct(c echo.Context) error {
 
 	data, err := h.productUsecase.DeleteProduct(Id)
 	if err != nil {
+		WriteLogErorr("[delivery][rest][product_handler][DeleteProduct] ", err)
 		return handleError(c, http.StatusInternalServerError, err, meta, data)
 	}
 

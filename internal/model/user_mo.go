@@ -26,6 +26,11 @@ type UserSession struct {
 	RefreshToken string `json:"refresh_token"`
 }
 
+type UserSessionRespond struct {
+	UserSession     UserSession `json:"user_session"`
+	UserInformation User        `json:"-"`
+}
+
 type RefreshSession struct {
 	RefreshToken string `json:"refresh_token"`
 }

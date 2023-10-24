@@ -29,27 +29,33 @@ func (au *authStruct) CheckSession(sessionData model.UserSession) (userID string
 }
 
 // Login implements Usecase.
-func (au *authStruct) Login(request model.LoginRequest) (model.UserSession, error) {
+func (au *authStruct) Login(request model.LoginRequest) (model.UserSessionRespond, error) {
+	userSessionRespond := model.UserSessionRespond{}
+
 	userData, err := au.userRepo.GetUserData(request.Username)
 	if err != nil {
-		return model.UserSession{}, err
+		return userSessionRespond, err
 	}
 
 	verified, err := au.userRepo.VerifyLogin(request.Username, request.Password, userData)
 	if err != nil {
-		return model.UserSession{}, err
+		return userSessionRespond, err
 	}
 
 	if !verified {
-		return model.UserSession{}, errors.New("can't verifit user login")
+		return userSessionRespond, errors.New("can't verifit user login")
 	}
 
 	userSession, err := au.userRepo.CreateUserSession(userData.ID)
 	if err != nil {
-		return model.UserSession{}, err
+		return userSessionRespond, err
 	}
 
-	return userSession, nil
+	userSessionRespond = model.UserSessionRespond{
+		UserSession:     userSession,
+		UserInformation: userData,
+	}
+	return userSessionRespond, nil
 }
 
 // Refresh Token implements Usecase.
