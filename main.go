@@ -19,6 +19,7 @@ func main() {
 	container := usecase.NewContainer(db)
 	h := rest.NewHandler(container.PartnerUsecase, container.ProductUsecase, container.InvoiceUsecase, container.PaymentUsecase, container.PgUtil, container.AuthUsecase, container.Middleware, db)
 
+	rest.LoadMiddlewares(e)
 	rest.LoadRoutes(e, h)
 
 	//after all set, push the start
