@@ -2,6 +2,7 @@ package rest
 
 import (
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 )
 
 func LoadRoutes(e *echo.Echo, handler *handler) {
@@ -14,7 +15,7 @@ func LoadRoutes(e *echo.Echo, handler *handler) {
 
 	//partner
 	partnerGroup := e.Group("/partner")
-	partnerGroup.GET("", handler.IndexPartner, handler.middleware.CheckAuth)
+	partnerGroup.GET("", handler.IndexPartner)
 	partnerGroup.GET("/:id", handler.GetPartner, handler.middleware.CheckAuth)
 	partnerGroup.POST("", handler.CreatePartner, handler.middleware.CheckAuth)
 	partnerGroup.PUT("/:id", handler.UpdatedPartner, handler.middleware.CheckAuth)
@@ -60,4 +61,10 @@ func LoadRoutes(e *echo.Echo, handler *handler) {
 	paymentGroupLine.PUT("/:id", handler.UpdatePaymentLine, handler.middleware.CheckAuth)
 	paymentGroupLine.DELETE("/:id", handler.DeletePaymentLine, handler.middleware.CheckAuth)
 
+}
+
+func LoadMiddlewares(e *echo.Echo) {
+	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowOrigins: []string{"http://localhost:3000"},
+	}))
 }
