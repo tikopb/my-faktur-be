@@ -85,7 +85,7 @@ func (ur *userRepo) CheckRegistered(username string) (bool, error) {
 func (ur *userRepo) GetUserData(username string) (model.User, error) {
 	var userData model.User
 
-	if err := ur.db.Where(model.User{Username: username}).First(&userData).Error; err != nil {
+	if err := ur.db.Where(model.User{Username: username, IsActive: true}).First(&userData).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return userData, errors.New("username not exist")
 		}

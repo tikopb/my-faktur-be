@@ -51,7 +51,7 @@ func (ur *userRepo) CreateUserSession(userID string) (model.UserSession, error) 
 func (ur *userRepo) CheckSession(data model.UserSession) (userID string, err error) {
 
 	//cek logout token session first!
-	if ur.checkLogOutSession(data) {
+	if ur.checkLogOutSession(data.AccessToken) {
 		return "", errors.New("access token expired/invalid")
 	}
 
@@ -75,14 +75,14 @@ func (ur *userRepo) CheckSession(data model.UserSession) (userID string, err err
 	return "", errors.New("unauthorized")
 }
 
-func (ur *userRepo) CheckRefreshToken(data model.UserSession) (userID string, err error) {
+func (ur *userRepo) CheckRefreshToken(RefreshToken string) (userID string, err error) {
 
 	//cek logout token session first!
-	if ur.checkLogOutSession(data) {
+	if ur.checkLogOutSession(RefreshToken) {
 		return "", errors.New("access token expired/invalid")
 	}
 
-	refreshToken, err := jwt.ParseWithClaims(data.RefreshToken, &RefreshClaims{}, func(token *jwt.Token) (interface{}, error) {
+	refreshToken, err := jwt.ParseWithClaims(RefreshToken, &RefreshClaims{}, func(token *jwt.Token) (interface{}, error) {
 		return &ur.signKey.PublicKey, nil
 	})
 	if err != nil {
@@ -140,9 +140,9 @@ func (ur *userRepo) LogOut(data model.UserSession) {
 	LogOutSessionArrrayMemory = append(LogOutSessionArrrayMemory, logOutData)
 }
 
-func (ur *userRepo) checkLogOutSession(data model.UserSession) bool {
+func (ur *userRepo) checkLogOutSession(token string) bool {
 	for _, session := range LogOutSessionArrrayMemory {
-		if session.AccessToken == data.AccessToken || session.RefreshToken == data.RefreshToken {
+		if session.AccessToken == token || session.RefreshToken == token {
 			return true
 		}
 	}

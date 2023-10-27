@@ -62,7 +62,15 @@ func (h *handler) Login(c echo.Context) error {
 
 func (h *handler) RefreshSession(c echo.Context) error {
 	var request model.UserSession
-	err := json.NewDecoder(c.Request().Body).Decode(&request)
+
+	refreshToken, err := h.middleware.GetSessionData(c.Request())
+	if err != nil {
+		WriteLogErorr("[delivery][rest][user_handler][RefreshSession] ", err)
+		return handleError(c, http.StatusInternalServerError, err, meta, data)
+	}
+
+	//decalre refresh token on sessioin is
+	request.RefreshToken = refreshToken.AccessToken
 	if err != nil {
 		WriteLogErorr("[delivery][rest][user_handler][RefreshSession] ", err)
 		return handleError(c, http.StatusInternalServerError, err, meta, data)
@@ -70,7 +78,7 @@ func (h *handler) RefreshSession(c echo.Context) error {
 
 	//clear the meta
 	meta = nil
-	sessionData, err := h.authUsecase.RefreshToken(request)
+	sessionData, err := h.authUsecase.RefreshToken(request.RefreshToken)
 	if err != nil {
 		return handleError(c, http.StatusInternalServerError, err, meta, data)
 	}

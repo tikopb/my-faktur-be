@@ -3,6 +3,7 @@ package auth
 import (
 	"bemyfaktur/internal/model"
 	"bemyfaktur/internal/repository/user"
+	"strings"
 
 	"errors"
 
@@ -59,9 +60,10 @@ func (au *authStruct) Login(request model.LoginRequest) (model.UserSessionRespon
 }
 
 // Refresh Token implements Usecase.
-func (au *authStruct) RefreshToken(userSession model.UserSession) (model.UserSession, error) {
+func (au *authStruct) RefreshToken(refreshToken string) (model.UserSession, error) {
+	userSession := model.UserSession{}
 
-	userID, err := au.userRepo.CheckRefreshToken(userSession)
+	userID, err := au.userRepo.CheckRefreshToken(refreshToken)
 	if err != nil {
 		return model.UserSession{}, err
 	}
@@ -81,6 +83,11 @@ func (au *authStruct) RegisterUser(request model.RegisterRequest) (model.User, e
 	if err != nil {
 		return model.User{}, err
 	}
+
+	if strings.Contains(request.Username, " ") {
+		return model.User{}, errors.New("username can't having space")
+	}
+
 	if userRegistered {
 		return model.User{}, errors.New("user already registered")
 	}
@@ -94,6 +101,8 @@ func (au *authStruct) RegisterUser(request model.RegisterRequest) (model.User, e
 		ID:       uuid.New().String(),
 		Username: request.Username,
 		Hash:     userHash,
+		FullName: request.FullName,
+		IsActive: true,
 	})
 	if err != nil {
 		return model.User{}, err
