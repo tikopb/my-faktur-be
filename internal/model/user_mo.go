@@ -3,7 +3,7 @@ package model
 import "time"
 
 type User struct {
-	ID        string    `gorm:"primaryKey;autoIncrement" json:"id"`
+	ID        string    `gorm:"primaryKey;autoIncrement" json:"-"`
 	Username  string    `gorm:"unique" json:"username"`
 	Hash      string    `json:"-"`
 	FullName  string    `gorm:"column:full_name" json:"full_name"`
@@ -14,6 +14,7 @@ type User struct {
 type RegisterRequest struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
+	FullName string `json:"fullname"`
 }
 
 type LoginRequest struct {
@@ -27,8 +28,8 @@ type UserSession struct {
 }
 
 type UserSessionRespond struct {
+	UserInformation User        `json:"user_information"`
 	UserSession     UserSession `json:"user_session"`
-	UserInformation User        `json:"-"`
 }
 
 type RefreshSession struct {

@@ -10,7 +10,7 @@ func LoadRoutes(e *echo.Echo, handler *handler) {
 	userGroup := e.Group("/user")
 	userGroup.POST("/register", handler.RegisterUser)
 	userGroup.POST("/login", handler.Login)
-	userGroup.POST("/refresh", handler.RefreshSession)
+	userGroup.GET("/refresh", handler.RefreshSession)
 	userGroup.POST("/logout", handler.LogOut)
 
 	//partner

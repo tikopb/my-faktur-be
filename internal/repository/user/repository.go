@@ -10,6 +10,6 @@ type Repository interface {
 	GetUserData(username string) (model.User, error)
 	CreateUserSession(userID string) (model.UserSession, error)
 	CheckSession(data model.UserSession) (string, error)
-	CheckRefreshToken(data model.UserSession) (string, error)
+	CheckRefreshToken(RefreshToken string) (string, error)
 	LogOut(data model.UserSession)
 }
