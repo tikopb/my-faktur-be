@@ -63,14 +63,14 @@ func (h *handler) Login(c echo.Context) error {
 func (h *handler) RefreshSession(c echo.Context) error {
 	var request model.UserSession
 
-	refreshToken, err := h.middleware.GetSessionData(c.Request())
+	refreshToken, err := h.middleware.GetValueParamHeader(c.Request(), "Refresh-token")
 	if err != nil {
 		WriteLogErorr("[delivery][rest][user_handler][RefreshSession] ", err)
 		return handleError(c, http.StatusInternalServerError, err, meta, data)
 	}
 
 	//decalre refresh token on sessioin is
-	request.RefreshToken = refreshToken.AccessToken
+	request.RefreshToken = refreshToken
 	if err != nil {
 		WriteLogErorr("[delivery][rest][user_handler][RefreshSession] ", err)
 		return handleError(c, http.StatusInternalServerError, err, meta, data)
@@ -78,7 +78,7 @@ func (h *handler) RefreshSession(c echo.Context) error {
 
 	//clear the meta
 	meta = nil
-	sessionData, err := h.authUsecase.RefreshToken(request.RefreshToken)
+	sessionData, err := h.authUsecase.RefreshToken(refreshToken)
 	if err != nil {
 		return handleError(c, http.StatusInternalServerError, err, meta, data)
 	}
@@ -89,10 +89,22 @@ func (h *handler) RefreshSession(c echo.Context) error {
 }
 
 func (h *handler) LogOut(c echo.Context) error {
-	var request model.UserSession
-	err := json.NewDecoder(c.Request().Body).Decode(&request)
+
+	//get header information
+	refreshToken, err := h.middleware.GetValueParamHeader(c.Request(), "Refresh-token")
 	if err != nil {
+		WriteLogErorr("[delivery][rest][user_handler][LogOut] ", err)
 		return handleError(c, http.StatusInternalServerError, err, meta, data)
+	}
+	accessToken, err := h.middleware.GetSessionData(c.Request())
+	if err != nil {
+		WriteLogErorr("[delivery][rest][user_handler][LogOut] ", err)
+		return handleError(c, http.StatusInternalServerError, err, meta, data)
+	}
+
+	request := model.UserSession{
+		AccessToken:  accessToken.AccessToken,
+		RefreshToken: refreshToken,
 	}
 
 	meta = nil

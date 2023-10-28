@@ -34,3 +34,13 @@ func (am *authMiddleware) GetuserId(r *http.Request) (string, error) {
 
 	return userID, nil
 }
+
+// function getting param variabel from header that custome needed
+func (am *authMiddleware) GetValueParamHeader(r *http.Request, param string) (string, error) {
+	value := ""
+	value = r.Header.Get(param)
+	if value == "" {
+		return "", errors.New("value of param is empty")
+	}
+	return value, nil
+}
