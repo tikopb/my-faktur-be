@@ -18,6 +18,7 @@ type MidlewareInterface interface {
 	CheckAuth(next echo.HandlerFunc) echo.HandlerFunc
 	GetSessionData(r *http.Request) (model.UserSession, error)
 	GetuserId(r *http.Request) (string, error)
+	GetValueParamHeader(r *http.Request, param string) (string, error)
 }
 
 func GetAuthMiddleware(authusecase auth.Usecase) MidlewareInterface {
