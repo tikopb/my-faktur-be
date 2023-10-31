@@ -14,15 +14,15 @@ import (
 func main() {
 	logger.Init()
 	e := echo.New()
+	rest.LoadMiddlewares(e)
+
 	db := database.GetDb()
 
 	container := usecase.NewContainer(db)
 	h := rest.NewHandler(container.PartnerUsecase, container.ProductUsecase, container.InvoiceUsecase, container.PaymentUsecase, container.PgUtil, container.AuthUsecase, container.Middleware, db)
 
-	rest.LoadMiddlewares(e)
 	rest.LoadRoutes(e, h)
 
-	//after all set, push the start
 	e.Logger.Fatal(e.Start((":4000")))
 
 }

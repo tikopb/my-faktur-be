@@ -63,11 +63,14 @@ func LoadRoutes(e *echo.Echo, handler *handler) {
 	paymentGroupLine.PUT("/:id", handler.UpdatePaymentLine, handler.middleware.CheckAuth)
 	paymentGroupLine.DELETE("/:id", handler.DeletePaymentLine, handler.middleware.CheckAuth)
 
+	//cors test
+	e.GET("/cors", handler.CorsTest)
 }
 
 func LoadMiddlewares(e *echo.Echo) {
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-		AllowOrigins: []string{"http://localhost:3000"},
-		AllowMethods: []string{http.MethodGet, http.MethodPut, http.MethodPost, http.MethodDelete},
+		AllowOrigins:     []string{"http://localhost:3000"},
+		AllowMethods:     []string{http.MethodGet, http.MethodPost, http.MethodPut, http.MethodDelete},
+		AllowCredentials: true,
 	}))
 }

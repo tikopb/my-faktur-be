@@ -114,3 +114,9 @@ func (h *handler) LogOut(c echo.Context) error {
 	WriteLogInfo(msg)
 	return handleError(c, http.StatusOK, errors.New("LOG OUT SUCCESS"), meta, nil)
 }
+
+func (h *handler) CorsTest(c echo.Context) error {
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"data": "success",
+	})
+}
