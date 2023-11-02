@@ -24,12 +24,11 @@ func GetRepository(db *gorm.DB, pgRepo pgUtil.Repository) Repository {
 
 // Create implements Repository.
 func (pr *partnerRepo) Create(partner model.Partner) (model.PartnerRespon, error) {
-	data := model.Partner{}
 	dataValue := model.PartnerRespon{}
 
 	if partner.Code == "" {
 		var count int64
-		pr.db.Table("deleted_users").Count(&count)
+		pr.db.Table("partners").Count(&count)
 
 		partner.Code = "BP - " + strconv.FormatInt(count, 10)
 	}
@@ -38,7 +37,7 @@ func (pr *partnerRepo) Create(partner model.Partner) (model.PartnerRespon, error
 		return dataValue, err
 	}
 
-	dataValue = pr.parsingPartnerToParnerRespond(data)
+	dataValue = pr.parsingPartnerToParnerRespond(partner)
 	return dataValue, nil
 }
 
