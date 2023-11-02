@@ -16,10 +16,14 @@ type Partner struct {
 }
 
 type PartnerRespon struct {
-	Name     string  `json:"name"`
-	DNAmount float64 `json:"dn_amount"`
-	CNAmount float64 `json:"cn_amount"`
-	Isactive bool    `json:"isactive"`
+	ID        int       `json:"id"`
+	Name      string    `json:"name"`
+	Code      string    `json:"bp_code"`
+	CreatedAt time.Time `json:"created_at"`
+	DNAmount  float64   `json:"dn_amount"`
+	CNAmount  float64   `json:"cn_amount"`
+	Isactive  bool      `json:"isactive"`
+	CreatedBy string    `json:"created_by"`
 }
 
 func GetSeatchParamPartner() []string {
