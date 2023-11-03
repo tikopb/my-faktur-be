@@ -14,6 +14,7 @@ import (
 
 	pgUtil "bemyfaktur/internal/model/paginationUtil"
 
+	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
@@ -131,4 +132,15 @@ func WriteLogInfo(msg string) {
 	}
 	logrus.SetFormatter(formatter)
 	logrus.Info(msg)
+}
+
+func (h *handler) ParsingUUID(value string) (uuid.UUID, error) {
+	// Parse the string into a UUID
+	uuid, err := uuid.Parse(value)
+	if err != nil {
+		// Handle the error, e.g., return an error response
+		return uuid, err
+	}
+
+	return uuid, nil
 }

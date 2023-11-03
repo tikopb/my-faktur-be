@@ -7,6 +7,7 @@ import (
 
 	pgUtil "bemyfaktur/internal/model/paginationUtil"
 
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -67,10 +68,10 @@ func (pr *partnerRepo) Index(limit int, offset int, q string) ([]model.PartnerRe
 }
 
 // Show implements Repository.
-func (pr *partnerRepo) Show(id int) (model.Partner, error) {
+func (pr *partnerRepo) Show(id uuid.UUID) (model.Partner, error) {
 	var data model.Partner
 
-	if err := pr.db.Preload("User").First(&data, id).Error; err != nil {
+	if err := pr.db.Preload("User").Where(&model.Partner{UUID: id}).First(&data).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return data, errors.New("data not found")
 		}
@@ -80,7 +81,7 @@ func (pr *partnerRepo) Show(id int) (model.Partner, error) {
 }
 
 // Update implements Repository.
-func (pr *partnerRepo) Update(id int, updatedPartner model.Partner) (model.PartnerRespon, error) {
+func (pr *partnerRepo) Update(id uuid.UUID, updatedPartner model.Partner) (model.PartnerRespon, error) {
 	dataUpdated := model.PartnerRespon{}
 	data, err := pr.Show(id)
 
@@ -107,7 +108,7 @@ func (pr *partnerRepo) Update(id int, updatedPartner model.Partner) (model.Partn
 }
 
 // Delete implements Repository.
-func (pr *partnerRepo) Delete(id int) (string, error) {
+func (pr *partnerRepo) Delete(id uuid.UUID) (string, error) {
 	data, err := pr.Show(id)
 	name := data.Name
 
@@ -122,7 +123,7 @@ func (pr *partnerRepo) Delete(id int) (string, error) {
 
 func (pr *partnerRepo) parsingPartnerToParnerRespond(partner model.Partner) model.PartnerRespon {
 	data := model.PartnerRespon{
-		ID:        partner.ID,
+		ID:        partner.UUID,
 		Name:      partner.Name,
 		Code:      partner.Code,
 		DNAmount:  partner.DNAmount,

@@ -1,11 +1,15 @@
 package partner
 
-import "bemyfaktur/internal/model"
+import (
+	"bemyfaktur/internal/model"
+
+	"github.com/google/uuid"
+)
 
 type Usecase interface {
 	IndexPartner(limit int, offset int, q string) ([]model.PartnerRespon, error)
-	GetPartner(id int) (model.Partner, error)
+	GetPartner(id uuid.UUID) (model.Partner, error)
 	CreatePartner(request model.Partner, userID string) (model.PartnerRespon, error)
-	UpdatedPartner(id int, request model.Partner) (model.PartnerRespon, error)
-	Deletepartner(id int) (string, error)
+	UpdatedPartner(id uuid.UUID, request model.Partner) (model.PartnerRespon, error)
+	Deletepartner(id uuid.UUID) (string, error)
 }
