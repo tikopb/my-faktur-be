@@ -43,17 +43,16 @@ func (pr *partnerRepo) Create(partner model.Partner) (model.PartnerRespon, error
 }
 
 // Index implements Repository.
-func (pr *partnerRepo) Index(limit int, offset int, q string) ([]model.PartnerRespon, error) {
+func (pr *partnerRepo) Index(limit int, offset int, q string, order []string) ([]model.PartnerRespon, error) {
 	var dataReturn []model.PartnerRespon
 	var data []model.Partner
 
 	if q != "" {
-		query := " select * from partners " + pr.pgUtilRepo.HandlingPaginationWhere(model.GetSeatchParamPartner(), q, "", "")
-		if err := pr.db.Raw(query).Scan(&data).Error; err != nil {
+		if err := pr.db.Joins("User").Where(model.GetSeatchParamPartnerV2(q)).Limit(limit).Offset(offset).Order(order).Preload("User").Find(&data).Error; err != nil {
 			return dataReturn, err
 		}
 	} else {
-		if err := pr.db.Order("name").Find(&data).Error; err != nil {
+		if err := pr.db.Preload("User").Order(order[0]).Find(&data).Error; err != nil {
 			return dataReturn, err
 		}
 	}
@@ -61,7 +60,6 @@ func (pr *partnerRepo) Index(limit int, offset int, q string) ([]model.PartnerRe
 	//parsing to responFormat
 	for _, partner := range data {
 		dataReturn = append(dataReturn, pr.parsingPartnerToParnerRespond(partner))
-
 	}
 
 	return dataReturn, nil

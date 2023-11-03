@@ -7,7 +7,7 @@ import (
 )
 
 type Usecase interface {
-	IndexPartner(limit int, offset int, q string) ([]model.PartnerRespon, error)
+	IndexPartner(limit int, offset int, q string, order []string) ([]model.PartnerRespon, error)
 	GetPartner(id uuid.UUID) (model.Partner, error)
 	CreatePartner(request model.Partner, userID string) (model.PartnerRespon, error)
 	UpdatedPartner(id uuid.UUID, request model.Partner) (model.PartnerRespon, error)
