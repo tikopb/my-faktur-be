@@ -5,6 +5,8 @@ import (
 	"time"
 
 	"bemyfaktur/internal/model/constant"
+
+	"github.com/google/uuid"
 )
 
 // -- invoice
@@ -24,6 +26,7 @@ type Invoice struct {
 	OustandingPayment float64                   `json:"oustanding" gorm:"column:oustanding_payment"`
 	DocumentNo        string                    `json:"documentno" gorm:"column:documentno;not null;unique"`
 	IsPrecentage      bool                      `gorm:"column:isprecentage;default:false" json:"isprecentage"`
+	PartnerIdUU       uuid.UUID                 `json:"partneriduu"`
 }
 
 type InvoiceRequest struct {
@@ -31,6 +34,7 @@ type InvoiceRequest struct {
 	CreatedBy    string                    `json:"-"`
 	UserId       string                    `json:"user_id"` //##@ until security module fixed
 	PartnerID    int                       `json:"partner_id"`
+	PartnerIdUU  uuid.UUID                 `json:"partneriduu"`
 	GrandTotal   float64                   `json:"grand_total"`
 	Discount     float64                   `json:"discount"`
 	BatchNo      string                    `json:"batchno"`

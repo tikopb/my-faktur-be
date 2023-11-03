@@ -17,11 +17,11 @@ func LoadRoutes(e *echo.Echo, handler *handler) {
 
 	//partner
 	partnerGroup := e.Group("/partner")
-	partnerGroup.GET("", handler.IndexPartner)
-	partnerGroup.GET("/:id", handler.GetPartner, handler.middleware.CheckAuth)
+	partnerGroup.GET("s", handler.IndexPartner, handler.middleware.CheckAuth)
+	partnerGroup.GET("/", handler.GetPartner, handler.middleware.CheckAuth)
 	partnerGroup.POST("", handler.CreatePartner, handler.middleware.CheckAuth)
-	partnerGroup.PUT("/:id", handler.UpdatedPartner, handler.middleware.CheckAuth)
-	partnerGroup.DELETE("/:id", handler.DeletePartner, handler.middleware.CheckAuth)
+	partnerGroup.PUT("/", handler.UpdatedPartner, handler.middleware.CheckAuth)
+	partnerGroup.DELETE("/", handler.DeletePartner, handler.middleware.CheckAuth)
 
 	//group
 	productGroup := e.Group("/product")

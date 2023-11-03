@@ -1,9 +1,13 @@
 package model
 
-import "time"
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
 
 type Partner struct {
-	ID        int       `gorm:"primaryKey;autoIncrement" json:"id"`
+	ID        int       `gorm:"primaryKey;autoIncrement" json:"-"`
 	Name      string    `json:"name"`
 	CreatedAt time.Time `gorm:"column:created_at;default:current_timestamp"`
 	CreatedBy string    `gorm:"column:created_by" json:"created_by"`
@@ -12,11 +16,11 @@ type Partner struct {
 	CNAmount  float64   `gorm:"column:cn_amount" json:"cn_amount"`
 	Isactive  bool      `gorm:"column:isactive" json:"isactive"`
 	Code      string    `gorm:"column:bp_code;unique;not null" json:"bpcode"`
-	Invoice   []Invoice
+	UUID      uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4()"`
 }
 
 type PartnerRespon struct {
-	ID        int       `json:"id"`
+	ID        uuid.UUID `json:"id"`
 	Name      string    `json:"name"`
 	Code      string    `json:"bp_code"`
 	CreatedAt time.Time `json:"created_at"`

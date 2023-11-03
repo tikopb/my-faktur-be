@@ -3,6 +3,8 @@ package partner
 import (
 	"bemyfaktur/internal/model"
 	"bemyfaktur/internal/repository/partner"
+
+	"github.com/google/uuid"
 )
 
 type partnerUsecase struct {
@@ -21,7 +23,7 @@ func (m *partnerUsecase) IndexPartner(limit int, offset int, q string) ([]model.
 }
 
 // GetPartner implements Usecase.
-func (m *partnerUsecase) GetPartner(id int) (model.Partner, error) {
+func (m *partnerUsecase) GetPartner(id uuid.UUID) (model.Partner, error) {
 	return m.partnerRepo.Show(id)
 }
 
@@ -33,13 +35,13 @@ func (m *partnerUsecase) CreatePartner(request model.Partner, userID string) (mo
 }
 
 // UpdatedPartner implements Partner_Usecase.
-func (m *partnerUsecase) UpdatedPartner(id int, request model.Partner) (model.PartnerRespon, error) {
+func (m *partnerUsecase) UpdatedPartner(id uuid.UUID, request model.Partner) (model.PartnerRespon, error) {
 	data, err := m.partnerRepo.Update(id, request)
 	return data, err
 }
 
 // Deletepartner implements Partner_Usecase.
-func (m *partnerUsecase) Deletepartner(id int) (string, error) {
+func (m *partnerUsecase) Deletepartner(id uuid.UUID) (string, error) {
 	data, err := m.partnerRepo.Delete(id)
 	return data, err
 }

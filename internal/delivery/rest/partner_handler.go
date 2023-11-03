@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"strconv"
 
 	"github.com/labstack/echo/v4"
 )
@@ -38,13 +37,17 @@ func (h *handler) IndexPartner(c echo.Context) error {
 }
 
 func (h *handler) GetPartner(c echo.Context) error {
-	PartnerId := c.Param("id")
-	Id, err := strconv.Atoi(PartnerId)
+	// Get the "id" parameter from the request
+	meta = nil
+	idStr := c.QueryParam("id")
+
+	// Parse the string into a UUID
+	partnerID, err := h.ParsingUUID(idStr)
 	if err != nil {
-		panic(err)
+		return handleError(c, http.StatusInternalServerError, err, meta, data)
 	}
 
-	data, err := h.partnerUsecase.GetPartner(Id)
+	data, err := h.partnerUsecase.GetPartner(partnerID)
 	if err != nil {
 		WriteLogErorr("[delivery][rest][GetPartner] ", err)
 		return handleError(c, http.StatusInternalServerError, err, meta, data)
@@ -74,16 +77,19 @@ func (h *handler) CreatePartner(c echo.Context) error {
 		return handleError(c, http.StatusInternalServerError, err, meta, data)
 	}
 
+	meta = nil
 	return handleError(c, http.StatusOK, errors.New("CREATE "+data.Name+" SUCCESS"), meta, data)
 
 }
 
 func (h *handler) UpdatedPartner(c echo.Context) error {
 	//get param
-	PartnerId := c.Param("id")
-	Id, err := strconv.Atoi(PartnerId)
+	idStr := c.QueryParam("id")
+
+	// Parse the string into a UUID
+	partnerID, err := h.ParsingUUID(idStr)
 	if err != nil {
-		panic(err)
+		return handleError(c, http.StatusInternalServerError, err, meta, data)
 	}
 
 	//search Data and validate
@@ -94,31 +100,35 @@ func (h *handler) UpdatedPartner(c echo.Context) error {
 		return handleError(c, http.StatusInternalServerError, err, meta, data)
 	}
 
-	data, err := h.partnerUsecase.UpdatedPartner(Id, request)
+	data, err := h.partnerUsecase.UpdatedPartner(partnerID, request)
 	if err != nil {
 		WriteLogErorr("[delivery][rest][UpdatedPartner] ", err)
 		return handleError(c, http.StatusInternalServerError, err, meta, data)
 	}
 
 	//return value
+	meta = nil
 	return handleError(c, http.StatusOK, errors.New("Update "+data.Name+" SUCCESS"), meta, data)
 }
 
 func (h *handler) DeletePartner(c echo.Context) error {
 	//get param
-	PartnerId := c.Param("id")
-	Id, err := strconv.Atoi(PartnerId)
+	idStr := c.QueryParam("id")
+
+	// Parse the string into a UUID
+	partnerID, err := h.ParsingUUID(idStr)
 	if err != nil {
-		panic(err)
+		return handleError(c, http.StatusInternalServerError, err, meta, data)
 	}
 
-	data, err := h.partnerUsecase.Deletepartner(Id)
+	data, err := h.partnerUsecase.Deletepartner(partnerID)
 	if err != nil {
 		WriteLogErorr("[delivery][rest][DeletePartner] ", err)
 		return handleError(c, http.StatusInternalServerError, err, meta, data)
 	}
 
 	//return value
+	meta = nil
 	return handleError(c, http.StatusOK, errors.New("DELETE SUCCESS"), meta, data)
 
 }
