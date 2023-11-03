@@ -17,7 +17,13 @@ func (h *handler) IndexPartner(c echo.Context) error {
 	//get parameter
 	q := c.QueryParam("q")
 
-	data, err := h.partnerUsecase.IndexPartner(limit, offset, q)
+	//setOrderData
+	order, err := h.GetOrderClauses(c)
+	if err != nil {
+		return handleError(c, http.StatusInternalServerError, err, meta, data)
+	}
+
+	data, err := h.partnerUsecase.IndexPartner(limit, offset, q, order)
 	if err != nil {
 		fmt.Printf("got error %s\n", err.Error())
 		WriteLogErorr("[delivery][rest][IndexPartner] ", err)

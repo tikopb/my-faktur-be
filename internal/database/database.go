@@ -6,6 +6,7 @@ import (
 	"github.com/spf13/viper"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 type DBConfig struct {
@@ -28,7 +29,7 @@ func GetDb() *gorm.DB {
 	// }
 
 	db, err := gorm.Open(postgres.Open(dbAddress), &gorm.Config{
-		//Logger: logger.Default.LogMode(logger.Silent),
+		Logger: logger.Default.LogMode(logger.Info),
 	})
 	if err != nil {
 		panic("Failed to connect into database")

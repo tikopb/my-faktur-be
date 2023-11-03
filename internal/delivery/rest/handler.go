@@ -6,7 +6,9 @@ import (
 	"bemyfaktur/internal/usecase/partner"
 	"bemyfaktur/internal/usecase/payment"
 	"bemyfaktur/internal/usecase/product"
+	"fmt"
 	"net/http"
+	"strings"
 
 	"strconv"
 
@@ -143,4 +145,56 @@ func (h *handler) ParsingUUID(value string) (uuid.UUID, error) {
 	}
 
 	return uuid, nil
+}
+
+// func (h *handler) GetOrderClauses(c echo.Context) ([]string, error) {
+// 	urlString := c.Request().URL.String()
+// 	u, err := url.Parse(urlString)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+
+// 	query := u.Query()
+// 	var orderClauses []string
+
+// 	// Declare the orderKey variable outside of the loop.
+// 	var orderKey string
+
+// 	for key, values := range query {
+// 		if strings.HasPrefix(key, "sort") {
+// 			for _, value := range values {
+// 				orderKey = strings.TrimPrefix(value, "sort=")
+// 				orderValue := "asc" // Default to ascending order
+// 				orderKey = strings.TrimPrefix(orderKey, "order=")
+// 				if orderValueParam := query.Get("order" + orderKey); orderValueParam != "" {
+// 					orderValue = orderValueParam
+// 				}
+// 				orderClauses = append(orderClauses, fmt.Sprintf("%s %s", orderKey, orderValue))
+// 			}
+
+// 		}
+// 	}
+
+// 	fmt.Println(orderClauses)
+
+// 	return orderClauses, nil
+// }
+
+func (h *handler) GetOrderClauses(c echo.Context) ([]string, error) {
+	// Get the URL parameters
+	sort := c.QueryParam("sort")
+	order := c.QueryParam("order")
+
+	if sort == "" && order == "" {
+		return []string{}, nil
+	}
+
+	// Create the order clauses
+	orderClauses := []string{}
+	for _, field := range strings.Split(sort, ",") {
+		orderClauses = append(orderClauses, fmt.Sprintf("%s %s", field, order))
+	}
+
+	fmt.Println(orderClauses)
+	return orderClauses, nil
 }
