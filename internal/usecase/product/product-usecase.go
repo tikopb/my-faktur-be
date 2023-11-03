@@ -16,7 +16,7 @@ func GetUsecase(productRepo product.Repository) ProductUsecaseInterface {
 }
 
 // IndexPartner implements Usecase.
-func (m *productUsecase) IndexProduct(limit int, offset int, q string) ([]model.Product, error) {
+func (m *productUsecase) IndexProduct(limit int, offset int, q string) ([]model.ProductRespon, error) {
 	return m.productRepo.Index(limit, offset, q)
 }
 

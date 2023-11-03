@@ -30,33 +30,34 @@ func (pr *productRepo) Create(product model.Product) (model.ProductRespon, error
 		return data, err
 	}
 
-	data = model.ProductRespon{
-		Name:        product.Name,
-		Description: product.Description,
-		IsActive:    product.IsActive,
-	}
-
+	//parsing the data to product respont
+	data = pr.parsingProductToProductRespon(product)
 	return data, nil
 }
 
 // Index implements Repository.
-func (pr *productRepo) Index(limit int, offset int, q string) ([]model.Product, error) {
+func (pr *productRepo) Index(limit int, offset int, q string) ([]model.ProductRespon, error) {
 	data := []model.Product{}
+	var dataReturn []model.ProductRespon
 
 	if q != "" {
 		query := " select * from products " + pr.pgUtilRepo.HandlingPaginationWhere(model.GetSeatchParamProduct(), q, "", "")
-		// pr.GetSearchParam(q, limit, offset)
-		if err := pr.db.Raw(query).Scan(&data).Error; err != nil {
-			return data, err
+		if err := pr.db.Preload("User").Raw(query).Scan(&data).Error; err != nil {
+			return dataReturn, err
 		}
 
 	} else {
-		if err := pr.db.Order("name").Limit(limit).Offset(offset).Find(&data).Error; err != nil {
-			return data, err
+		if err := pr.db.Preload("User").Order("name").Limit(limit).Offset(offset).Find(&data).Error; err != nil {
+			return dataReturn, err
 		}
 	}
 
-	return data, nil
+	//parsing to responFormat
+	for _, product := range data {
+		dataReturn = append(dataReturn, pr.parsingProductToProductRespon(product))
+	}
+
+	return dataReturn, nil
 }
 
 // Show implements Repository.
@@ -113,4 +114,17 @@ func (pr *productRepo) Delete(id int) (string, error) {
 		return "", err
 	}
 	return name, nil
+}
+
+func (pr *productRepo) parsingProductToProductRespon(product model.Product) model.ProductRespon {
+	data := model.ProductRespon{
+		ID:          product.ID,
+		Name:        product.Name,
+		Description: product.Description,
+		IsActive:    product.IsActive,
+		CreatedAt:   product.CreatedAt,
+		CreatedBy:   product.User.Username,
+	}
+
+	return data
 }
