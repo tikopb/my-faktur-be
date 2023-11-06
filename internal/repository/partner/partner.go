@@ -48,7 +48,7 @@ func (pr *partnerRepo) Index(limit int, offset int, q string, order []string) ([
 	var data []model.Partner
 
 	if q != "" {
-		if err := pr.db.Joins("User").Where(model.GetSeatchParamPartnerV2(q)).Limit(limit).Offset(offset).Order(order).Preload("User").Find(&data).Error; err != nil {
+		if err := pr.db.Joins("User").Where(model.GetSearchParamPartnerV2(q)).Limit(limit).Offset(offset).Order(order).Preload("User").Find(&data).Error; err != nil {
 			return dataReturn, err
 		}
 	} else {
@@ -117,6 +117,25 @@ func (pr *partnerRepo) Delete(id uuid.UUID) (string, error) {
 		return "", err
 	}
 	return name, nil
+}
+
+// Partial implements Repository.
+func (pr *partnerRepo) Partial(q string) ([]model.PartnerPartialRespon, error) {
+	var dataReturn []model.PartnerPartialRespon
+	stringParam := model.GetSearchParamPartnerV2(q) + " AND isactive = true "
+
+	if q != "" {
+		if err := pr.db.Model(&model.Partner{}).Select("Name, uuid").Where(stringParam).Find(&dataReturn).Error; err != nil {
+			return dataReturn, err
+		}
+	} else {
+		if err := pr.db.Model(&model.Partner{}).Select("Name, uuid").Where(&model.Partner{Isactive: true}).Find(&dataReturn).Error; err != nil {
+			return dataReturn, err
+		}
+	}
+
+	return dataReturn, nil
+
 }
 
 func (pr *partnerRepo) parsingPartnerToParnerRespond(partner model.Partner) model.PartnerRespon {

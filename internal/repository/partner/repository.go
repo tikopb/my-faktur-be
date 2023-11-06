@@ -26,4 +26,6 @@ type Repository interface {
 	// Delete deletes an Partner by its ID.
 	// Call this method to delete an Partner by ID.
 	Delete(id uuid.UUID) (string, error)
+
+	Partial(q string) ([]model.PartnerPartialRespon, error)
 }

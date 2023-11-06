@@ -29,12 +29,17 @@ type PartnerRespon struct {
 	CreatedBy string    `json:"created_by"`
 }
 
+type PartnerPartialRespon struct {
+	UUID uuid.UUID `json:"id"`
+	Name string    `json:"name"`
+}
+
 func GetSeatchParamPartner() []string {
 	searchParam := []string{"name", "bp_code"}
 	return searchParam
 }
 
-func GetSeatchParamPartnerV2(q string) string {
+func GetSearchParamPartnerV2(q string) string {
 	q = "'%" + q + "%'"
 	value := " lower(name)  LIKE " + q + " OR lower(bp_code) LIKE " + q
 

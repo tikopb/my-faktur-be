@@ -209,7 +209,7 @@ func (pr *paymentRepo) HandlingPaginationLine(q string, limit int, offset int, p
 	data := model.Invoice{}
 	//q param handler
 	if q != "" {
-		if err := pr.db.Joins("Partner", pr.db.Where(model.GetSeatchParamPartnerV2(q))).Where(model.GetSeatchParamPaymentLine(q, paymentID)).Find(&data).Count(&count).Error; err != nil {
+		if err := pr.db.Joins("Partner", pr.db.Where(model.GetSearchParamPartnerV2(q))).Where(model.GetSeatchParamPaymentLine(q, paymentID)).Find(&data).Count(&count).Error; err != nil {
 			return count, err
 		}
 	} else {

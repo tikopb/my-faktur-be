@@ -41,7 +41,7 @@ func (ir *invoiceRepo) IndexLine(limit int, offset int, invoiceId int, q string)
 
 	//q param handler
 	if q != "" {
-		if err := ir.db.Joins("Product", ir.db.Where(model.GetSeatchParamPartnerV2(q))).Where(model.GetSeatchParamInvoiceLine(q, invoiceId)).Limit(limit).Offset(offset).Find(&data).Error; err != nil {
+		if err := ir.db.Joins("Product", ir.db.Where(model.GetSearchParamPartnerV2(q))).Where(model.GetSeatchParamInvoiceLine(q, invoiceId)).Limit(limit).Offset(offset).Find(&data).Error; err != nil {
 			return data, err
 		}
 	} else {
