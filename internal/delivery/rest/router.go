@@ -19,6 +19,7 @@ func LoadRoutes(e *echo.Echo, handler *handler) {
 	partnerGroup := e.Group("/partner")
 	partnerGroup.GET("s/", handler.IndexPartner, handler.middleware.CheckAuth)
 	partnerGroup.GET("/", handler.GetPartner, handler.middleware.CheckAuth)
+	partnerGroup.GET("/patial/", handler.PartialPartner, handler.middleware.CheckAuth)
 	partnerGroup.POST("", handler.CreatePartner, handler.middleware.CheckAuth)
 	partnerGroup.PUT("/", handler.UpdatedPartner, handler.middleware.CheckAuth)
 	partnerGroup.DELETE("/", handler.DeletePartner, handler.middleware.CheckAuth)

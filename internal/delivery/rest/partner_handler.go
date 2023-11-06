@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/labstack/echo/v4"
 )
@@ -38,8 +39,13 @@ func (h *handler) IndexPartner(c echo.Context) error {
 		WriteLogErorr("[delivery][rest][IndexPartner] ", err)
 		return handleError(c, http.StatusInternalServerError, err, meta, data)
 	}
+	//meta data field
+	msg := "GET SUCCESS"
+	if len(data) == 0 {
+		msg = "data not found"
+	}
 
-	return handleError(c, http.StatusOK, errors.New("GET SUCCESS"), meta, data)
+	return handleError(c, http.StatusOK, errors.New(msg), meta, data)
 }
 
 func (h *handler) GetPartner(c echo.Context) error {
@@ -137,4 +143,27 @@ func (h *handler) DeletePartner(c echo.Context) error {
 	meta = nil
 	return handleError(c, http.StatusOK, errors.New("DELETE SUCCESS"), meta, data)
 
+}
+
+func (h *handler) PartialPartner(c echo.Context) error {
+	//get parameter
+	q := c.QueryParam("q")
+	q = strings.ToLower(q)
+
+	data, err := h.partnerUsecase.PartialGet(q)
+	if err != nil {
+		fmt.Printf("got error %s\n", err.Error())
+		WriteLogErorr("[delivery][rest][PartialPartner] ", err)
+
+		return handleError(c, http.StatusInternalServerError, err, meta, data)
+	}
+
+	//meta data field
+	meta = nil
+	msg := "GET SUCCESS"
+	if len(data) == 0 {
+		msg = "data not found"
+	}
+
+	return handleError(c, http.StatusOK, errors.New(msg), meta, data)
 }

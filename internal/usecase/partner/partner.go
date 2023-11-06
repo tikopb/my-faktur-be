@@ -45,3 +45,9 @@ func (m *partnerUsecase) Deletepartner(id uuid.UUID) (string, error) {
 	data, err := m.partnerRepo.Delete(id)
 	return data, err
 }
+
+// PartialGet implements Usecase.
+func (m *partnerUsecase) PartialGet(q string) ([]model.PartnerPartialRespon, error) {
+	data, err := m.partnerRepo.Partial(q)
+	return data, err
+}

@@ -83,7 +83,7 @@ func (ir *invoiceRepo) Index(limit int, offset int, q string) ([]model.InvoiceRe
 
 	//q param handler
 	if q != "" {
-		if err := ir.db.Joins("Partner", ir.db.Where(model.GetSeatchParamPartnerV2(q))).Where(model.GetSeatchParamInvoice(q)).Limit(limit).Offset(offset).Find(&data).Error; err != nil {
+		if err := ir.db.Joins("Partner", ir.db.Where(model.GetSearchParamPartnerV2(q))).Where(model.GetSeatchParamInvoice(q)).Limit(limit).Offset(offset).Find(&data).Error; err != nil {
 			return dataReturn, err
 		}
 	} else {
@@ -211,7 +211,7 @@ func (ir *invoiceRepo) HandlingPagination(q string, limit int, offset int) (int6
 	data := model.Invoice{}
 	//q param handler
 	if q != "" {
-		if err := ir.db.Joins("Partner", ir.db.Where(model.GetSeatchParamPartnerV2(q))).Where(model.GetSeatchParamInvoice(q)).Find(&data).Count(&count).Error; err != nil {
+		if err := ir.db.Joins("Partner", ir.db.Where(model.GetSearchParamPartnerV2(q))).Where(model.GetSeatchParamInvoice(q)).Find(&data).Count(&count).Error; err != nil {
 			return count, err
 		}
 	} else {
