@@ -6,6 +6,8 @@ import (
 	"bemyfaktur/internal/repository/partner"
 	"bemyfaktur/internal/repository/product"
 	"errors"
+
+	"github.com/google/uuid"
 )
 
 type invoiceUsecase struct {
@@ -82,10 +84,10 @@ func (iu *invoiceUsecase) CreateInvoiceLine(request model.InvoiceLine, userId st
 	//set createdby
 	request.CreatedBy = userId
 
-	data := model.InvoiceLine{}
-	if !iu.validateProductIsActive(request.ProductID) {
-		return data, errors.New("product is not activated")
-	}
+	// data := model.InvoiceLine{}
+	// if !iu.validateProductIsActive(request.Product.UUID) {
+	// 	return data, errors.New("product is not activated")
+	// }
 	return iu.invoiceRepo.CreateLine(request)
 }
 
@@ -111,7 +113,7 @@ func (iu *invoiceUsecase) GetInvoiceLine(id int) (model.InvoiceLine, error) {
 		- The calculation considers whether the discount is a percentage or a fixed amount.
 		- The result is the product of (quantity * unit price) minus the discount.
 */
-func (iu *invoiceUsecase) UpdatedInvoiceLine(id int, request model.InvoiceLine, productId int) (model.InvoiceLine, error) {
+func (iu *invoiceUsecase) UpdatedInvoiceLine(id int, request model.InvoiceLine, productId uuid.UUID) (model.InvoiceLine, error) {
 	data := model.InvoiceLine{}
 	//validate product is active!
 	if !iu.validateProductIsActive(productId) {
@@ -127,7 +129,7 @@ func (iu *invoiceUsecase) IndexLine(limit int, offset int, invoiceId int, q stri
 }
 
 // validated product is activated on production
-func (iu *invoiceUsecase) validateProductIsActive(id int) bool {
+func (iu *invoiceUsecase) validateProductIsActive(id uuid.UUID) bool {
 	//validate product is active!
 	data, err := iu.productRepo.Show(id)
 	if err != nil {

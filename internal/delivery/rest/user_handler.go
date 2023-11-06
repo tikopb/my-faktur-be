@@ -10,10 +10,9 @@ import (
 )
 
 func (h *handler) Getuser(c echo.Context) error {
-	Id := transformIdToInt(c)
-
+	param := c.QueryParam("username")
 	meta = nil
-	data, err := h.productUsecase.GetProduct(Id)
+	data, err := h.authUsecase.GetUser(param)
 	if err != nil {
 		WriteLogErorr("[delivery][rest][user_handler][Getuser] Get user failed", err)
 		return handleError(c, http.StatusInternalServerError, err, meta, data)

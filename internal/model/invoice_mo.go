@@ -76,6 +76,19 @@ type InvoiceLine struct {
 	User         User      `gorm:"foreignKey:created_by"`
 }
 
+type InvoiceLineRequest struct {
+	Invoice_id      int
+	Invoice_line_id int
+	Created_at      time.Time
+	Product_name    string
+	Product_id      uuid.UUID
+	Qty             float64
+	Price           float64
+	Amount          float64
+	Discount        float64
+	IsPrecentage    bool
+}
+
 type InvoiceLineRespont struct {
 	Invoice_id      int
 	Invoice_line_id int

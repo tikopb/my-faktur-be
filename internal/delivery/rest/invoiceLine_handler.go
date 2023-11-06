@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 )
 
@@ -93,7 +94,7 @@ func (h *handler) UpdatedInvoiceLine(c echo.Context) error {
 
 	//run function
 
-	data, err := h.invoiceUsecase.UpdatedInvoiceLine(id, request, request.ProductID)
+	data, err := h.invoiceUsecase.UpdatedInvoiceLine(id, request, uuid.UUID{})
 	if err != nil {
 		WriteLogErorr("[delivery][rest][invoiceLine_handler][UpdatedInvoiceLine] ", err)
 		return handleError(c, http.StatusInternalServerError, err, meta, data)

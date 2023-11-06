@@ -6,8 +6,11 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 )
+
+var idStr string
 
 func (h *handler) IndexProduct(c echo.Context) error {
 	//set param
@@ -35,9 +38,13 @@ func (h *handler) IndexProduct(c echo.Context) error {
 }
 
 func (h *handler) GetProduct(c echo.Context) error {
-	Id := transformIdToInt(c)
+	// Parse the string into a UUID
+	productId, err := h.parsingId(c)
+	if err != nil {
+		return handleError(c, http.StatusInternalServerError, err, meta, data)
+	}
 
-	data, err := h.productUsecase.GetProduct(Id)
+	data, err := h.productUsecase.GetProduct(productId)
 	if err != nil {
 		WriteLogErorr("[delivery][rest][product_handler][IndexProduct] ", err)
 		return handleError(c, http.StatusInternalServerError, err, meta, data)
@@ -75,10 +82,14 @@ func (h *handler) CreateProduct(c echo.Context) error {
 func (h *handler) UpdatedProduct(c echo.Context) error {
 	var request model.Product
 	// get param
-	Id := transformIdToInt(c)
+	Id, err := h.parsingId(c)
+	if err != nil {
+		WriteLogErorr("[delivery][rest][product_handler][UpdatedProduct] ", err)
+		return handleError(c, http.StatusInternalServerError, err, meta, data)
+	}
 
 	//run function
-	err := json.NewDecoder(c.Request().Body).Decode(&request)
+	err = json.NewDecoder(c.Request().Body).Decode(&request)
 	if err != nil {
 		WriteLogErorr("[delivery][rest][product_handler][UpdatedProduct] ", err)
 		return handleError(c, http.StatusInternalServerError, err, meta, data)
@@ -95,7 +106,11 @@ func (h *handler) UpdatedProduct(c echo.Context) error {
 
 func (h *handler) DeleteProduct(c echo.Context) error {
 	// get param
-	Id := transformIdToInt(c)
+	Id, err := h.parsingId(c)
+	if err != nil {
+		WriteLogErorr("[delivery][rest][product_handler][UpdatedProduct] ", err)
+		return handleError(c, http.StatusInternalServerError, err, meta, data)
+	}
 
 	data, err := h.productUsecase.DeleteProduct(Id)
 	if err != nil {
@@ -104,4 +119,15 @@ func (h *handler) DeleteProduct(c echo.Context) error {
 	}
 
 	return handleError(c, http.StatusOK, errors.New("DELETE "+data+" SUCCESS"), meta, data)
+}
+
+func (h *handler) parsingId(c echo.Context) (uuid.UUID, error) {
+	idStr = c.QueryParam("id")
+	// Parse the string into a UUID
+	productId, err := h.ParsingUUID(idStr)
+	if err != nil {
+		return uuid.UUID{}, err
+	}
+
+	return productId, nil
 }

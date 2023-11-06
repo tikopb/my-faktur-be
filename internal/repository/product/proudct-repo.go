@@ -5,6 +5,7 @@ import (
 	pgUtil "bemyfaktur/internal/model/paginationUtil"
 	"errors"
 
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -61,10 +62,10 @@ func (pr *productRepo) Index(limit int, offset int, q string) ([]model.ProductRe
 }
 
 // Show implements Repository.
-func (pr *productRepo) Show(id int) (model.Product, error) {
+func (pr *productRepo) Show(id uuid.UUID) (model.Product, error) {
 	var data model.Product
 
-	if err := pr.db.First(&data, id).Preload("Product").Error; err != nil {
+	if err := pr.db.Preload("User").Where("uuid", id).First(&data).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return data, errors.New("data not found")
 		}
@@ -74,7 +75,7 @@ func (pr *productRepo) Show(id int) (model.Product, error) {
 }
 
 // Update implements Repository.
-func (pr *productRepo) Update(id int, updatedProduct model.Product) (model.ProductRespon, error) {
+func (pr *productRepo) Update(id uuid.UUID, updatedProduct model.Product) (model.ProductRespon, error) {
 	dataUpdated := model.ProductRespon{}
 	data, err := pr.Show(id)
 
@@ -86,24 +87,22 @@ func (pr *productRepo) Update(id int, updatedProduct model.Product) (model.Produ
 	data.Name = updatedProduct.Name
 	data.Description = updatedProduct.Description
 	data.IsActive = updatedProduct.User.IsActive
+	data.Value = updatedProduct.Value
+	data.Upc = updatedProduct.Upc
 
 	//inisiate data udpated system
-	if err := pr.db.Save(&data).Error; err != nil {
+	if err := pr.db.Updates(&data).Error; err != nil {
 		return dataUpdated, err
 	}
 
 	//inisiate data update version
-	dataUpdated = model.ProductRespon{
-		Name:        data.Name,
-		Description: data.Name,
-		IsActive:    data.IsActive,
-	}
+	dataUpdated = pr.parsingProductToProductRespon(data)
 
 	return dataUpdated, nil
 }
 
 // Delete implements Repository.
-func (pr *productRepo) Delete(id int) (string, error) {
+func (pr *productRepo) Delete(id uuid.UUID) (string, error) {
 	data, err := pr.Show(id)
 	name := data.Name
 
@@ -118,12 +117,15 @@ func (pr *productRepo) Delete(id int) (string, error) {
 
 func (pr *productRepo) parsingProductToProductRespon(product model.Product) model.ProductRespon {
 	data := model.ProductRespon{
-		ID:          product.ID,
+		UUID:        product.UUID,
 		Name:        product.Name,
 		Description: product.Description,
 		IsActive:    product.IsActive,
 		CreatedAt:   product.CreatedAt,
+		UpdateAt:    product.UpdateAt,
 		CreatedBy:   product.User.Username,
+		Value:       product.Value,
+		Upc:         product.Upc,
 	}
 
 	return data
