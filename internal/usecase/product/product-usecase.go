@@ -3,6 +3,8 @@ package product
 import (
 	"bemyfaktur/internal/model"
 	"bemyfaktur/internal/repository/product"
+
+	"github.com/google/uuid"
 )
 
 type productUsecase struct {
@@ -27,16 +29,16 @@ func (m *productUsecase) CreateProduct(request model.Product, userId string) (mo
 }
 
 // DeleteProduct implements Usecase.
-func (m *productUsecase) DeleteProduct(id int) (string, error) {
+func (m *productUsecase) DeleteProduct(id uuid.UUID) (string, error) {
 	return m.productRepo.Delete(id)
 }
 
 // GetProduct implements Usecase.
-func (m *productUsecase) GetProduct(id int) (model.Product, error) {
+func (m *productUsecase) GetProduct(id uuid.UUID) (model.Product, error) {
 	return m.productRepo.Show(id)
 }
 
 // UpdatedProduct implements Usecase.
-func (m *productUsecase) UpdatedProduct(id int, request model.Product) (model.ProductRespon, error) {
+func (m *productUsecase) UpdatedProduct(id uuid.UUID, request model.Product) (model.ProductRespon, error) {
 	return m.productRepo.Update(id, request)
 }

@@ -2,6 +2,8 @@ package product
 
 import (
 	"bemyfaktur/internal/model"
+
+	"github.com/google/uuid"
 )
 
 type Repository interface {
@@ -15,13 +17,13 @@ type Repository interface {
 
 	// Show retrieves an Partner by its ID.
 	// Call this method to retrieve a specific Partner by ID.
-	Show(id int) (model.Product, error)
+	Show(id uuid.UUID) (model.Product, error)
 
 	// Update updates an existing Partner by its ID.
 	// Call this method to update an existing Partner by ID.
-	Update(id int, updatedProduct model.Product) (model.ProductRespon, error)
+	Update(id uuid.UUID, updatedProduct model.Product) (model.ProductRespon, error)
 
 	// Delete deletes an Partner by its ID.
 	// Call this method to delete an Partner by ID.
-	Delete(id int) (string, error)
+	Delete(id uuid.UUID) (string, error)
 }

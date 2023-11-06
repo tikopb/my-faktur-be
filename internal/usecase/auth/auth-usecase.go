@@ -20,6 +20,15 @@ func GetUsecase(userRepo user.Repository) Usecase {
 	}
 }
 
+// GetUser implements Usecase.
+func (au *authStruct) GetUser(param string) (model.User, error) {
+	userData, err := au.userRepo.GetUserData(param)
+	if err != nil {
+		return model.User{}, err
+	}
+	return userData, nil
+}
+
 // CheckSession implements Usecase.
 func (au *authStruct) CheckSession(sessionData model.UserSession) (userID string, err error) {
 	userID, err = au.userRepo.CheckSession(sessionData)

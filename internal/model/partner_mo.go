@@ -8,7 +8,7 @@ import (
 
 type Partner struct {
 	ID        int       `gorm:"primaryKey;autoIncrement" json:"-"`
-	Name      string    `json:"name"`
+	Name      string    `gorm:"column:name;not null;index:idx_partner_name" json:"name" `
 	CreatedAt time.Time `gorm:"column:created_at;default:current_timestamp"`
 	CreatedBy string    `gorm:"column:created_by;index:idx_partner_created_by" json:"created_by"`
 	User      User      `gorm:"foreignKey:created_by"`
