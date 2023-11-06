@@ -14,7 +14,7 @@ type Partner struct {
 	User      User      `gorm:"foreignKey:created_by"`
 	DNAmount  float64   `gorm:"column:dn_amount" json:"dn_amount"`
 	CNAmount  float64   `gorm:"column:cn_amount" json:"cn_amount"`
-	Isactive  bool      `gorm:"column:isactive;index:idx_partner_isactive" json:"isactive"`
+	Isactive  bool      `gorm:"column:isactive;index:idx_partner_isactive;default: true" json:"isactive"`
 	Code      string    `gorm:"column:bp_code;unique;not null;index:idx_partner_code" json:"bpcode"`
 	UUID      uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4();index:idx_partner_uuid"`
 }
