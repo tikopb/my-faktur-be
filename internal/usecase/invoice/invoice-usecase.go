@@ -31,7 +31,7 @@ func (iu *invoiceUsecase) CreateInvoice(request model.InvoiceRequest, userID str
 	data := model.InvoiceRespont{}
 
 	//get Partner
-	partnerData, err := iu.partnerRepo.Show(request.PartnerIdUU)
+	partnerData, err := iu.partnerRepo.ShowInternal(request.PartnerIdUU)
 	if err != nil || !partnerData.Isactive {
 		return data, errors.New("partner not exist")
 	}

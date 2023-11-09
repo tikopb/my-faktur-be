@@ -23,7 +23,7 @@ func (m *partnerUsecase) IndexPartner(limit int, offset int, q string, order []s
 }
 
 // GetPartner implements Usecase.
-func (m *partnerUsecase) GetPartner(id uuid.UUID) (model.Partner, error) {
+func (m *partnerUsecase) GetPartner(id uuid.UUID) (model.PartnerRespon, error) {
 	return m.partnerRepo.Show(id)
 }
 
