@@ -66,7 +66,21 @@ func (pr *partnerRepo) Index(limit int, offset int, q string, order []string) ([
 }
 
 // Show implements Repository.
-func (pr *partnerRepo) Show(id uuid.UUID) (model.Partner, error) {
+func (pr *partnerRepo) Show(id uuid.UUID) (model.PartnerRespon, error) {
+	var data model.Partner
+
+	if err := pr.db.Preload("User").Where(&model.Partner{UUID: id}).First(&data).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return model.PartnerRespon{}, errors.New("data not found")
+		}
+	}
+
+	returnData := pr.parsingPartnerToParnerRespond(data)
+
+	return returnData, nil
+}
+
+func (pr *partnerRepo) ShowInternal(id uuid.UUID) (model.Partner, error) {
 	var data model.Partner
 
 	if err := pr.db.Preload("User").Where(&model.Partner{UUID: id}).First(&data).Error; err != nil {
@@ -81,7 +95,7 @@ func (pr *partnerRepo) Show(id uuid.UUID) (model.Partner, error) {
 // Update implements Repository.
 func (pr *partnerRepo) Update(id uuid.UUID, updatedPartner model.Partner) (model.PartnerRespon, error) {
 	dataUpdated := model.PartnerRespon{}
-	data, err := pr.Show(id)
+	data, err := pr.ShowInternal(id)
 
 	if err != nil {
 		return dataUpdated, err
@@ -107,7 +121,7 @@ func (pr *partnerRepo) Update(id uuid.UUID, updatedPartner model.Partner) (model
 
 // Delete implements Repository.
 func (pr *partnerRepo) Delete(id uuid.UUID) (string, error) {
-	data, err := pr.Show(id)
+	data, err := pr.ShowInternal(id)
 	name := data.Name
 
 	if err != nil {
