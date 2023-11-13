@@ -51,7 +51,7 @@ func (h *handler) IndexPartner(c echo.Context) error {
 func (h *handler) GetPartner(c echo.Context) error {
 	// Get the "id" parameter from the request
 	meta = nil
-	idStr := c.QueryParam("id")
+	idStr := c.Param("id")
 
 	// Parse the string into a UUID
 	partnerID, err := h.ParsingUUID(idStr)
@@ -62,7 +62,7 @@ func (h *handler) GetPartner(c echo.Context) error {
 	data, err := h.partnerUsecase.GetPartner(partnerID)
 	if err != nil {
 		WriteLogErorr("[delivery][rest][GetPartner] ", err)
-		return handleError(c, http.StatusInternalServerError, err, meta, data)
+		return handleError(c, http.StatusNotFound, err, meta, data)
 	}
 
 	return handleError(c, http.StatusOK, errors.New("GET SUCCESS"), meta, data)
@@ -96,7 +96,7 @@ func (h *handler) CreatePartner(c echo.Context) error {
 
 func (h *handler) UpdatedPartner(c echo.Context) error {
 	//get param
-	idStr := c.QueryParam("id")
+	idStr := c.Param("id")
 
 	// Parse the string into a UUID
 	partnerID, err := h.ParsingUUID(idStr)
@@ -125,7 +125,7 @@ func (h *handler) UpdatedPartner(c echo.Context) error {
 
 func (h *handler) DeletePartner(c echo.Context) error {
 	//get param
-	idStr := c.QueryParam("id")
+	idStr := c.Param("id")
 
 	// Parse the string into a UUID
 	partnerID, err := h.ParsingUUID(idStr)
@@ -152,7 +152,6 @@ func (h *handler) PartialPartner(c echo.Context) error {
 
 	data, err := h.partnerUsecase.PartialGet(q)
 	if err != nil {
-		fmt.Printf("got error %s\n", err.Error())
 		WriteLogErorr("[delivery][rest][PartialPartner] ", err)
 
 		return handleError(c, http.StatusInternalServerError, err, meta, data)
