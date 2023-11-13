@@ -61,12 +61,17 @@ func NewHandler(partnerUsecase partner.Usecase, productUsecase product.ProductUs
 func handleError(c echo.Context, statusCode int, err error, meta interface{}, data interface{}) error {
 	var response handlerRespont
 
+	if strings.Contains(err.Error(), "data not found") {
+		statusCode = http.StatusNotFound
+		data = nil
+	}
+
 	if statusCode != http.StatusOK {
 		response = handlerRespont{
 			Status:  statusCode,
 			Message: "internal error: " + err.Error(),
-			Meta:    meta,
-			Data:    data,
+			Meta:    nil,
+			Data:    nil,
 		}
 	} else {
 		response = handlerRespont{
