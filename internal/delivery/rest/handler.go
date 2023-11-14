@@ -98,11 +98,11 @@ func transformIdToInt(c echo.Context) int {
 func HandlingLimitAndOffset(c echo.Context) (int, int) {
 	// Get query parameters with default values
 	limitStr := c.QueryParam("limit")
-	if limitStr == "" {
+	if limitStr == "" { //convertion default value if offset not found
 		limitStr = "15" // Default value
 	}
 	offsetStr := c.QueryParam("offset")
-	if offsetStr == "" {
+	if offsetStr == "" { //convertion default value if offset not found
 		offsetStr = "0"
 	}
 
@@ -152,48 +152,14 @@ func (h *handler) ParsingUUID(value string) (uuid.UUID, error) {
 	return uuid, nil
 }
 
-// func (h *handler) GetOrderClauses(c echo.Context) ([]string, error) {
-// 	urlString := c.Request().URL.String()
-// 	u, err := url.Parse(urlString)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	query := u.Query()
-// 	var orderClauses []string
-
-// 	// Declare the orderKey variable outside of the loop.
-// 	var orderKey string
-
-// 	for key, values := range query {
-// 		if strings.HasPrefix(key, "sort") {
-// 			for _, value := range values {
-// 				orderKey = strings.TrimPrefix(value, "sort=")
-// 				orderValue := "asc" // Default to ascending order
-// 				orderKey = strings.TrimPrefix(orderKey, "order=")
-// 				if orderValueParam := query.Get("order" + orderKey); orderValueParam != "" {
-// 					orderValue = orderValueParam
-// 				}
-// 				orderClauses = append(orderClauses, fmt.Sprintf("%s %s", orderKey, orderValue))
-// 			}
-
-// 		}
-// 	}
-
-// 	fmt.Println(orderClauses)
-
-// 	return orderClauses, nil
-// }
-
 func (h *handler) GetOrderClauses(c echo.Context) ([]string, error) {
 	// Get the URL parameters
 	sort := c.QueryParam("sort")
 	order := c.QueryParam("order")
 
-	if sort == "" && order == "" {
+	if strings.TrimSpace(sort) == "" && strings.TrimSpace(order) == "" {
 		return []string{}, nil
 	}
-
 	// Create the order clauses
 	orderClauses := []string{}
 	for _, field := range strings.Split(sort, ",") {

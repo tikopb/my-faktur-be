@@ -48,12 +48,24 @@ func (pr *partnerRepo) Index(limit int, offset int, q string, order []string) ([
 	var data []model.Partner
 
 	if q != "" {
-		if err := pr.db.Joins("User").Where(model.GetSearchParamPartnerV2(q)).Limit(limit).Offset(offset).Order(order).Preload("User").Find(&data).Error; err != nil {
-			return dataReturn, err
+		if len(order) > 0 {
+			if err := pr.db.Joins("User").Where(model.GetSearchParamPartnerV2(q)).Limit(limit).Offset(offset).Order(order[0]).Preload("User").Find(&data).Error; err != nil {
+				return dataReturn, err
+			}
+		} else {
+			if err := pr.db.Joins("User").Where(model.GetSearchParamPartnerV2(q)).Limit(limit).Offset(offset).Preload("User").Find(&data).Error; err != nil {
+				return dataReturn, err
+			}
 		}
 	} else {
-		if err := pr.db.Preload("User").Order(order[0]).Find(&data).Error; err != nil {
-			return dataReturn, err
+		if len(order) > 0 {
+			if err := pr.db.Preload("User").Order(order[0]).Limit(limit).Offset(offset).Find(&data).Error; err != nil {
+				return dataReturn, err
+			}
+		} else {
+			if err := pr.db.Preload("User").Order("name desc").Limit(limit).Offset(offset).Find(&data).Error; err != nil {
+				return dataReturn, err
+			}
 		}
 	}
 
@@ -136,9 +148,9 @@ func (pr *partnerRepo) Delete(id uuid.UUID) (string, error) {
 // Partial implements Repository.
 func (pr *partnerRepo) Partial(q string) ([]model.PartnerPartialRespon, error) {
 	var dataReturn []model.PartnerPartialRespon
-	stringParam := model.GetSearchParamPartnerV2(q) + " AND isactive = true "
 
 	if q != "" {
+		stringParam := model.GetSearchParamPartnerV2(q) + " AND isactive = true "
 		if err := pr.db.Model(&model.Partner{}).Select("Name, uuid").Where(stringParam).Find(&dataReturn).Error; err != nil {
 			return dataReturn, err
 		}

@@ -61,7 +61,7 @@ func (p *paginationUtilRepo) PaginationUtil(tabelName string, searchParam []stri
 	totalPage := math.Ceil(float64(count) / float64(limit))
 
 	//set meta data
-	meta.Current_page = offset + 1
+	meta.Current_page = offset/limit + 1
 	meta.Total_page = int(totalPage)
 	meta.Per_page = limit
 	meta.Total_data = count
@@ -105,7 +105,7 @@ func (p *paginationUtilRepo) PaginationUtilWithJoinTable(count int64, limit int,
 
 	totalPage := math.Ceil(float64(count) / float64(limit))
 	//set meta data
-	meta.Current_page = offset + 1
+	meta.Current_page = offset/limit + 1
 	meta.Total_page = int(totalPage)
 	meta.Per_page = limit
 	meta.Total_data = count

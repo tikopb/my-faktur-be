@@ -62,7 +62,23 @@ func (pr *productRepo) Index(limit int, offset int, q string) ([]model.ProductRe
 }
 
 // Show implements Repository.
-func (pr *productRepo) Show(id uuid.UUID) (model.Product, error) {
+func (pr *productRepo) Show(id uuid.UUID) (model.ProductRespon, error) {
+	var data model.Product
+	dataReturn := model.ProductRespon{}
+
+	if err := pr.db.Preload("User").Where("uuid", id).First(&data).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return dataReturn, errors.New("data not found")
+		}
+	}
+
+	dataReturn = pr.parsingProductToProductRespon(data)
+
+	return dataReturn, nil
+}
+
+// Show implements Repository.
+func (pr *productRepo) ShowInternal(id uuid.UUID) (model.Product, error) {
 	var data model.Product
 
 	if err := pr.db.Preload("User").Where("uuid", id).First(&data).Error; err != nil {
@@ -77,7 +93,7 @@ func (pr *productRepo) Show(id uuid.UUID) (model.Product, error) {
 // Update implements Repository.
 func (pr *productRepo) Update(id uuid.UUID, updatedProduct model.Product) (model.ProductRespon, error) {
 	dataUpdated := model.ProductRespon{}
-	data, err := pr.Show(id)
+	data, err := pr.ShowInternal(id)
 
 	if err != nil {
 		return dataUpdated, err

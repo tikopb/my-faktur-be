@@ -8,7 +8,7 @@ import (
 
 type ProductUsecaseInterface interface {
 	IndexProduct(limit int, offset int, q string) ([]model.ProductRespon, error)
-	GetProduct(id uuid.UUID) (model.Product, error)
+	GetProduct(id uuid.UUID) (model.ProductRespon, error)
 	CreateProduct(request model.Product, userId string) (model.ProductRespon, error)
 	UpdatedProduct(id uuid.UUID, request model.Product) (model.ProductRespon, error)
 	DeleteProduct(id uuid.UUID) (string, error)

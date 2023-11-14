@@ -17,7 +17,7 @@ type Repository interface {
 
 	// Show retrieves an Partner by its ID.
 	// Call this method to retrieve a specific Partner by ID.
-	Show(id uuid.UUID) (model.Product, error)
+	Show(id uuid.UUID) (model.ProductRespon, error)
 
 	// Update updates an existing Partner by its ID.
 	// Call this method to update an existing Partner by ID.
