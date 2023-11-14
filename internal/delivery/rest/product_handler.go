@@ -122,7 +122,7 @@ func (h *handler) DeleteProduct(c echo.Context) error {
 }
 
 func (h *handler) parsingId(c echo.Context) (uuid.UUID, error) {
-	idStr = c.QueryParam("id")
+	idStr = c.Param("id")
 	// Parse the string into a UUID
 	productId, err := h.ParsingUUID(idStr)
 	if err != nil {

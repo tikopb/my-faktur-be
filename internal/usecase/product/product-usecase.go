@@ -34,7 +34,7 @@ func (m *productUsecase) DeleteProduct(id uuid.UUID) (string, error) {
 }
 
 // GetProduct implements Usecase.
-func (m *productUsecase) GetProduct(id uuid.UUID) (model.Product, error) {
+func (m *productUsecase) GetProduct(id uuid.UUID) (model.ProductRespon, error) {
 	return m.productRepo.Show(id)
 }
 
