@@ -66,6 +66,7 @@ func LoadRoutes(e *echo.Echo, handler *handler) {
 
 	//cors test
 	e.GET("/cors", handler.CorsTest)
+
 }
 
 func LoadMiddlewares(e *echo.Echo) {
