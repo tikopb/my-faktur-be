@@ -47,7 +47,7 @@ func (iu *invoiceUsecase) DeleteInvoice(id int) (string, error) {
 }
 
 // GetInvoice implements InvoiceUsecaseInterface.
-func (iu *invoiceUsecase) GetInvoice(id int) (model.Invoice, error) {
+func (iu *invoiceUsecase) GetInvoice(id int) (model.InvoiceRespont, error) {
 	return iu.invoiceRepo.Show(id)
 }
 
