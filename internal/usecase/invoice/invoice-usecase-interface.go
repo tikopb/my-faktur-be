@@ -8,7 +8,7 @@ import (
 
 type InvoiceUsecaseInterface interface {
 	IndexInvoice(limit int, offset int, q string) ([]model.InvoiceRespont, error)
-	GetInvoice(id int) (model.Invoice, error)
+	GetInvoice(id int) (model.InvoiceRespont, error)
 	CreateInvoice(request model.InvoiceRequest, userId string) (model.InvoiceRespont, error)
 	UpdatedInvoice(id int, request model.Invoice) (model.InvoiceRespont, error)
 	DeleteInvoice(id int) (string, error)

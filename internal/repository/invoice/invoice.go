@@ -120,7 +120,20 @@ func (ir *invoiceRepo) Index(limit int, offset int, q string) ([]model.InvoiceRe
 }
 
 // Show implements InvoiceRepositoryInterface.
-func (ir *invoiceRepo) Show(id int) (model.Invoice, error) {
+func (ir *invoiceRepo) Show(id int) (model.InvoiceRespont, error) {
+	var data model.Invoice
+
+	if err := ir.db.Preload("Partner").Preload("User").First(&data, id).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return model.InvoiceRespont{}, errors.New("data not found")
+		}
+	}
+
+	return ir.ParsingInvoiceToInvoiceRequest(data)
+}
+
+// Show implements InvoiceRepositoryInterface.
+func (ir *invoiceRepo) ShowInternal(id int) (model.Invoice, error) {
 	var data model.Invoice
 
 	if err := ir.db.Preload("Partner").Preload("User").First(&data, id).Error; err != nil {
@@ -136,7 +149,7 @@ func (ir *invoiceRepo) Show(id int) (model.Invoice, error) {
 func (ir *invoiceRepo) Update(id int, updatedInvoice model.Invoice) (model.InvoiceRespont, error) {
 	//set var
 	data := model.InvoiceRespont{}
-	invoiceData, err := ir.Show(id) //get invoice Data
+	invoiceData, err := ir.ShowInternal(id) //get invoice Data
 
 	if err != nil {
 		return data, err
@@ -171,7 +184,7 @@ func (ir *invoiceRepo) Update(id int, updatedInvoice model.Invoice) (model.Invoi
 
 func (ir *invoiceRepo) ParsingInvoiceToInvoiceRequest(invoice model.Invoice) (model.InvoiceRespont, error) {
 	data := model.InvoiceRespont{}
-	dataPreload, err := ir.Show(invoice.ID)
+	dataPreload, err := ir.ShowInternal(invoice.ID)
 	if err != nil {
 		return data, err
 	}

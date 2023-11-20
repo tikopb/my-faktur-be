@@ -5,11 +5,10 @@ import (
 )
 
 type InvoiceRepositoryInterface interface {
-
 	//Header
 	Index(limit int, offset int, q string) ([]model.InvoiceRespont, error)
 	Create(invoice model.InvoiceRequest, partner model.Partner) (model.InvoiceRespont, error)
-	Show(id int) (model.Invoice, error)
+	Show(id int) (model.InvoiceRespont, error)
 	Update(id int, updatedInvoice model.Invoice) (model.InvoiceRespont, error)
 	Delete(id int) (string, error)
 
