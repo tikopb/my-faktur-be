@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"strings"
 
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
@@ -130,4 +131,26 @@ func (h *handler) parsingId(c echo.Context) (uuid.UUID, error) {
 	}
 
 	return productId, nil
+}
+
+func (h *handler) PartialProduct(c echo.Context) error {
+	//get parameter
+	q := c.QueryParam("q")
+	q = strings.ToLower(q)
+
+	data, err := h.productUsecase.Partial(q)
+	if err != nil {
+		WriteLogErorr("[delivery][rest][PartialProduct] ", err)
+
+		return handleError(c, http.StatusInternalServerError, err, meta, data)
+	}
+
+	//meta data field
+	meta = nil
+	msg := "GET SUCCESS"
+	if len(data) == 0 {
+		msg = "data not found"
+	}
+
+	return handleError(c, http.StatusOK, errors.New(msg), meta, data)
 }

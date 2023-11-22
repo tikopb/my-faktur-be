@@ -11,22 +11,22 @@ import (
 
 // -- invoice
 type Invoice struct {
-	ID                int       `json:"id" gorm:"primaryKey;autoIncrement"`
-	CreatedAt         time.Time `gorm:"column:created_at"`
-	CreatedBy         string    `gorm:"column:created_by" json:"created_by"`
-	User              User      `gorm:"foreignKey:created_by"`
-	PartnerID         int       `json:"partner_id" gorm:"column:partner_id"`
-	Partner           Partner   `gorm:"foreignKey:partner_id"`
-	GrandTotal        float64   `gorm:"column:grand_total"`
-	Discount          float64   `json:"discount" gorm:"column:discount"`
-	BatchNo           string    `json:"batchno" gorm:"column:batch_no"`
-	InvoiceLine       []InvoiceLine
+	ID                int                       `json:"-" gorm:"primaryKey;autoIncrement"`
+	CreatedAt         time.Time                 `gorm:"column:created_at"`
+	CreatedBy         string                    `gorm:"column:created_by" json:"created_by"`
+	User              User                      `gorm:"foreignKey:created_by"`
+	PartnerID         int                       `json:"partner_id" gorm:"column:partner_id;index:idx_invoice_partner_id"`
+	Partner           Partner                   `gorm:"foreignKey:partner_id"`
+	GrandTotal        float64                   `gorm:"column:grand_total"`
+	Discount          float64                   `json:"discount" gorm:"column:discount"`
+	BatchNo           string                    `json:"batchno" gorm:"column:batch_no;index:idx_invoice_batchno"`
 	Status            constant.InvoiceStatus    `gorm:"column:status;default:DR"`
 	DocAction         constant.InvoiceDocAction `json:"docaction" gorm:"column:docaction;default:DR"`
 	OustandingPayment float64                   `json:"oustanding" gorm:"column:oustanding_payment"`
 	DocumentNo        string                    `json:"documentno" gorm:"column:documentno;not null;unique"`
 	IsPrecentage      bool                      `gorm:"column:isprecentage;default:false" json:"isprecentage"`
 	PartnerIdUU       uuid.UUID                 `json:"partneriduu"`
+	UUID              uuid.UUID                 `json:"id" gorm:"type:uuid;default:uuid_generate_v4();index:idx_invoice_uuid"`
 }
 
 type InvoiceRequest struct {
@@ -61,19 +61,20 @@ type InvoiceRespont struct {
 
 // -- invoice line
 type InvoiceLine struct {
-	ID           int       `json:"id" gorm:"primaryKey;autoIncrement"`
+	ID           int       `json:"-" gorm:"primaryKey;autoIncrement"`
 	CreatedAt    time.Time `json:"created_at"`
 	Price        float64   `gorm:"column:price" json:"price"`
 	Discount     float64   `gorm:"column:discount" json:"discount"`
 	Qty          float64   `gorm:"column:qty" json:"qty"`
 	Amount       float64   `gorm:"column:amount"`
 	IsPrecentage bool      `gorm:"column:isprecentage;default:false" json:"isprecentage"`
-	ProductID    int       `gorm:"column:product_id" json:"product_id"` // Fixed column name
+	ProductID    int       `gorm:"column:product_id;index:idx_invoiceline_productId" json:"product_id"`
 	Product      Product   `gorm:"foreignKey:ProductID"`
-	InvoiceID    int       `gorm:"column:invoice_id;not null" json:"invoice_id"`
+	InvoiceID    int       `gorm:"column:invoice_id;not null;index:idx_invoiceline_invoiceId" json:"invoice_id"`
 	Invoice      Invoice   `gorm:"foreignKey:invoice_id"`
 	CreatedBy    string    `gorm:"column:created_by" json:"created_by"`
 	User         User      `gorm:"foreignKey:created_by"`
+	UUID         uuid.UUID `json:"id" gorm:"type:uuid;default:uuid_generate_v4();index:idx_invoiceline_uuid"`
 }
 
 type InvoiceLineRequest struct {

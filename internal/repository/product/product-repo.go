@@ -61,6 +61,24 @@ func (pr *productRepo) Index(limit int, offset int, q string) ([]model.ProductRe
 	return dataReturn, nil
 }
 
+func (pr *productRepo) Partial(q string) ([]model.ProductPartialRespon, error) {
+	var dataReturn []model.ProductPartialRespon
+
+	if q != "" {
+		stringParam := model.GetSeatchParamProductV2(q) + " AND isactive = true "
+		if err := pr.db.Model(&model.Product{}).Select("CONCAT(value, ' - ', name) as name, uuid").Where(stringParam).Find(&dataReturn).Error; err != nil {
+			return dataReturn, err
+		}
+	} else {
+		if err := pr.db.Model(&model.Product{}).Select("CONCAT(value, ' - ', name) as name, uuid").Where(&model.Product{IsActive: true}).Find(&dataReturn).Error; err != nil {
+			return dataReturn, err
+		}
+	}
+
+	return dataReturn, nil
+
+}
+
 // Show implements Repository.
 func (pr *productRepo) Show(id uuid.UUID) (model.ProductRespon, error) {
 	var data model.Product

@@ -42,3 +42,8 @@ func (m *productUsecase) GetProduct(id uuid.UUID) (model.ProductRespon, error) {
 func (m *productUsecase) UpdatedProduct(id uuid.UUID, request model.Product) (model.ProductRespon, error) {
 	return m.productRepo.Update(id, request)
 }
+
+// Partial implements ProductUsecaseInterface.
+func (m *productUsecase) Partial(q string) ([]model.ProductPartialRespon, error) {
+	return m.productRepo.Partial(q)
+}

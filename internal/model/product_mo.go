@@ -32,6 +32,11 @@ type ProductRespon struct {
 	Upc         string    `json:"upc"`
 }
 
+type ProductPartialRespon struct {
+	UUID uuid.UUID `json:"id"`
+	Name string    `json:"name"`
+}
+
 func GetSeatchParamProduct() []string {
 	searchParam := []string{"name", "description"}
 	return searchParam
@@ -39,6 +44,6 @@ func GetSeatchParamProduct() []string {
 
 // searching for join table with other model
 func GetSeatchParamProductV2(q string) string {
-	value := " lower(name)  LIKE " + q + " OR lower(description) LIKE " + q
+	value := " lower(name)  LIKE '%" + q + "%' OR lower(description) LIKE '%" + q + "%' OR lower(value) LIKE '%" + q + "%' "
 	return value
 }

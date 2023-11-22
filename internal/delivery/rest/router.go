@@ -28,6 +28,7 @@ func LoadRoutes(e *echo.Echo, handler *handler) {
 	productGroup := e.Group("/product")
 	productGroup.GET("s/", handler.IndexProduct, handler.middleware.CheckAuth)
 	productGroup.GET("/:id", handler.GetProduct, handler.middleware.CheckAuth)
+	productGroup.GET("/patial/", handler.PartialProduct, handler.middleware.CheckAuth)
 	productGroup.POST("/", handler.CreateProduct, handler.middleware.CheckAuth)
 	productGroup.PUT("/:id", handler.UpdatedProduct, handler.middleware.CheckAuth)
 	productGroup.DELETE("/:id", handler.DeleteProduct, handler.middleware.CheckAuth)

@@ -53,7 +53,7 @@ func (pr *paymentRepo) IndexLine(limit int, offset int, paymentId int) ([]model.
 
 	for _, paymentline := range paymentLine {
 		indexResponse := model.PaymentLineRespont{
-			ID:           paymentline.ID,
+			ID:           paymentline.UUID,
 			BatchNo:      paymentline.Invoice.BatchNo,
 			Invoice_id:   paymentline.InvoiceID,
 			Price:        paymentline.Price,
@@ -141,7 +141,7 @@ func (pr *paymentRepo) parsingPaymentLineToRespont(paymentLine model.PaymentLine
 	}
 
 	data = model.PaymentLineRespont{
-		ID:           dataPreload.ID,
+		ID:           dataPreload.UUID,
 		Price:        dataPreload.Price,
 		Amount:       dataPreload.Amount,
 		BatchNo:      dataPreload.Invoice.BatchNo,
