@@ -20,7 +20,13 @@ func (h *handler) IndexProduct(c echo.Context) error {
 	//get parameter
 	q := c.QueryParam("q")
 
-	data, err := h.productUsecase.IndexProduct(limit, offset, q)
+	//setOrderData
+	order, err := h.GetOrderClauses(c)
+	if err != nil {
+		return handleError(c, http.StatusInternalServerError, err, meta, data)
+	}
+
+	data, err := h.productUsecase.IndexProduct(limit, offset, q, order)
 	if err != nil {
 		WriteLogErorr("[delivery][rest][product_handler][IndexProduct] ", err)
 		return handleError(c, http.StatusInternalServerError, err, meta, data)

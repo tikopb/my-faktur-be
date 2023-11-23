@@ -4,6 +4,8 @@ import (
 	"bemyfaktur/internal/model"
 	pgUtil "bemyfaktur/internal/model/paginationUtil"
 	"errors"
+	"fmt"
+	"strconv"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -24,10 +26,16 @@ func GetRepository(db *gorm.DB, pgRepo pgUtil.Repository) Repository {
 // Create implements Repository.
 func (pr *productRepo) Create(product model.Product) (model.ProductRespon, error) {
 	data := model.ProductRespon{}
+	if product.Value == "" {
+		product.Value = pr.getValueWhenNull()
+	}
+
 	if err := pr.db.Create(&product).Error; err != nil {
 		if errors.Is(err, gorm.ErrDuplicatedKey) {
-			return data, errors.New("duplicate data")
+			value := fmt.Sprintf("%s-%s already exist ", product.Value, product.Name)
+			return data, errors.New(err.Error() + value)
 		}
+
 		return data, err
 	}
 
@@ -37,20 +45,25 @@ func (pr *productRepo) Create(product model.Product) (model.ProductRespon, error
 }
 
 // Index implements Repository.
-func (pr *productRepo) Index(limit int, offset int, q string) ([]model.ProductRespon, error) {
+func (pr *productRepo) Index(limit int, offset int, q string, order []string) ([]model.ProductRespon, error) {
 	data := []model.Product{}
 	var dataReturn []model.ProductRespon
 
 	if q != "" {
-		query := " select * from products " + pr.pgUtilRepo.HandlingPaginationWhere(model.GetSeatchParamProduct(), q, "", "")
-		if err := pr.db.Preload("User").Raw(query).Scan(&data).Error; err != nil {
+		order := ""
+		if string(order[0]) != "" {
+			order = fmt.Sprintf(" order by %s", string(order[0]))
+		}
+
+		query := " select * from products " + pr.pgUtilRepo.HandlingPaginationWhere(model.GetSeatchParamProduct(), q, "", "") + order
+		if err := pr.db.Preload("User").Raw(query).Order(order[0]).Limit(limit).Offset(offset).Scan(&data).Error; err != nil {
+			return dataReturn, err
+		}
+	} else {
+		if err := pr.db.Preload("User").Order(order[0]).Limit(limit).Offset(offset).Find(&data).Error; err != nil {
 			return dataReturn, err
 		}
 
-	} else {
-		if err := pr.db.Preload("User").Order("name").Limit(limit).Offset(offset).Find(&data).Error; err != nil {
-			return dataReturn, err
-		}
 	}
 
 	//parsing to responFormat
@@ -118,10 +131,8 @@ func (pr *productRepo) Update(id uuid.UUID, updatedProduct model.Product) (model
 	}
 
 	//slicing data update
-	data.Name = updatedProduct.Name
 	data.Description = updatedProduct.Description
-	data.IsActive = updatedProduct.User.IsActive
-	data.Value = updatedProduct.Value
+	data.IsActive = updatedProduct.IsActive
 	data.Upc = updatedProduct.Upc
 
 	//inisiate data udpated system
@@ -137,7 +148,7 @@ func (pr *productRepo) Update(id uuid.UUID, updatedProduct model.Product) (model
 
 // Delete implements Repository.
 func (pr *productRepo) Delete(id uuid.UUID) (string, error) {
-	data, err := pr.Show(id)
+	data, err := pr.ShowInternal(id)
 	name := data.Name
 
 	if err != nil {
@@ -163,4 +174,11 @@ func (pr *productRepo) parsingProductToProductRespon(product model.Product) mode
 	}
 
 	return data
+}
+
+func (pr *productRepo) getValueWhenNull() string {
+	var count int64
+	pr.db.Model(&model.Product{}).Count(&count)
+
+	return fmt.Sprintf("%05s", strconv.FormatInt(int64(count), 10))
 }
