@@ -156,16 +156,15 @@ func (h *handler) GetOrderClauses(c echo.Context) ([]string, error) {
 	// Get the URL parameters
 	sort := c.QueryParam("sort")
 	order := c.QueryParam("order")
+	orderClauses := []string{}
 
 	if strings.TrimSpace(sort) == "" && strings.TrimSpace(order) == "" {
-		return []string{}, nil
+		return orderClauses, nil
 	}
 	// Create the order clauses
-	orderClauses := []string{}
 	for _, field := range strings.Split(sort, ",") {
 		orderClauses = append(orderClauses, fmt.Sprintf("%s %s", field, order))
 	}
 
-	fmt.Println(orderClauses)
 	return orderClauses, nil
 }

@@ -7,6 +7,7 @@ import (
 )
 
 func seedDB(db *gorm.DB) {
+	db.Exec("CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\";")
 	db.AutoMigrate(
 		&model.User{},
 		&model.Partner{},

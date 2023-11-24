@@ -18,8 +18,8 @@ func GetUsecase(productRepo product.Repository) ProductUsecaseInterface {
 }
 
 // IndexPartner implements Usecase.
-func (m *productUsecase) IndexProduct(limit int, offset int, q string) ([]model.ProductRespon, error) {
-	return m.productRepo.Index(limit, offset, q)
+func (m *productUsecase) IndexProduct(limit int, offset int, q string, order []string) ([]model.ProductRespon, error) {
+	return m.productRepo.Index(limit, offset, q, order)
 }
 
 // CreateProduct implements Usecase.
@@ -41,4 +41,9 @@ func (m *productUsecase) GetProduct(id uuid.UUID) (model.ProductRespon, error) {
 // UpdatedProduct implements Usecase.
 func (m *productUsecase) UpdatedProduct(id uuid.UUID, request model.Product) (model.ProductRespon, error) {
 	return m.productRepo.Update(id, request)
+}
+
+// Partial implements ProductUsecaseInterface.
+func (m *productUsecase) Partial(q string) ([]model.ProductPartialRespon, error) {
+	return m.productRepo.Partial(q)
 }

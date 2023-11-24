@@ -199,7 +199,7 @@ func (pr *paymentRepo) parsingPaymentToPaymentRespont(payment model.Payment) (mo
 	}
 
 	data = model.PaymentRespont{
-		ID:           dataPreload.ID,
+		ID:           dataPreload.UUID,
 		CreatedBy:    dataPreload.User.Username,
 		PartnerID:    dataPreload.PartnerID,
 		GrandTotal:   dataPreload.GrandTotal,

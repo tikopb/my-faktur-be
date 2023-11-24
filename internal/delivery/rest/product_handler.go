@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"strings"
 
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
@@ -19,7 +20,13 @@ func (h *handler) IndexProduct(c echo.Context) error {
 	//get parameter
 	q := c.QueryParam("q")
 
-	data, err := h.productUsecase.IndexProduct(limit, offset, q)
+	//setOrderData
+	order, err := h.GetOrderClauses(c)
+	if err != nil {
+		return handleError(c, http.StatusInternalServerError, err, meta, data)
+	}
+
+	data, err := h.productUsecase.IndexProduct(limit, offset, q, order)
 	if err != nil {
 		WriteLogErorr("[delivery][rest][product_handler][IndexProduct] ", err)
 		return handleError(c, http.StatusInternalServerError, err, meta, data)
@@ -130,4 +137,26 @@ func (h *handler) parsingId(c echo.Context) (uuid.UUID, error) {
 	}
 
 	return productId, nil
+}
+
+func (h *handler) PartialProduct(c echo.Context) error {
+	//get parameter
+	q := c.QueryParam("q")
+	q = strings.ToLower(q)
+
+	data, err := h.productUsecase.Partial(q)
+	if err != nil {
+		WriteLogErorr("[delivery][rest][PartialProduct] ", err)
+
+		return handleError(c, http.StatusInternalServerError, err, meta, data)
+	}
+
+	//meta data field
+	meta = nil
+	msg := "GET SUCCESS"
+	if len(data) == 0 {
+		msg = "data not found"
+	}
+
+	return handleError(c, http.StatusOK, errors.New(msg), meta, data)
 }

@@ -28,7 +28,7 @@ func GetDb() *gorm.DB {
 	// }
 
 	db, err := gorm.Open(postgres.Open(dbAddress), &gorm.Config{
-		//Logger: logger.Default.LogMode(logger.Info),
+		TranslateError: true,
 	})
 	if err != nil {
 		panic("Failed to connect into database")

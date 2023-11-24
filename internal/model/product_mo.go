@@ -10,7 +10,7 @@ type Product struct {
 	ID          int       `json:"-" gorm:"primaryKey;autoIncrement" `
 	Name        string    `json:"name" gorm:"column:name;unique;not null;index:idx_product_name"`
 	Value       string    `json:"value" gorm:"column:value;not null;index:idx_product_value"`
-	Upc         string    `json:"upc" gorm:"column:upc;not null;index:idx_product_upc"`
+	Upc         string    `json:"upc" gorm:"column:upc;index:idx_product_upc"`
 	Description string    `json:"description" gorm:"column:description"`
 	CreatedBy   string    `gorm:"column:created_by;index:idx_product_created_by" json:"created_by"`
 	CreatedAt   time.Time `gorm:"column:created_at;default:current_timestamp" json:"created_at"`
@@ -32,6 +32,11 @@ type ProductRespon struct {
 	Upc         string    `json:"upc"`
 }
 
+type ProductPartialRespon struct {
+	UUID uuid.UUID `json:"id"`
+	Name string    `json:"name"`
+}
+
 func GetSeatchParamProduct() []string {
 	searchParam := []string{"name", "description"}
 	return searchParam
@@ -39,6 +44,6 @@ func GetSeatchParamProduct() []string {
 
 // searching for join table with other model
 func GetSeatchParamProductV2(q string) string {
-	value := " lower(name)  LIKE " + q + " OR lower(description) LIKE " + q
+	value := " lower(name)  LIKE '%" + q + "%' OR lower(description) LIKE '%" + q + "%' OR lower(value) LIKE '%" + q + "%' "
 	return value
 }

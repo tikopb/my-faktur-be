@@ -39,7 +39,6 @@ func (ir *invoiceRepo) Create(request model.InvoiceRequest, partner model.Partne
 		CreatedBy:         request.CreatedBy,
 		PartnerID:         request.PartnerID,
 		BatchNo:           request.BatchNo,
-		InvoiceLine:       []model.InvoiceLine{},
 		Status:            constant.InvoiceStatusDraft, //every new document default as draft
 		DocumentNo:        documentno,
 		DocAction:         constant.InvoiceActionDraft,
@@ -183,24 +182,19 @@ func (ir *invoiceRepo) Update(id int, updatedInvoice model.Invoice) (model.Invoi
 }
 
 func (ir *invoiceRepo) ParsingInvoiceToInvoiceRequest(invoice model.Invoice) (model.InvoiceRespont, error) {
-	data := model.InvoiceRespont{}
-	dataPreload, err := ir.ShowInternal(invoice.ID)
-	if err != nil {
-		return data, err
-	}
-
-	data = model.InvoiceRespont{
-		ID:           dataPreload.ID,
-		CreatedAt:    dataPreload.CreatedAt,
-		GrandTotal:   dataPreload.GrandTotal,
-		Discount:     dataPreload.Discount,
-		BatchNo:      dataPreload.BatchNo,
-		Status:       dataPreload.Status,
-		CreatedBy:    dataPreload.User,
-		Partner:      dataPreload.Partner,
-		DocumentNo:   dataPreload.DocumentNo,
-		DocAction:    dataPreload.DocAction,
-		IsPrecentage: data.IsPrecentage,
+	data := model.InvoiceRespont{
+		ID:                invoice.ID,
+		CreatedAt:         invoice.CreatedAt,
+		GrandTotal:        invoice.GrandTotal,
+		Discount:          invoice.Discount,
+		BatchNo:           invoice.BatchNo,
+		Status:            invoice.Status,
+		DocAction:         invoice.DocAction,
+		CreatedBy:         invoice.User,
+		Partner:           invoice.Partner,
+		OustandingPayment: invoice.OustandingPayment,
+		DocumentNo:        invoice.DocumentNo,
+		IsPrecentage:      invoice.IsPrecentage,
 	}
 
 	return data, nil
