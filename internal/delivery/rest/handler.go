@@ -159,7 +159,6 @@ func (h *handler) GetOrderClauses(c echo.Context) ([]string, error) {
 	orderClauses := []string{}
 
 	if strings.TrimSpace(sort) == "" && strings.TrimSpace(order) == "" {
-		orderClauses = append(orderClauses, "")
 		return orderClauses, nil
 	}
 	// Create the order clauses

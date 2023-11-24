@@ -50,13 +50,13 @@ func (pr *productRepo) Index(limit int, offset int, q string, order []string) ([
 	var dataReturn []model.ProductRespon
 
 	if q != "" {
-		order := ""
-		if string(order[0]) != "" {
-			order = fmt.Sprintf(" order by %s", string(order[0]))
+		orderParam := ""
+		if len(order) != 0 {
+			orderParam = fmt.Sprintf(" order by %s", string(order[0]))
 		}
 
-		query := " select * from products " + pr.pgUtilRepo.HandlingPaginationWhere(model.GetSeatchParamProduct(), q, "", "") + order
-		if err := pr.db.Preload("User").Raw(query).Order(order[0]).Limit(limit).Offset(offset).Scan(&data).Error; err != nil {
+		query := " select * from products " + pr.pgUtilRepo.HandlingPaginationWhere(model.GetSeatchParamProduct(), q, "", "") + orderParam
+		if err := pr.db.Preload("User").Raw(query).Limit(limit).Offset(offset).Scan(&data).Error; err != nil {
 			return dataReturn, err
 		}
 	} else {
@@ -131,6 +131,7 @@ func (pr *productRepo) Update(id uuid.UUID, updatedProduct model.Product) (model
 	}
 
 	//slicing data update
+	data.Name = updatedProduct.Name
 	data.Description = updatedProduct.Description
 	data.IsActive = updatedProduct.IsActive
 	data.Upc = updatedProduct.Upc
