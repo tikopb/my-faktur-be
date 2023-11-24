@@ -66,7 +66,7 @@ func handleError(c echo.Context, statusCode int, err error, meta interface{}, da
 		data = nil
 	}
 
-	if statusCode != http.StatusOK {
+	if statusCode != http.StatusOK && statusCode != http.StatusCreated {
 		response = handlerRespont{
 			Status:  statusCode,
 			Message: "internal error: " + err.Error(),
