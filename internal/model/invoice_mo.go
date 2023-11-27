@@ -45,7 +45,7 @@ type InvoiceRequest struct {
 }
 
 type InvoiceRespont struct {
-	ID                int       `json:"id"`
+	ID                uuid.UUID `json:"id"`
 	CreatedAt         time.Time `json:"created_at"`
 	GrandTotal        float64   `json:"grand_total"`
 	Discount          float64   `json:"discount"`

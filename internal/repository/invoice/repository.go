@@ -2,15 +2,18 @@ package invoice
 
 import (
 	"bemyfaktur/internal/model"
+
+	"github.com/google/uuid"
 )
 
 type InvoiceRepositoryInterface interface {
 	//Header
-	Index(limit int, offset int, q string) ([]model.InvoiceRespont, error)
+	Index(limit int, offset int, q string, order []string) ([]model.InvoiceRespont, error)
 	Create(invoice model.InvoiceRequest, partner model.Partner) (model.InvoiceRespont, error)
-	Show(id int) (model.InvoiceRespont, error)
-	Update(id int, updatedInvoice model.Invoice) (model.InvoiceRespont, error)
-	Delete(id int) (string, error)
+	Show(id uuid.UUID) (model.InvoiceRespont, error)
+	ShowInternal(id uuid.UUID) (model.Invoice, error)
+	Update(id uuid.UUID, updatedInvoice model.Invoice) (model.InvoiceRespont, error)
+	Delete(id uuid.UUID) (string, error)
 
 	//Line
 	IndexLine(limit int, offset int, invoiceId int, q string) ([]model.InvoiceLineRespont, error)

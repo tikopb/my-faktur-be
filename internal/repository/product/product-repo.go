@@ -51,7 +51,7 @@ func (pr *productRepo) Index(limit int, offset int, q string, order []string) ([
 
 	if q != "" {
 		orderParam := ""
-		if len(order) != 0 {
+		if len(order) > 0 {
 			orderParam = fmt.Sprintf(" order by %s", string(order[0]))
 		}
 
@@ -60,8 +60,14 @@ func (pr *productRepo) Index(limit int, offset int, q string, order []string) ([
 			return dataReturn, err
 		}
 	} else {
-		if err := pr.db.Preload("User").Order(order[0]).Limit(limit).Offset(offset).Find(&data).Error; err != nil {
-			return dataReturn, err
+		if len(order) > 0 {
+			if err := pr.db.Preload("User").Order(order[0]).Limit(limit).Offset(offset).Find(&data).Error; err != nil {
+				return dataReturn, err
+			}
+		} else {
+			if err := pr.db.Preload("User").Limit(limit).Offset(offset).Find(&data).Error; err != nil {
+				return dataReturn, err
+			}
 		}
 
 	}

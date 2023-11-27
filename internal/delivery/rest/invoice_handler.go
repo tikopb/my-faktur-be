@@ -18,7 +18,13 @@ func (h *handler) IndexInvoice(c echo.Context) error {
 	q := c.QueryParam("q")
 	q = strings.ToLower(q)
 
-	data, err := h.invoiceUsecase.IndexInvoice(limit, offset, q)
+	//setOrderData
+	order, err := h.GetOrderClauses(c)
+	if err != nil {
+		return handleError(c, http.StatusInternalServerError, err, meta, data)
+	}
+
+	data, err := h.invoiceUsecase.IndexInvoice(limit, offset, q, order)
 	if err != nil {
 		WriteLogErorr("[delivery][rest][invoice_handler][IndexInvoice] ", err)
 		return handleError(c, http.StatusInternalServerError, err, meta, data)
@@ -41,7 +47,10 @@ func (h *handler) IndexInvoice(c echo.Context) error {
 }
 
 func (h *handler) GetInvoice(c echo.Context) error {
-	id := transformIdToInt(c)
+	id, err := h.parsingId(c)
+	if err != nil {
+		return handleError(c, http.StatusInternalServerError, err, meta, data)
+	}
 
 	data, err := h.invoiceUsecase.GetInvoice(id)
 	if err != nil {
@@ -78,10 +87,13 @@ func (h *handler) CreateInvoice(c echo.Context) error {
 func (h *handler) UpdateInvoice(c echo.Context) error {
 	var request model.Invoice
 	//get param
-	id := transformIdToInt(c)
+	id, err := h.parsingId(c)
+	if err != nil {
+		return handleError(c, http.StatusInternalServerError, err, meta, data)
+	}
 
 	//run function
-	err := json.NewDecoder(c.Request().Body).Decode(&request)
+	err = json.NewDecoder(c.Request().Body).Decode(&request)
 	if err != nil {
 		WriteLogErorr("[delivery][rest][invoice_handler][UpdateInvoice] ", err)
 		return handleError(c, http.StatusInternalServerError, err, meta, data)
@@ -98,7 +110,10 @@ func (h *handler) UpdateInvoice(c echo.Context) error {
 
 func (h *handler) DeleteInvoice(c echo.Context) error {
 	//get param
-	id := transformIdToInt(c)
+	id, err := h.parsingId(c)
+	if err != nil {
+		return handleError(c, http.StatusInternalServerError, err, meta, data)
+	}
 
 	data, err := h.invoiceUsecase.DeleteInvoice(id)
 	if err != nil {
