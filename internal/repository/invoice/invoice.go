@@ -6,7 +6,9 @@ import (
 	documentutil "bemyfaktur/internal/model/documentUtil"
 	pgUtil "bemyfaktur/internal/model/paginationUtil"
 	"errors"
+	"fmt"
 
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -62,8 +64,8 @@ func (ir *invoiceRepo) Create(request model.InvoiceRequest, partner model.Partne
 }
 
 // Delete implements InvoiceRepositoryInterface.
-func (ir *invoiceRepo) Delete(id int) (string, error) {
-	data, err := ir.Show(id)
+func (ir *invoiceRepo) Delete(id uuid.UUID) (string, error) {
+	data, err := ir.ShowInternal(id)
 	batchno := data.BatchNo
 	if err != nil {
 		return "", err
@@ -76,14 +78,26 @@ func (ir *invoiceRepo) Delete(id int) (string, error) {
 }
 
 // Index implements InvoiceRepositoryInterface.
-func (ir *invoiceRepo) Index(limit int, offset int, q string) ([]model.InvoiceRespont, error) {
+func (ir *invoiceRepo) Index(limit int, offset int, q string, order []string) ([]model.InvoiceRespont, error) {
 	data := []model.Invoice{}
 	dataReturn := []model.InvoiceRespont{}
 
+	//order by handling
+	orderParam := ""
+	if len(order) != 0 {
+		orderParam = fmt.Sprintf(" order by %s", string(order[0]))
+	}
+
 	//q param handler
 	if q != "" {
-		if err := ir.db.Joins("Partner", ir.db.Where(model.GetSearchParamPartnerV2(q))).Where(model.GetSeatchParamInvoice(q)).Limit(limit).Offset(offset).Find(&data).Error; err != nil {
-			return dataReturn, err
+		if orderParam != "" {
+			if err := ir.db.Joins("Partner", ir.db.Where(model.GetSearchParamPartnerV2(q))).Where(model.GetSeatchParamInvoice(q)).Limit(limit).Offset(offset).Order(orderParam).Find(&data).Error; err != nil {
+				return dataReturn, err
+			}
+		} else {
+			if err := ir.db.Joins("Partner", ir.db.Where(model.GetSearchParamPartnerV2(q))).Where(model.GetSeatchParamInvoice(q)).Limit(limit).Offset(offset).Find(&data).Error; err != nil {
+				return dataReturn, err
+			}
 		}
 	} else {
 		if err := ir.db.Order("created_at DESC").Limit(limit).Offset(offset).Find(&data).Error; err != nil {
@@ -100,7 +114,7 @@ func (ir *invoiceRepo) Index(limit int, offset int, q string) ([]model.InvoiceRe
 		}
 
 		indexResponse := model.InvoiceRespont{
-			ID:                invoice.ID,
+			ID:                invoice.UUID,
 			CreatedAt:         invoice.CreatedAt,
 			DocumentNo:        dataPreload.DocumentNo,
 			BatchNo:           invoice.BatchNo,
@@ -119,10 +133,10 @@ func (ir *invoiceRepo) Index(limit int, offset int, q string) ([]model.InvoiceRe
 }
 
 // Show implements InvoiceRepositoryInterface.
-func (ir *invoiceRepo) Show(id int) (model.InvoiceRespont, error) {
+func (ir *invoiceRepo) Show(id uuid.UUID) (model.InvoiceRespont, error) {
 	var data model.Invoice
 
-	if err := ir.db.Preload("Partner").Preload("User").First(&data, id).Error; err != nil {
+	if err := ir.db.Preload("Partner").Preload("User").Where(model.Invoice{UUID: id}).First(&data).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return model.InvoiceRespont{}, errors.New("data not found")
 		}
@@ -132,7 +146,7 @@ func (ir *invoiceRepo) Show(id int) (model.InvoiceRespont, error) {
 }
 
 // Show implements InvoiceRepositoryInterface.
-func (ir *invoiceRepo) ShowInternal(id int) (model.Invoice, error) {
+func (ir *invoiceRepo) ShowInternal(id uuid.UUID) (model.Invoice, error) {
 	var data model.Invoice
 
 	if err := ir.db.Preload("Partner").Preload("User").First(&data, id).Error; err != nil {
@@ -145,7 +159,7 @@ func (ir *invoiceRepo) ShowInternal(id int) (model.Invoice, error) {
 }
 
 // Update implements InvoiceRepositoryInterface.
-func (ir *invoiceRepo) Update(id int, updatedInvoice model.Invoice) (model.InvoiceRespont, error) {
+func (ir *invoiceRepo) Update(id uuid.UUID, updatedInvoice model.Invoice) (model.InvoiceRespont, error) {
 	//set var
 	data := model.InvoiceRespont{}
 	invoiceData, err := ir.ShowInternal(id) //get invoice Data
@@ -183,7 +197,7 @@ func (ir *invoiceRepo) Update(id int, updatedInvoice model.Invoice) (model.Invoi
 
 func (ir *invoiceRepo) ParsingInvoiceToInvoiceRequest(invoice model.Invoice) (model.InvoiceRespont, error) {
 	data := model.InvoiceRespont{
-		ID:                invoice.ID,
+		ID:                invoice.UUID,
 		CreatedAt:         invoice.CreatedAt,
 		GrandTotal:        invoice.GrandTotal,
 		Discount:          invoice.Discount,

@@ -42,18 +42,18 @@ func (iu *invoiceUsecase) CreateInvoice(request model.InvoiceRequest, userID str
 }
 
 // DeleteInvoice implements InvoiceUsecaseInterface.
-func (iu *invoiceUsecase) DeleteInvoice(id int) (string, error) {
+func (iu *invoiceUsecase) DeleteInvoice(id uuid.UUID) (string, error) {
 	return iu.invoiceRepo.Delete(id)
 }
 
 // GetInvoice implements InvoiceUsecaseInterface.
-func (iu *invoiceUsecase) GetInvoice(id int) (model.InvoiceRespont, error) {
+func (iu *invoiceUsecase) GetInvoice(id uuid.UUID) (model.InvoiceRespont, error) {
 	return iu.invoiceRepo.Show(id)
 }
 
 // IndexInvoice implements InvoiceUsecaseInterface.
-func (iu *invoiceUsecase) IndexInvoice(limit int, offset int, q string) ([]model.InvoiceRespont, error) {
-	return iu.invoiceRepo.Index(limit, offset, q)
+func (iu *invoiceUsecase) IndexInvoice(limit int, offset int, q string, order []string) ([]model.InvoiceRespont, error) {
+	return iu.invoiceRepo.Index(limit, offset, q, order)
 }
 
 // UpdatedInvoice implements InvoiceUsecaseInterface.
@@ -65,7 +65,7 @@ DOD (Definition Of Done)
 2.	insert data of invoice with struct invoice
 3. 	fill invoice respon for return
 */
-func (iu *invoiceUsecase) UpdatedInvoice(id int, request model.Invoice) (model.InvoiceRespont, error) {
+func (iu *invoiceUsecase) UpdatedInvoice(id uuid.UUID, request model.Invoice) (model.InvoiceRespont, error) {
 	data := model.InvoiceRespont{}
 
 	//get and set partner

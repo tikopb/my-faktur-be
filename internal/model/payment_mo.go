@@ -70,12 +70,13 @@ type PaymentLine struct {
 }
 
 type PaymentLineRequest struct {
-	PaymentID    int     `json:"payment_id"`
-	Invoice_id   int     `json:"invoice_id"`
-	Price        float64 `json:"price"`
-	Discount     float64 `json:"discount"`
-	IsPrecentage bool    `json:"isprecentage"`
-	CreatedBy    string  `json:"createdby"`
+	PaymentID    int       `json:"payment_id"`
+	Invoice_uuid uuid.UUID `json:"invoice_id"`
+	Invoice_id   int       `json:"-"`
+	Price        float64   `json:"price"`
+	Discount     float64   `json:"discount"`
+	IsPrecentage bool      `json:"isprecentage"`
+	CreatedBy    string    `json:"createdby"`
 }
 
 type PaymentLineRespont struct {

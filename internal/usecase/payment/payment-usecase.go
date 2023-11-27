@@ -51,8 +51,10 @@ func (pu *paymentUsecase) Updatedpayment(id int, request model.PaymentRequest) (
 // CreateInvoiceLine implements PaymentUsecaseInterface.
 func (pu *paymentUsecase) CreatePaymentLine(request model.PaymentLineRequest, userId string) (model.PaymentLineRespont, error) {
 	data := model.PaymentLineRespont{}
-	invoice, err := pu.invoiceRepo.Show(request.Invoice_id)
+	invoice, err := pu.invoiceRepo.ShowInternal(request.Invoice_uuid)
 	if err != nil {
+		//set the value to invoice_id because relation key used with id int not uuid
+		request.Invoice_id = invoice.ID
 		return data, err
 	} else if invoice.Status != constant.InvoiceStatusComplete {
 		return data, errors.New("invoice not in completed")
@@ -77,7 +79,7 @@ func (pu *paymentUsecase) IndexLine(limit int, offset int, paymentId int, q stri
 // UpdatedInvoiceLine implements PaymentUsecaseInterface.
 func (pu *paymentUsecase) UpdatedPaymentLine(id int, request model.PaymentLineRequest) (model.PaymentLineRespont, error) {
 	data := model.PaymentLineRespont{}
-	invoice, err := pu.invoiceRepo.Show(request.Invoice_id)
+	invoice, err := pu.invoiceRepo.Show(request.Invoice_uuid)
 	if err != nil {
 		return data, err
 	} else if invoice.Status != constant.InvoiceStatusComplete {
