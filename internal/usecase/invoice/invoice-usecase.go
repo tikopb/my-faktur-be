@@ -14,7 +14,7 @@ type invoiceUsecase struct {
 	invoiceRepo invoice.InvoiceRepositoryInterface
 	partnerRepo partner.Repository
 	productRepo product.Repository
-	//userRepo    user.Repository
+	// userRepo    user.Repository
 }
 
 func GetUsecase(invoiceRepo invoice.InvoiceRepositoryInterface, partnerRepo partner.Repository, productRepo product.Repository) InvoiceUsecaseInterface {
@@ -30,14 +30,17 @@ func (iu *invoiceUsecase) CreateInvoice(request model.InvoiceRequest, userID str
 	//# Get all data First
 	data := model.InvoiceRespont{}
 
-	//get Partner
-	partnerData, err := iu.partnerRepo.ShowInternal(request.PartnerIdUU)
+	//set Partner
+	partnerData, err := iu.partnerRepo.ShowInternal(request.PartnerUUID)
 	if err != nil || !partnerData.Isactive {
 		return data, errors.New("partner not exist")
 	}
+	request.PartnerId = partnerData.ID
 
-	//setCreatedBy
-	request.CreatedBy = userID
+	//setCreatedBy && updateBy
+	request.CreatedById = userID
+	request.UpdatedById = userID
+
 	return iu.invoiceRepo.Create(request, partnerData)
 }
 
@@ -65,15 +68,17 @@ DOD (Definition Of Done)
 2.	insert data of invoice with struct invoice
 3. 	fill invoice respon for return
 */
-func (iu *invoiceUsecase) UpdatedInvoice(id uuid.UUID, request model.Invoice) (model.InvoiceRespont, error) {
-	data := model.InvoiceRespont{}
+func (iu *invoiceUsecase) UpdatedInvoice(id uuid.UUID, request model.InvoiceRequest, userId string) (model.InvoiceRespont, error) {
 
-	//get and set partner
-	partnerData, err := iu.partnerRepo.Show(request.PartnerIdUU)
+	//set Partner
+	partnerData, err := iu.partnerRepo.ShowInternal(request.PartnerUUID)
 	if err != nil || !partnerData.Isactive {
-		return data, errors.New("partner not exist or partnet not active")
+		return model.InvoiceRespont{}, errors.New("partner not exist or inactive")
 	}
+	request.PartnerId = partnerData.ID
 
+	//set updated
+	request.UpdatedById = userId
 	return iu.invoiceRepo.Update(id, request)
 }
 

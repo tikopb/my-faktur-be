@@ -8,6 +8,7 @@ type Repository interface {
 	GenerateUserHash(password string) (hash string, err error)
 	VerifyLogin(username, password string, userData model.User) (bool, error)
 	GetUserData(username string) (model.User, error)
+	GetUserDatById(id string) (model.User, error)
 	CreateUserSession(userID string) (model.UserSession, error)
 	CheckSession(data model.UserSession) (string, error)
 	CheckRefreshToken(RefreshToken string) (string, error)

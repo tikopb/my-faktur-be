@@ -7,6 +7,7 @@ import (
 	pgUtil "bemyfaktur/internal/model/paginationUtil"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -28,33 +29,33 @@ func GetRepository(db *gorm.DB, docUtil documentutil.Repository, pgRepo pgUtil.R
 
 // Create implements InvoiceRepositoryInterface.
 func (ir *invoiceRepo) Create(request model.InvoiceRequest, partner model.Partner) (model.InvoiceRespont, error) {
-	data := model.InvoiceRespont{}
 
 	//init for documentno
 	documentno, err := ir.docUtil.GetDocumentNo(ir.getTableName())
 	if err != nil {
-		return data, err
+		return model.InvoiceRespont{}, err
 	}
 
 	invoiceData := model.Invoice{
-		CreatedAt:         request.CreatedAt,
-		CreatedBy:         request.CreatedBy,
-		PartnerID:         request.PartnerID,
-		BatchNo:           request.BatchNo,
-		Status:            constant.InvoiceStatusDraft, //every new document default as draft
-		DocumentNo:        documentno,
-		DocAction:         constant.InvoiceActionDraft,
-		OustandingPayment: 0,
+		CreatedBy:         request.CreatedById,
+		UpdatedBy:         request.UpdatedById,
+		PartnerID:         request.PartnerId,
+		GrandTotal:        0, // all new invoice data is 0
 		Discount:          request.Discount,
+		BatchNo:           request.BatchNo,
+		Status:            constant.InvoiceStatusDraft, // all new data set to draft
+		DocAction:         constant.InvoiceActionDraft, // all new data set to draft
+		OustandingPayment: 0,
+		DocumentNo:        documentno,
 		IsPrecentage:      request.IsPrecentage,
 	}
 
 	if err := ir.db.Create(&invoiceData).Error; err != nil {
-		return data, err
+		return model.InvoiceRespont{}, err
 	}
 
 	//set return data
-	//set data preload for return
+	//parsing the data return
 	dataPreload, err := ir.ParsingInvoiceToInvoiceRequest(invoiceData)
 	if err != nil {
 		return dataPreload, err
@@ -91,17 +92,23 @@ func (ir *invoiceRepo) Index(limit int, offset int, q string, order []string) ([
 	//q param handler
 	if q != "" {
 		if orderParam != "" {
-			if err := ir.db.Joins("Partner", ir.db.Where(model.GetSearchParamPartnerV2(q))).Where(model.GetSeatchParamInvoice(q)).Limit(limit).Offset(offset).Order(orderParam).Find(&data).Error; err != nil {
+			if err := ir.db.Preload("Partner").Preload("User").Preload("UserUpdated").Joins("Partner", ir.db.Where(model.GetSearchParamPartnerV2(q))).Where(model.GetSeatchParamInvoice(q)).Limit(limit).Offset(offset).Order(orderParam).Find(&data).Error; err != nil {
 				return dataReturn, err
 			}
 		} else {
-			if err := ir.db.Joins("Partner", ir.db.Where(model.GetSearchParamPartnerV2(q))).Where(model.GetSeatchParamInvoice(q)).Limit(limit).Offset(offset).Find(&data).Error; err != nil {
+			if err := ir.db.Preload("Partner").Preload("User").Preload("UserUpdated").Joins("Partner", ir.db.Where(model.GetSearchParamPartnerV2(q))).Where(model.GetSeatchParamInvoice(q)).Limit(limit).Offset(offset).Find(&data).Error; err != nil {
 				return dataReturn, err
 			}
 		}
 	} else {
-		if err := ir.db.Order("created_at DESC").Limit(limit).Offset(offset).Find(&data).Error; err != nil {
-			return dataReturn, err
+		if len(order) > 0 {
+			if err := ir.db.Preload("Partner").Preload("User").Preload("UserUpdated").Order(order[0]).Limit(limit).Offset(offset).Find(&data).Error; err != nil {
+				return dataReturn, err
+			}
+		} else {
+			if err := ir.db.Preload("Partner").Preload("User").Preload("UserUpdated").Limit(limit).Offset(offset).Find(&data).Error; err != nil {
+				return dataReturn, err
+			}
 		}
 	}
 
@@ -114,16 +121,18 @@ func (ir *invoiceRepo) Index(limit int, offset int, q string, order []string) ([
 		}
 
 		indexResponse := model.InvoiceRespont{
-			ID:                invoice.UUID,
-			CreatedAt:         invoice.CreatedAt,
+			ID:                dataPreload.ID,
+			CreatedAt:         dataPreload.CreatedAt,
+			GrandTotal:        dataPreload.GrandTotal,
+			Discount:          dataPreload.Discount,
+			BatchNo:           dataPreload.BatchNo,
+			Status:            dataPreload.Status,
+			DocAction:         dataPreload.DocAction,
+			OustandingPayment: dataPreload.OustandingPayment,
 			DocumentNo:        dataPreload.DocumentNo,
-			BatchNo:           invoice.BatchNo,
-			Status:            invoice.Status,
-			CreatedBy:         dataPreload.Partner.User,
-			Discount:          invoice.Discount,
 			IsPrecentage:      dataPreload.IsPrecentage,
-			GrandTotal:        invoice.GrandTotal,
-			OustandingPayment: invoice.OustandingPayment,
+			CreatedBy:         dataPreload.CreatedBy,
+			UpdatedBy:         dataPreload.UpdatedBy,
 			Partner:           dataPreload.Partner,
 		}
 		dataReturn = append(dataReturn, indexResponse)
@@ -136,7 +145,7 @@ func (ir *invoiceRepo) Index(limit int, offset int, q string, order []string) ([
 func (ir *invoiceRepo) Show(id uuid.UUID) (model.InvoiceRespont, error) {
 	var data model.Invoice
 
-	if err := ir.db.Preload("Partner").Preload("User").Where(model.Invoice{UUID: id}).First(&data).Error; err != nil {
+	if err := ir.db.Preload("Partner").Preload("User").Preload("UserUpdated").Where(model.Invoice{UUID: id}).First(&data).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return model.InvoiceRespont{}, errors.New("data not found")
 		}
@@ -149,7 +158,7 @@ func (ir *invoiceRepo) Show(id uuid.UUID) (model.InvoiceRespont, error) {
 func (ir *invoiceRepo) ShowInternal(id uuid.UUID) (model.Invoice, error) {
 	var data model.Invoice
 
-	if err := ir.db.Preload("Partner").Preload("User").First(&data, id).Error; err != nil {
+	if err := ir.db.Preload("Partner").Preload("User").Preload("UserUpdated").Where(model.Invoice{UUID: id}).First(&data).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return data, errors.New("data not found")
 		}
@@ -159,7 +168,7 @@ func (ir *invoiceRepo) ShowInternal(id uuid.UUID) (model.Invoice, error) {
 }
 
 // Update implements InvoiceRepositoryInterface.
-func (ir *invoiceRepo) Update(id uuid.UUID, updatedInvoice model.Invoice) (model.InvoiceRespont, error) {
+func (ir *invoiceRepo) Update(id uuid.UUID, request model.InvoiceRequest) (model.InvoiceRespont, error) {
 	//set var
 	data := model.InvoiceRespont{}
 	invoiceData, err := ir.ShowInternal(id) //get invoice Data
@@ -168,21 +177,23 @@ func (ir *invoiceRepo) Update(id uuid.UUID, updatedInvoice model.Invoice) (model
 		return data, err
 	}
 
-	invoiceData.PartnerID = updatedInvoice.PartnerID
-	invoiceData.Discount = updatedInvoice.Discount
-	invoiceData.BatchNo = updatedInvoice.BatchNo
+	invoiceData.UpdateAt = time.Now()
+	invoiceData.UpdatedBy = request.UpdatedById
+	invoiceData.PartnerID = request.PartnerId
+	invoiceData.Discount = request.Discount
+	invoiceData.BatchNo = request.BatchNo
 
 	//handling Grand Total
 	invoiceData = ir.handlingGrandTotal(invoiceData)
 
 	//validation docaction
-	invoiceData, err = ir.DocProcess(invoiceData, string(updatedInvoice.DocAction))
+	invoiceData, err = ir.DocProcess(invoiceData, string(request.DocAction))
 	if err != nil {
 		return data, err
 	}
 
 	//save the data
-	if err := ir.db.Save(&invoiceData).Error; err != nil {
+	if err := ir.db.Updates(&invoiceData).Error; err != nil {
 		return data, err
 	}
 
@@ -196,19 +207,35 @@ func (ir *invoiceRepo) Update(id uuid.UUID, updatedInvoice model.Invoice) (model
 }
 
 func (ir *invoiceRepo) ParsingInvoiceToInvoiceRequest(invoice model.Invoice) (model.InvoiceRespont, error) {
+	//parsing to patial verstion first!
+	createdBy := model.UserPartial{
+		UserId:   invoice.User.ID,
+		Username: invoice.User.Username,
+	}
+	updateBy := model.UserPartial{
+		UserId:   invoice.UserUpdated.ID,
+		Username: invoice.UserUpdated.Username,
+	}
+	partner := model.PartnerPartialRespon{
+		UUID: invoice.Partner.UUID,
+		Name: invoice.Partner.Name,
+	}
+
 	data := model.InvoiceRespont{
 		ID:                invoice.UUID,
 		CreatedAt:         invoice.CreatedAt,
+		UpdatedAt:         invoice.UpdateAt,
 		GrandTotal:        invoice.GrandTotal,
 		Discount:          invoice.Discount,
 		BatchNo:           invoice.BatchNo,
 		Status:            invoice.Status,
 		DocAction:         invoice.DocAction,
-		CreatedBy:         invoice.User,
-		Partner:           invoice.Partner,
 		OustandingPayment: invoice.OustandingPayment,
 		DocumentNo:        invoice.DocumentNo,
 		IsPrecentage:      invoice.IsPrecentage,
+		CreatedBy:         createdBy,
+		UpdatedBy:         updateBy,
+		Partner:           partner,
 	}
 
 	return data, nil
