@@ -1,7 +1,6 @@
 package paginationutil
 
 import (
-	"fmt"
 	"math"
 	"strings"
 
@@ -53,7 +52,6 @@ func (p *paginationUtilRepo) PaginationUtil(tabelName string, searchParam []stri
 		}
 	} else {
 		if err := p.db.Raw(query).Scan(&count).Error; err != nil {
-			fmt.Println(query)
 			return meta, err
 		}
 	}

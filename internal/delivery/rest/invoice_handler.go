@@ -49,6 +49,7 @@ func (h *handler) IndexInvoice(c echo.Context) error {
 func (h *handler) GetInvoice(c echo.Context) error {
 	id, err := h.parsingId(c)
 	if err != nil {
+		WriteLogErorr("[delivery][rest][invoice_handler][GetInvoice] ", err)
 		return handleError(c, http.StatusInternalServerError, err, meta, data)
 	}
 
@@ -85,7 +86,7 @@ func (h *handler) CreateInvoice(c echo.Context) error {
 }
 
 func (h *handler) UpdateInvoice(c echo.Context) error {
-	var request model.Invoice
+	var request model.InvoiceRequest
 	//get param
 	id, err := h.parsingId(c)
 	if err != nil {
@@ -99,7 +100,14 @@ func (h *handler) UpdateInvoice(c echo.Context) error {
 		return handleError(c, http.StatusInternalServerError, err, meta, data)
 	}
 
-	data, err := h.invoiceUsecase.UpdatedInvoice(id, request)
+	//getUpdateByUserId
+	userId, err := h.middleware.GetuserId(c.Request())
+	if err != nil {
+		WriteLogErorr("[delivery][rest][invoice_handler][CreateInvoice] ", err)
+		return handleError(c, http.StatusInternalServerError, err, meta, data)
+	}
+
+	data, err := h.invoiceUsecase.UpdatedInvoice(id, request, userId)
 	if err != nil {
 		return handleError(c, http.StatusInternalServerError, err, meta, data)
 	}

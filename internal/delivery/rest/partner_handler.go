@@ -4,7 +4,6 @@ import (
 	"bemyfaktur/internal/model"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"net/http"
 	"strings"
 
@@ -26,9 +25,8 @@ func (h *handler) IndexPartner(c echo.Context) error {
 
 	data, err := h.partnerUsecase.IndexPartner(limit, offset, q, order)
 	if err != nil {
-		fmt.Printf("got error %s\n", err.Error())
+		//fmt.Printf("got error %s\n", err.Error())
 		WriteLogErorr("[delivery][rest][IndexPartner] ", err)
-
 		return handleError(c, http.StatusInternalServerError, err, meta, data)
 	}
 

@@ -1,6 +1,8 @@
 package model
 
-import "time"
+import (
+	"time"
+)
 
 type User struct {
 	ID        string    `gorm:"primaryKey;autoIncrement" json:"-"`
@@ -30,6 +32,11 @@ type UserSession struct {
 type UserSessionRespond struct {
 	UserInformation User        `json:"user_information"`
 	UserSession     UserSession `json:"user_session"`
+}
+
+type UserPartial struct {
+	UserId   string `json:"user_uuid"`
+	Username string `json:"username"`
 }
 
 type RefreshSession struct {

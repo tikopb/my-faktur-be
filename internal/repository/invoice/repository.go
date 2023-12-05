@@ -12,15 +12,16 @@ type InvoiceRepositoryInterface interface {
 	Create(invoice model.InvoiceRequest, partner model.Partner) (model.InvoiceRespont, error)
 	Show(id uuid.UUID) (model.InvoiceRespont, error)
 	ShowInternal(id uuid.UUID) (model.Invoice, error)
-	Update(id uuid.UUID, updatedInvoice model.Invoice) (model.InvoiceRespont, error)
+	Update(id uuid.UUID, request model.InvoiceRequest) (model.InvoiceRespont, error)
 	Delete(id uuid.UUID) (string, error)
 
 	//Line
-	IndexLine(limit int, offset int, invoiceId int, q string) ([]model.InvoiceLineRespont, error)
-	CreateLine(request model.InvoiceLine) (model.InvoiceLine, error)
-	ShowLine(id int) (model.InvoiceLine, error)
-	UpdateLine(id int, updatedInvoiceLine model.InvoiceLine) (model.InvoiceLine, error)
-	DeleteLine(id int) (string, error)
+	IndexLine(limit int, offset int, invoiceId int, q string, order []string) ([]model.InvoiceLineRespont, error)
+	CreateLine(request model.InvoiceLineRequest) (model.InvoiceLineRespont, error)
+	ShowLine(id uuid.UUID) (model.InvoiceLineRespont, error)
+	ShowLineLinternal(id uuid.UUID) (model.InvoiceLine, error)
+	UpdateLine(id uuid.UUID, request model.InvoiceLineRequest) (model.InvoiceLineRespont, error)
+	DeleteLine(id uuid.UUID) (string, error)
 
 	//docValidation
 	DocProcess(data model.Invoice, docaction string) (model.Invoice, error)

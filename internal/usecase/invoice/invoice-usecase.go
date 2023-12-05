@@ -2,6 +2,7 @@ package invoice
 
 import (
 	"bemyfaktur/internal/model"
+	"bemyfaktur/internal/model/constant"
 	"bemyfaktur/internal/repository/invoice"
 	"bemyfaktur/internal/repository/partner"
 	"bemyfaktur/internal/repository/product"
@@ -14,7 +15,6 @@ type invoiceUsecase struct {
 	invoiceRepo invoice.InvoiceRepositoryInterface
 	partnerRepo partner.Repository
 	productRepo product.Repository
-	//userRepo    user.Repository
 }
 
 func GetUsecase(invoiceRepo invoice.InvoiceRepositoryInterface, partnerRepo partner.Repository, productRepo product.Repository) InvoiceUsecaseInterface {
@@ -30,14 +30,17 @@ func (iu *invoiceUsecase) CreateInvoice(request model.InvoiceRequest, userID str
 	//# Get all data First
 	data := model.InvoiceRespont{}
 
-	//get Partner
-	partnerData, err := iu.partnerRepo.ShowInternal(request.PartnerIdUU)
+	//set Partner
+	partnerData, err := iu.partnerRepo.ShowInternal(request.PartnerUUID)
 	if err != nil || !partnerData.Isactive {
 		return data, errors.New("partner not exist")
 	}
+	request.PartnerId = partnerData.ID
 
-	//setCreatedBy
-	request.CreatedBy = userID
+	//setCreatedBy && updateBy
+	request.CreatedById = userID
+	request.UpdatedById = userID
+
 	return iu.invoiceRepo.Create(request, partnerData)
 }
 
@@ -65,39 +68,51 @@ DOD (Definition Of Done)
 2.	insert data of invoice with struct invoice
 3. 	fill invoice respon for return
 */
-func (iu *invoiceUsecase) UpdatedInvoice(id uuid.UUID, request model.Invoice) (model.InvoiceRespont, error) {
-	data := model.InvoiceRespont{}
+func (iu *invoiceUsecase) UpdatedInvoice(id uuid.UUID, request model.InvoiceRequest, userId string) (model.InvoiceRespont, error) {
 
-	//get and set partner
-	partnerData, err := iu.partnerRepo.Show(request.PartnerIdUU)
+	//set Partner
+	partnerData, err := iu.partnerRepo.ShowInternal(request.PartnerUUID)
 	if err != nil || !partnerData.Isactive {
-		return data, errors.New("partner not exist or partnet not active")
+		return model.InvoiceRespont{}, errors.New("partner not exist or inactive")
 	}
+	request.PartnerId = partnerData.ID
 
+	//set updated
+	request.UpdatedById = userId
 	return iu.invoiceRepo.Update(id, request)
 }
 
 //-- invoice line part
 
 // CreateInvoiceLine implements InvoiceUsecaseInterface.
-func (iu *invoiceUsecase) CreateInvoiceLine(request model.InvoiceLine, userId string) (model.InvoiceLine, error) {
+func (iu *invoiceUsecase) CreateInvoiceLine(request model.InvoiceLineRequest, userId string) (model.InvoiceLineRespont, error) {
 	//set createdby
-	request.CreatedBy = userId
+	request.CreatedById = userId
 
-	// data := model.InvoiceLine{}
-	// if !iu.validateProductIsActive(request.Product.UUID) {
-	// 	return data, errors.New("product is not activated")
-	// }
+	//validated the product
+	product, err := iu.validateProduct(request.ProductUUID)
+	if err != nil {
+		return model.InvoiceLineRespont{}, err
+	}
+	request.ProductID = product.ID //declare the product id of int
+
+	//validated header not void or not complete
+	invoice, err := iu.validateInvoice(request.InvoiceUUId)
+	if err != nil {
+		return model.InvoiceLineRespont{}, err
+	}
+	request.InvoiceId = invoice.ID
+
 	return iu.invoiceRepo.CreateLine(request)
 }
 
 // DeleteInvoiceLine implements InvoiceUsecaseInterface.
-func (iu *invoiceUsecase) DeleteInvoiceLine(id int) (string, error) {
+func (iu *invoiceUsecase) DeleteInvoiceLine(id uuid.UUID) (string, error) {
 	return iu.invoiceRepo.DeleteLine(id)
 }
 
 // GetInvoiceLine implements InvoiceUsecaseInterface.
-func (iu *invoiceUsecase) GetInvoiceLine(id int) (model.InvoiceLine, error) {
+func (iu *invoiceUsecase) GetInvoiceLine(id uuid.UUID) (model.InvoiceLineRespont, error) {
 	return iu.invoiceRepo.ShowLine(id)
 }
 
@@ -107,39 +122,68 @@ func (iu *invoiceUsecase) GetInvoiceLine(id int) (model.InvoiceLine, error) {
 	- Validate Product:
 		- Before using a product, ensure that its 'isActive' flag is set to true.
 		- If the product is not valid, an expected error function should be triggered.
-
+	- validate invoice:
+		- invoice must be active and in draft posisition
 	- Calculate Line Amount:
 		- This function calculates the line amount based on the quantity and discounts applied.
 		- The calculation considers whether the discount is a percentage or a fixed amount.
 		- The result is the product of (quantity * unit price) minus the discount.
 */
-func (iu *invoiceUsecase) UpdatedInvoiceLine(id int, request model.InvoiceLine, productId uuid.UUID) (model.InvoiceLine, error) {
-	data := model.InvoiceLine{}
-	//validate product is active!
-	if !iu.validateProductIsActive(productId) {
-		return data, errors.New("product not activated")
+func (iu *invoiceUsecase) UpdatedInvoiceLine(id uuid.UUID, request model.InvoiceLineRequest) (model.InvoiceLineRespont, error) {
+	//validated the product
+	//validated the product
+	product, err := iu.validateProduct(request.ProductUUID)
+	if err != nil {
+		return model.InvoiceLineRespont{}, err
 	}
+	request.ProductID = product.ID //declare the product id of int
+
+	invoice, err := iu.validateInvoice(request.InvoiceUUId)
+	if err != nil {
+		return model.InvoiceLineRespont{}, err
+	}
+	request.InvoiceId = invoice.ID
 
 	return iu.invoiceRepo.UpdateLine(id, request)
 }
 
 // IndexLine implements InvoiceUsecaseInterface.
-func (iu *invoiceUsecase) IndexLine(limit int, offset int, invoiceId int, q string) ([]model.InvoiceLineRespont, error) {
-	return iu.invoiceRepo.IndexLine(limit, offset, invoiceId, q)
+func (iu *invoiceUsecase) IndexLine(limit int, offset int, invoiceId uuid.UUID, q string, order []string) ([]model.InvoiceLineRespont, error) {
+	//validated header not void or not complete
+	invoice, err := iu.invoiceRepo.ShowInternal(invoiceId)
+	if err != nil {
+		return []model.InvoiceLineRespont{}, err
+	}
+	return iu.invoiceRepo.IndexLine(limit, offset, invoice.ID, q, order)
 }
 
 // validated product is activated on production
-func (iu *invoiceUsecase) validateProductIsActive(id uuid.UUID) bool {
-	//validate product is active!
-	data, err := iu.productRepo.Show(id)
+func (iu *invoiceUsecase) validateProduct(id uuid.UUID) (model.Product, error) {
+	product, err := iu.productRepo.ShowInternal(id)
 	if err != nil {
-		return false
+		return model.Product{}, err
+	}
+	if !product.IsActive {
+		return model.Product{}, errors.New("product is not activated, please review the data")
+	}
+	return product, nil
+}
+
+// validatet the invoiced header data
+func (iu *invoiceUsecase) validateInvoice(id uuid.UUID) (model.Invoice, error) {
+	invoice, err := iu.invoiceRepo.ShowInternal(id)
+	if err != nil {
+		return model.Invoice{}, err
+	}
+	if invoice.Status == constant.InvoiceStatusVoid {
+		return model.Invoice{}, errors.New("invoice status is void, please review the data")
+	} else if invoice.Status == constant.InvoiceStatusProcessed {
+		return model.Invoice{}, errors.New("invoice status is in progress, please review the data")
+	} else if invoice.Status == constant.InvoiceStatusComplete {
+		return model.Invoice{}, errors.New("invoice status is complete, please review the data")
 	}
 
-	if data.IsActive {
-		return true
-	}
-	return false
+	return invoice, nil
 }
 
 func (iu *invoiceUsecase) HandlingPagination(q string, limit int, offset int) (int64, error) {

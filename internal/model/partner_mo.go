@@ -1,6 +1,7 @@
 package model
 
 import (
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -40,6 +41,7 @@ func GetSeatchParamPartner() []string {
 }
 
 func GetSearchParamPartnerV2(q string) string {
+	q = strings.ToLower(q)
 	q = "'%" + q + "%'"
 	value := " lower(name)  LIKE " + q + " OR lower(bp_code) LIKE " + q
 

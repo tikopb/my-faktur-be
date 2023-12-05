@@ -12,9 +12,13 @@ import (
 // -- invoice
 type Invoice struct {
 	ID                int                       `json:"-" gorm:"primaryKey;autoIncrement"`
-	CreatedAt         time.Time                 `gorm:"column:created_at"`
-	CreatedBy         string                    `gorm:"column:created_by" json:"created_by"`
+	UUID              uuid.UUID                 `json:"id" gorm:"type:uuid;default:uuid_generate_v4();index:idx_invoice_uuid"`
+	CreatedAt         time.Time                 `gorm:"column:created_at;default:current_timestamp"`
+	UpdateAt          time.Time                 `gorm:"column:updated_at;default:current_timestamp"`
+	CreatedBy         string                    `gorm:"column:created_by;" json:"created_by"`
 	User              User                      `gorm:"foreignKey:created_by"`
+	UpdatedBy         string                    `gorm:"column:updated_by" json:"updated_by"`
+	UserUpdated       User                      `gorm:"foreignKey:updated_by"`
 	PartnerID         int                       `json:"partner_id" gorm:"column:partner_id;index:idx_invoice_partner_id"`
 	Partner           Partner                   `gorm:"foreignKey:partner_id"`
 	GrandTotal        float64                   `gorm:"column:grand_total"`
@@ -25,44 +29,53 @@ type Invoice struct {
 	OustandingPayment float64                   `json:"oustanding" gorm:"column:oustanding_payment"`
 	DocumentNo        string                    `json:"documentno" gorm:"column:documentno;not null;unique"`
 	IsPrecentage      bool                      `gorm:"column:isprecentage;default:false" json:"isprecentage"`
-	PartnerIdUU       uuid.UUID                 `json:"partneriduu"`
-	UUID              uuid.UUID                 `json:"id" gorm:"type:uuid;default:uuid_generate_v4();index:idx_invoice_uuid"`
 }
 
 type InvoiceRequest struct {
-	CreatedAt    time.Time                 `json:"created_at"`
-	CreatedBy    string                    `json:"-"`
-	UserId       string                    `json:"user_id"` //##@ until security module fixed
-	PartnerID    int                       `json:"partner_id"`
-	PartnerIdUU  uuid.UUID                 `json:"partneriduu"`
-	GrandTotal   float64                   `json:"grand_total"`
-	Discount     float64                   `json:"discount"`
-	BatchNo      string                    `json:"batchno"`
-	Status       constant.InvoiceStatus    `json:"status"`
+	Discount     float64 `json:"discount"`
+	BatchNo      string  `json:"batchno"`
+	Status       constant.InvoiceStatus
 	DocAction    constant.InvoiceDocAction `json:"docaction"`
-	DocumentNo   string                    `json:"documentno"`
 	IsPrecentage bool                      `json:"isprecentage"`
+	PartnerUUID  uuid.UUID                 `json:"partner_id"`
+	PartnerId    int                       `json:"-"`
+	CreatedById  string                    `json:"-"`
+	UpdatedById  string                    `json:"-"`
 }
 
 type InvoiceRespont struct {
 	ID                uuid.UUID `json:"id"`
 	CreatedAt         time.Time `json:"created_at"`
+	UpdatedAt         time.Time `json:"updated_at"`
 	GrandTotal        float64   `json:"grand_total"`
 	Discount          float64   `json:"discount"`
 	BatchNo           string    `json:"batchno"`
 	Status            constant.InvoiceStatus
-	DocAction         constant.InvoiceDocAction
-	CreatedBy         User    `json:"createdby"`
-	Partner           Partner `json:"partner"`
-	OustandingPayment float64 `json:"oustanding"`
-	DocumentNo        string  `json:"documentno"`
-	IsPrecentage      bool    `json:"isprecentage"`
+	DocAction         constant.InvoiceDocAction `json:"docaction"`
+	OustandingPayment float64                   `json:"oustanding"`
+	DocumentNo        string                    `json:"documentno"`
+	IsPrecentage      bool                      `json:"isprecentage"`
+	CreatedBy         UserPartial               `json:"createdby"`
+	UpdatedBy         UserPartial               `json:"updatedby"`
+	Partner           PartnerPartialRespon      `json:"partner"`
+}
+
+type InvoicePartialRespont struct {
+	UUID       uuid.UUID `json:"id"`
+	BatchNo    string    `json:"batchno"`
+	DocumentNo string    `json:"documentno"`
+	Id         int       `json:"-"`
 }
 
 // -- invoice line
 type InvoiceLine struct {
 	ID           int       `json:"-" gorm:"primaryKey;autoIncrement"`
-	CreatedAt    time.Time `json:"created_at"`
+	CreatedAt    time.Time `gorm:"column:created_at;default:current_timestamp"`
+	UpdateAt     time.Time `gorm:"column:updated_at;default:current_timestamp"`
+	CreatedBy    string    `gorm:"column:created_by;" json:"created_by"`
+	User         User      `gorm:"foreignKey:created_by"`
+	UpdatedBy    string    `gorm:"column:updated_by" json:"updated_by"`
+	UserUpdated  User      `gorm:"foreignKey:updated_by"`
 	Price        float64   `gorm:"column:price" json:"price"`
 	Discount     float64   `gorm:"column:discount" json:"discount"`
 	Qty          float64   `gorm:"column:qty" json:"qty"`
@@ -72,35 +85,36 @@ type InvoiceLine struct {
 	Product      Product   `gorm:"foreignKey:ProductID"`
 	InvoiceID    int       `gorm:"column:invoice_id;not null;index:idx_invoiceline_invoiceId" json:"invoice_id"`
 	Invoice      Invoice   `gorm:"foreignKey:invoice_id"`
-	CreatedBy    string    `gorm:"column:created_by" json:"created_by"`
-	User         User      `gorm:"foreignKey:created_by"`
 	UUID         uuid.UUID `json:"id" gorm:"type:uuid;default:uuid_generate_v4();index:idx_invoiceline_uuid"`
 }
 
 type InvoiceLineRequest struct {
-	Invoice_id      int
-	Invoice_line_id int
-	Created_at      time.Time
-	Product_name    string
-	Product_id      uuid.UUID
-	Qty             float64
-	Price           float64
-	Amount          float64
-	Discount        float64
-	IsPrecentage    bool
+	InvoiceUUId  uuid.UUID `json:"invoice_id"`
+	InvoiceId    int       `json:"-"`
+	ProductUUID  uuid.UUID `json:"product_id"`
+	ProductID    int       `json:"-"`
+	Qty          float64   `json:"qty"`
+	Price        float64   `json:"price"`
+	Amount       float64   `json:"-"`
+	Discount     float64   `json:"discount"`
+	IsPrecentage bool      `json:"isprecentage"`
+	CreatedById  string    `json:"-"`
+	UpdatedById  string    `json:"-"`
 }
 
 type InvoiceLineRespont struct {
-	Invoice_id      int
-	Invoice_line_id int
-	Created_at      time.Time
-	Product_name    string
-	Product_id      int
-	Qty             float64
-	Price           float64
-	Amount          float64
-	Discount        float64
-	IsPrecentage    bool
+	ID           uuid.UUID             `json:"id"`
+	CreatedAt    time.Time             `json:"created_at"`
+	UpdatedAt    time.Time             `json:"updated_at"`
+	Qty          float64               `json:"qty"`
+	Price        float64               `json:"price"`
+	Amount       float64               `json:"amount"`
+	Discount     float64               `json:"discount"`
+	IsPrecentage bool                  `json:"isprecentage"`
+	CreatedBy    UserPartial           `json:"createdby"`
+	UpdatedBy    UserPartial           `json:"updatedby"`
+	Invoice      InvoicePartialRespont `json:"invoice"`
+	Product      ProductPartialRespon  `json:"product"`
 }
 
 func GetSeatchParamInvoice(q string) string {
@@ -120,7 +134,7 @@ func GetSeatchParamInvoiceLine(q string, invoiceId int) string {
 	value := " invoice_id = " + id
 	if IsIntegerVariable(q) {
 		q = "'%" + q + "%'"
-		value = value + " lower(batch_no)  LIKE " + q + " OR lower(documentno) LIKE " + q + " OR grand_total::TEXT LIKE " + q
+		value = value + " AND discount::TEXT LIKE " + q + " OR price::TEXT LIKE " + q + " OR amount::TEXT LIKE " + q
 	} else {
 		value = value + ""
 	}

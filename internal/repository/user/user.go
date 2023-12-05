@@ -95,6 +95,20 @@ func (ur *userRepo) GetUserData(username string) (model.User, error) {
 	return userData, nil
 }
 
+// GetUserData By Id implements Repository.
+func (ur *userRepo) GetUserDatById(id string) (model.User, error) {
+	var userData model.User
+
+	if err := ur.db.Where(model.User{ID: id, IsActive: true}).First(&userData).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return userData, errors.New("username not exist")
+		}
+		return userData, err
+	}
+
+	return userData, nil
+}
+
 // VerifyLogin implements Repository.
 func (ur *userRepo) VerifyLogin(username string, password string, userData model.User) (bool, error) {
 	if username != userData.Username {

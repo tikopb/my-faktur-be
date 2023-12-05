@@ -42,6 +42,20 @@ type Container struct {
 }
 
 func NewContainer(db *gorm.DB) *Container {
+
+	secret := GetEnv("key_secret")
+	signKey, err := rsa.GenerateKey(rand.Reader, 4096)
+	if err != nil {
+		panic(err)
+	}
+	userRepo, err := userRepo.GetRepository(db, secret, 1, 64*1024, 4, 32, signKey, 60*time.Second, 48*time.Hour)
+	if err != nil {
+		panic("errorr repo")
+	}
+	authUsecase := authUsecase.GetUsecase(userRepo)
+
+	middleware := midUtil.GetAuthMiddleware(authUsecase)
+
 	documentUtilRepo := documentutil.GetRepository(db)
 	pgUtilRepo := pgUtil.GetRepository(db)
 
@@ -56,19 +70,6 @@ func NewContainer(db *gorm.DB) *Container {
 
 	paymentRepo := paymentRepository.GetRepository(db, documentUtilRepo, pgUtilRepo)
 	paymentUsecase := paymentUsecase.GetUsecase(paymentRepo, invoiceRepo)
-
-	secret := GetEnv("key_secret")
-	signKey, err := rsa.GenerateKey(rand.Reader, 4096)
-	if err != nil {
-		panic(err)
-	}
-	userRepo, err := userRepo.GetRepository(db, secret, 1, 64*1024, 4, 32, signKey, 60*time.Second, 48*time.Hour)
-	if err != nil {
-		panic("errorr repo")
-	}
-	authUsecase := authUsecase.GetUsecase(userRepo)
-
-	middleware := midUtil.GetAuthMiddleware(authUsecase)
 
 	return &Container{
 		PartnerUsecase: partnerUsecase,

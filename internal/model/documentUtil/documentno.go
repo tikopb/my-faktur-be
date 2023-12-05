@@ -104,8 +104,12 @@ creating data documentno temp
 */
 func (dr *documentUtilRepo) createDocumentNoTemp(tableName string) error {
 	firstDate, lastDate := dr.getFirstAndLastDateOfMonth()
+
+	currentTime := time.Now()
+	formattedDate := currentTime.Format("0601")
+
 	data := model.DocumentNoTemp{
-		Prefix:    dr.switchPrefixCase(tableName),
+		Prefix:    dr.switchPrefixCase(tableName) + formattedDate,
 		Suffix:    "JS",
 		TableName: tableName, //##@ fix this!
 		StartDate: firstDate,

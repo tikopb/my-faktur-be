@@ -3,77 +3,103 @@ package invoice
 import (
 	"bemyfaktur/internal/model"
 	"errors"
-	"fmt"
+	"time"
 
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
 // CreateLine implements InvoiceRepositoryInterface.
-func (ir *invoiceRepo) CreateLine(request model.InvoiceLine) (model.InvoiceLine, error) {
+func (ir *invoiceRepo) CreateLine(request model.InvoiceLineRequest) (model.InvoiceLineRespont, error) {
+
+	tx := ir.db.Begin()
+
 	data := model.InvoiceLine{
-		InvoiceID:    request.InvoiceID,
+		InvoiceID:    request.InvoiceId,
 		ProductID:    request.ProductID,
 		Price:        request.Price,
 		Discount:     request.Discount,
 		Qty:          request.Qty,
 		Amount:       ir.handlingAmount(request.Qty, request.Price, request.IsPrecentage, request.Discount),
-		CreatedBy:    request.CreatedBy,
+		CreatedBy:    request.CreatedById,
+		UpdatedBy:    request.CreatedById,
 		IsPrecentage: request.IsPrecentage,
 	}
 
 	//saved data
-	if err := ir.db.Create(&data).Error; err != nil {
-		return data, err
+	if err := tx.Create(&data).Error; err != nil {
+		return model.InvoiceLineRespont{}, err
 	}
 
 	//update the invoice header
 	if err := ir.AfterSave(data); err != nil {
-		return data, err
+		return model.InvoiceLineRespont{}, err
 	}
 
-	return data, nil
+	tx.Commit()
+
+	//return value set
+	return ir.ParsingInvoiceLineToInvoiceRequest(data)
 }
 
 // IndexLine implements InvoiceRepositoryInterface.
-func (ir *invoiceRepo) IndexLine(limit int, offset int, invoiceId int, q string) ([]model.InvoiceLineRespont, error) {
+func (ir *invoiceRepo) IndexLine(limit int, offset int, invoiceId int, q string, order []string) ([]model.InvoiceLineRespont, error) {
 	data := []model.InvoiceLineRespont{}
 	invoiceLine := []model.InvoiceLine{}
 
 	//q param handler
 	if q != "" {
-		if err := ir.db.Joins("Product", ir.db.Where(model.GetSearchParamPartnerV2(q))).Where(model.GetSeatchParamInvoiceLine(q, invoiceId)).Limit(limit).Offset(offset).Find(&data).Error; err != nil {
-			return data, err
+		if len(order) > 0 {
+			if err := ir.db.Preload("Invoice").Preload("Product").Preload("User").Preload("UserUpdated").Joins("Product", ir.db.Where(model.GetSeatchParamProductV2(q))).Where(model.GetSeatchParamInvoiceLine(q, invoiceId)).Limit(limit).Offset(offset).Order(order[0]).Find(&invoiceLine).Error; err != nil {
+				return []model.InvoiceLineRespont{}, err
+			}
+		} else {
+			if err := ir.db.Preload("Invoice").Preload("Product").Preload("User").Preload("UserUpdated").Joins("INNER JOIN products Product ON invoice_lines.product_id = Product.id AND ( " + model.GetSeatchParamProductV2(q) + " )").Where(model.GetSeatchParamInvoiceLine(q, invoiceId)).Limit(limit).Offset(offset).Find(&invoiceLine).Error; err != nil {
+				return []model.InvoiceLineRespont{}, err
+			}
 		}
 	} else {
-		if err := ir.db.Preload("Product").Where(model.GetSeatchParamInvoiceLine("", invoiceId)).Find(&invoiceLine).Error; err != nil {
-			return data, err
+		if len(order) > 0 {
+			if err := ir.db.Preload("Invoice").Preload("Product").Preload("User").Preload("UserUpdated").Where(model.GetSeatchParamInvoiceLine("", invoiceId)).Order(order[0]).Find(&invoiceLine).Error; err != nil {
+				return []model.InvoiceLineRespont{}, err
+			}
+		} else {
+			if err := ir.db.Preload("Invoice").Preload("Product").Preload("User").Preload("UserUpdated").Where(model.GetSeatchParamInvoiceLine("", invoiceId)).Find(&invoiceLine).Error; err != nil {
+				return []model.InvoiceLineRespont{}, err
+			}
 		}
+
 	}
 
 	for _, line := range invoiceLine {
-		indexResponse := model.InvoiceLineRespont{
-			Invoice_id:      line.ID,
-			Invoice_line_id: line.InvoiceID,
-			Created_at:      line.CreatedAt,
-			Product_name:    line.Product.Name,
-			Product_id:      line.Product.ID,
-			Qty:             line.Qty,
-			Price:           line.Price,
-			Amount:          line.Amount,
-			Discount:        line.Discount,
-			IsPrecentage:    line.IsPrecentage,
+		parsing, err := ir.ParsingInvoiceLineToInvoiceRequest(line)
+		if err != nil {
+			return []model.InvoiceLineRespont{}, nil
 		}
-		data = append(data, indexResponse)
+		data = append(data, parsing)
 	}
 
 	return data, nil
 }
 
 // ShowLine implements InvoiceRepositoryInterface.
-func (ir *invoiceRepo) ShowLine(id int) (model.InvoiceLine, error) {
+func (ir *invoiceRepo) ShowLine(id uuid.UUID) (model.InvoiceLineRespont, error) {
 	data := model.InvoiceLine{}
 
-	if err := ir.db.Preload("User").Preload("Product").Preload("Invoice").First(&data, id).Error; err != nil {
+	if err := ir.db.Preload("User").Preload("UserUpdated").Preload("Product").Preload("Invoice").Where(model.InvoiceLine{UUID: id}).First(&data).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return model.InvoiceLineRespont{}, errors.New("data not found")
+		}
+		return model.InvoiceLineRespont{}, err
+	}
+	return ir.ParsingInvoiceLineToInvoiceRequest(data)
+}
+
+// ShowLine implements InvoiceRepositoryInterface.
+func (ir *invoiceRepo) ShowLineLinternal(id uuid.UUID) (model.InvoiceLine, error) {
+	data := model.InvoiceLine{}
+
+	if err := ir.db.Preload("User").Preload("UserUpdated").Preload("Product").Preload("Invoice").Where(model.InvoiceLine{UUID: id}).First(&data).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return data, errors.New("data not found")
 		}
@@ -83,32 +109,39 @@ func (ir *invoiceRepo) ShowLine(id int) (model.InvoiceLine, error) {
 }
 
 // UpdateLine implements InvoiceRepositoryInterface.
-func (ir *invoiceRepo) UpdateLine(id int, updatedInvoiceLine model.InvoiceLine) (model.InvoiceLine, error) {
-	data, err := ir.ShowLine(id)
-
+func (ir *invoiceRepo) UpdateLine(id uuid.UUID, request model.InvoiceLineRequest) (model.InvoiceLineRespont, error) {
+	data, err := ir.ShowLineLinternal(id)
 	if err != nil {
-		return data, nil
+		return model.InvoiceLineRespont{}, nil
 	}
 
-	data.ProductID = updatedInvoiceLine.ProductID
-	data.Price = updatedInvoiceLine.Price
-	data.Discount = updatedInvoiceLine.Discount
-	data.Qty = updatedInvoiceLine.Qty
-	data.Amount = ir.handlingAmount(updatedInvoiceLine.Qty, updatedInvoiceLine.Price, updatedInvoiceLine.IsPrecentage, updatedInvoiceLine.Discount)
+	//updated updatedby field becaue gorm overwrite the updatedby colum ## not fixet yed!
+	err = ir.db.Exec("UPDATE invoice_lines SET updated_by = ? WHERE uuid = ?", request.UpdatedById, id).Error
+	if err != nil {
+		return model.InvoiceLineRespont{}, err
+	}
 
-	if err := ir.db.Save(&data).Error; err != nil {
-		return data, err
+	data.UpdateAt = time.Now()
+	data.ProductID = request.ProductID
+	data.Price = request.Price
+	data.Discount = request.Discount
+	data.Qty = request.Qty
+	data.IsPrecentage = request.IsPrecentage
+	data.Amount = ir.handlingAmount(request.Qty, request.Price, request.IsPrecentage, request.Discount)
+
+	if err := ir.db.Omit("UpdatedBy").Updates(&data).Error; err != nil {
+		return model.InvoiceLineRespont{}, err
 	}
 
 	//update the invoice header
 	go ir.AfterSave(data)
 
-	return data, nil
+	return ir.ParsingInvoiceLineToInvoiceRequest(data)
 }
 
 // DeleteLine implements InvoiceRepositoryInterface.
-func (ir *invoiceRepo) DeleteLine(id int) (string, error) {
-	data, err := ir.ShowLine(id)
+func (ir *invoiceRepo) DeleteLine(id uuid.UUID) (string, error) {
+	data, err := ir.ShowLineLinternal(id)
 	if err != nil {
 		return "", nil
 	}
@@ -125,6 +158,7 @@ func (ir *invoiceRepo) DeleteLine(id int) (string, error) {
 	return "data deleted", nil
 }
 
+// calculated the amount base on qty, price and discount
 func (ir *invoiceRepo) handlingAmount(qty float64, price float64, isPrecentage bool, discount float64) float64 {
 	var amount float64 = 0
 	var discountValue float64 = 0
@@ -139,6 +173,7 @@ func (ir *invoiceRepo) handlingAmount(qty float64, price float64, isPrecentage b
 	return amount
 }
 
+// bring updated after saved is success
 func (ir *invoiceRepo) AfterSave(request model.InvoiceLine) error {
 
 	//init the sql
@@ -151,22 +186,66 @@ func (ir *invoiceRepo) AfterSave(request model.InvoiceLine) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println(err)
+
 	return nil
 }
 
-func (ir *invoiceRepo) HandlingPaginationLine(q string, limit int, offset int, paymentID int) (int64, error) {
+func (ir *invoiceRepo) HandlingPaginationLine(q string, limit int, offset int, invoiceId int) (int64, error) {
 	var count int64 = 0
 	data := model.InvoiceLine{}
 	//q param handler
 	if q != "" {
-		if err := ir.db.Joins("Product", ir.db.Where(model.GetSeatchParamProductV2(q))).Where(model.GetSeatchParamInvoiceLine(q, paymentID)).Find(&data).Count(&count).Error; err != nil {
+		if err := ir.db.Joins("Product", ir.db.Where(model.GetSeatchParamProductV2(q))).Where(model.GetSeatchParamInvoiceLine(q, invoiceId)).Find(&data).Count(&count).Error; err != nil {
 			return count, err
 		}
 	} else {
-		if err := ir.db.Where(model.GetSeatchParamInvoiceLine("", paymentID)).Find(&data).Count(&count).Error; err != nil {
+		if err := ir.db.Where(model.GetSeatchParamInvoiceLine("", invoiceId)).Find(&data).Count(&count).Error; err != nil {
 			return count, err
 		}
 	}
 	return count, nil
+}
+
+func (ir *invoiceRepo) ParsingInvoiceLineToInvoiceRequest(line model.InvoiceLine) (model.InvoiceLineRespont, error) {
+	dataRe, err := ir.ShowLineLinternal(line.UUID)
+	if err != nil {
+		panic("erorr parsing")
+	}
+	createdBy := model.UserPartial{
+		UserId:   dataRe.User.ID,
+		Username: dataRe.User.Username,
+	}
+	updateBy := model.UserPartial{
+		UserId:   dataRe.UserUpdated.ID,
+		Username: dataRe.UserUpdated.Username,
+	}
+
+	invoice := model.InvoicePartialRespont{
+		Id:         dataRe.Invoice.ID,
+		UUID:       dataRe.Invoice.UUID,
+		BatchNo:    dataRe.Invoice.BatchNo,
+		DocumentNo: dataRe.Invoice.DocumentNo,
+	}
+
+	product := model.ProductPartialRespon{
+		UUID: dataRe.Product.UUID,
+		Name: dataRe.Product.Name,
+	}
+
+	data := model.InvoiceLineRespont{
+		ID:           dataRe.UUID,
+		CreatedAt:    dataRe.CreatedAt,
+		UpdatedAt:    dataRe.UpdateAt,
+		Qty:          dataRe.Qty,
+		Price:        dataRe.Price,
+		Amount:       dataRe.Amount,
+		Discount:     dataRe.Discount,
+		IsPrecentage: dataRe.IsPrecentage,
+		CreatedBy:    createdBy,
+		UpdatedBy:    updateBy,
+		Invoice:      invoice,
+		Product:      product,
+	}
+
+	return data, nil
 }
