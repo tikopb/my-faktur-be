@@ -61,9 +61,10 @@ type InvoiceRespont struct {
 }
 
 type InvoicePartialRespont struct {
-	ID         uuid.UUID `json:"id"`
+	UUID       uuid.UUID `json:"id"`
 	BatchNo    string    `json:"batchno"`
 	DocumentNo string    `json:"documentno"`
+	Id         int       `json:"-"`
 }
 
 // -- invoice line
@@ -71,7 +72,7 @@ type InvoiceLine struct {
 	ID           int       `json:"-" gorm:"primaryKey;autoIncrement"`
 	CreatedAt    time.Time `gorm:"column:created_at;default:current_timestamp"`
 	UpdateAt     time.Time `gorm:"column:updated_at;default:current_timestamp"`
-	CreatedBy    string    `gorm:"column:created_by" json:"created_by"`
+	CreatedBy    string    `gorm:"column:created_by;" json:"created_by"`
 	User         User      `gorm:"foreignKey:created_by"`
 	UpdatedBy    string    `gorm:"column:updated_by" json:"updated_by"`
 	UserUpdated  User      `gorm:"foreignKey:updated_by"`
@@ -94,7 +95,7 @@ type InvoiceLineRequest struct {
 	ProductID    int       `json:"-"`
 	Qty          float64   `json:"qty"`
 	Price        float64   `json:"price"`
-	Amount       float64   `json:"amount"`
+	Amount       float64   `json:"-"`
 	Discount     float64   `json:"discount"`
 	IsPrecentage bool      `json:"isprecentage"`
 	CreatedById  string    `json:"-"`
@@ -133,7 +134,7 @@ func GetSeatchParamInvoiceLine(q string, invoiceId int) string {
 	value := " invoice_id = " + id
 	if IsIntegerVariable(q) {
 		q = "'%" + q + "%'"
-		value = value + " lower(batch_no)  LIKE " + q + " OR lower(documentno) LIKE " + q + " OR grand_total::TEXT LIKE " + q
+		value = value + " AND discount::TEXT LIKE " + q + " OR price::TEXT LIKE " + q + " OR amount::TEXT LIKE " + q
 	} else {
 		value = value + ""
 	}

@@ -16,7 +16,7 @@ type InvoiceRepositoryInterface interface {
 	Delete(id uuid.UUID) (string, error)
 
 	//Line
-	IndexLine(limit int, offset int, invoiceId int, q string) ([]model.InvoiceLineRespont, error)
+	IndexLine(limit int, offset int, invoiceId int, q string, order []string) ([]model.InvoiceLineRespont, error)
 	CreateLine(request model.InvoiceLineRequest) (model.InvoiceLineRespont, error)
 	ShowLine(id uuid.UUID) (model.InvoiceLineRespont, error)
 	ShowLineLinternal(id uuid.UUID) (model.InvoiceLine, error)

@@ -43,7 +43,7 @@ func LoadRoutes(e *echo.Echo, handler *handler) {
 
 	//group invoice
 	invoiceGroupLine := e.Group("/invoiceline")
-	invoiceGroupLine.GET("s/", handler.IndexInvoiceLine, handler.middleware.CheckAuth)
+	invoiceGroupLine.GET("s/:id", handler.IndexInvoiceLine, handler.middleware.CheckAuth)
 	invoiceGroupLine.GET("/:id", handler.GetInvoiceLine, handler.middleware.CheckAuth)
 	invoiceGroupLine.POST("", handler.CreateInvoiceLine, handler.middleware.CheckAuth)
 	invoiceGroupLine.PUT("/:id", handler.UpdatedInvoiceLine, handler.middleware.CheckAuth)

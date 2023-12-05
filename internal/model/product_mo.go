@@ -1,6 +1,7 @@
 package model
 
 import (
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -44,6 +45,7 @@ func GetSeatchParamProduct() []string {
 
 // searching for join table with other model
 func GetSeatchParamProductV2(q string) string {
+	q = strings.ToLower(q)
 	value := " lower(name)  LIKE '%" + q + "%' OR lower(description) LIKE '%" + q + "%' OR lower(value) LIKE '%" + q + "%' "
 	return value
 }

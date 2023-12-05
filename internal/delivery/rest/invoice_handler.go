@@ -49,6 +49,7 @@ func (h *handler) IndexInvoice(c echo.Context) error {
 func (h *handler) GetInvoice(c echo.Context) error {
 	id, err := h.parsingId(c)
 	if err != nil {
+		WriteLogErorr("[delivery][rest][invoice_handler][GetInvoice] ", err)
 		return handleError(c, http.StatusInternalServerError, err, meta, data)
 	}
 
