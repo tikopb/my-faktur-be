@@ -125,6 +125,8 @@ func (h *handler) DeletePartner(c echo.Context) error {
 	//get param
 	idStr := c.Param("id")
 
+	WriteLogErorr("[delivery][rest][DeletePartner] ", errors.New("TEST! DELETE PARTNER"))
+
 	// Parse the string into a UUID
 	partnerID, err := h.ParsingUUID(idStr)
 	if err != nil {

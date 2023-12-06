@@ -112,6 +112,9 @@ func (h *handler) UpdatedProduct(c echo.Context) error {
 }
 
 func (h *handler) DeleteProduct(c echo.Context) error {
+
+	WriteLogErorr("[delivery][rest][DeletePartner] ", errors.New("TEST! DELETE PRODUCT"))
+
 	// get param
 	Id, err := h.parsingId(c)
 	if err != nil {
