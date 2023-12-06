@@ -60,11 +60,11 @@ func (ir *invoiceRepo) IndexLine(limit int, offset int, invoiceId int, q string,
 		}
 	} else {
 		if len(order) > 0 {
-			if err := ir.db.Preload("Invoice").Preload("Product").Preload("User").Preload("UserUpdated").Where(model.GetSeatchParamInvoiceLine("", invoiceId)).Order(order[0]).Find(&invoiceLine).Error; err != nil {
+			if err := ir.db.Preload("Invoice").Preload("Product").Preload("User").Preload("UserUpdated").Where(model.GetSeatchParamInvoiceLine("", invoiceId)).Limit(limit).Offset(offset).Order(order[0]).Find(&invoiceLine).Error; err != nil {
 				return []model.InvoiceLineRespont{}, err
 			}
 		} else {
-			if err := ir.db.Preload("Invoice").Preload("Product").Preload("User").Preload("UserUpdated").Where(model.GetSeatchParamInvoiceLine("", invoiceId)).Find(&invoiceLine).Error; err != nil {
+			if err := ir.db.Preload("Invoice").Preload("Product").Preload("User").Preload("UserUpdated").Where(model.GetSeatchParamInvoiceLine("", invoiceId)).Limit(limit).Offset(offset).Find(&invoiceLine).Error; err != nil {
 				return []model.InvoiceLineRespont{}, err
 			}
 		}
