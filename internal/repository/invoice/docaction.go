@@ -18,6 +18,8 @@ func (ir *invoiceRepo) DocProcess(data model.Invoice, docaction string) (model.I
 	case "CO":
 		data, err = ir.CompleteIT(data, docaction)
 	case "IP":
+		data.DocAction = constant.InvoiceActionProcessed
+		data.Status = constant.InvoiceStatusProcessed
 		err = nil
 	case "VO":
 		data, err = ir.ReversedIt(data, docaction)

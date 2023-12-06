@@ -20,13 +20,6 @@ type DBConfig struct {
 func GetDb() *gorm.DB {
 	dbAddress := getDbAdress()
 
-	// var logMode logger.LogLevel
-	// if os.Getenv("environment_site") == "production" {
-	// 	logMode = logger.Silent
-	// } else {
-	// 	logMode = logger.Info // Set the desired log level for non-production environments
-	// }
-
 	db, err := gorm.Open(postgres.Open(dbAddress), &gorm.Config{
 		TranslateError: true,
 		//Logger:         logger.Default.LogMode(logger.Info),
