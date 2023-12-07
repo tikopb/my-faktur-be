@@ -63,7 +63,6 @@ func handleError(c echo.Context, statusCode int, err error, meta interface{}, da
 
 	if strings.Contains(err.Error(), "data not found") {
 		statusCode = http.StatusNotFound
-		data = nil
 	}
 
 	if statusCode != http.StatusOK && statusCode != http.StatusCreated {
@@ -71,7 +70,7 @@ func handleError(c echo.Context, statusCode int, err error, meta interface{}, da
 			Status:  statusCode,
 			Message: "internal error: " + err.Error(),
 			Meta:    nil,
-			Data:    nil,
+			Data:    data,
 		}
 	} else {
 		response = handlerRespont{

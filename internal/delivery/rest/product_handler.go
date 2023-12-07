@@ -41,6 +41,11 @@ func (h *handler) IndexProduct(c echo.Context) error {
 		return handleError(c, http.StatusInternalServerError, err, meta, data)
 	}
 
+	//add validation if partner == null then set roolback
+	if len(data) < 1 {
+		data = []model.ProductRespon{}
+	}
+
 	return handleError(c, http.StatusOK, errors.New("GET SUCCESS"), meta, data)
 }
 
@@ -112,9 +117,6 @@ func (h *handler) UpdatedProduct(c echo.Context) error {
 }
 
 func (h *handler) DeleteProduct(c echo.Context) error {
-
-	WriteLogErorr("[delivery][rest][DeletePartner] ", errors.New("TEST! DELETE PRODUCT"))
-
 	// get param
 	Id, err := h.parsingId(c)
 	if err != nil {

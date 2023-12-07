@@ -39,8 +39,10 @@ func (h *handler) IndexPartner(c echo.Context) error {
 	}
 	//meta data field
 	msg := "GET SUCCESS"
-	if len(data) == 0 {
-		msg = "data not found"
+
+	//add validation if partner == null then set roolback
+	if len(data) < 1 {
+		data = []model.PartnerRespon{}
 	}
 
 	return handleError(c, http.StatusOK, errors.New(msg), meta, data)
@@ -124,8 +126,6 @@ func (h *handler) UpdatedPartner(c echo.Context) error {
 func (h *handler) DeletePartner(c echo.Context) error {
 	//get param
 	idStr := c.Param("id")
-
-	WriteLogErorr("[delivery][rest][DeletePartner] ", errors.New("TEST! DELETE PARTNER"))
 
 	// Parse the string into a UUID
 	partnerID, err := h.ParsingUUID(idStr)

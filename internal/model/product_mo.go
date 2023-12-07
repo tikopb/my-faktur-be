@@ -39,7 +39,7 @@ type ProductPartialRespon struct {
 }
 
 func GetSeatchParamProduct() []string {
-	searchParam := []string{"name", "description"}
+	searchParam := []string{"name", "description", "value"}
 	return searchParam
 }
 
