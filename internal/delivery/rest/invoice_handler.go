@@ -24,14 +24,21 @@ func (h *handler) IndexInvoice(c echo.Context) error {
 		return handleError(c, http.StatusInternalServerError, err, meta, data)
 	}
 
-	data, err := h.invoiceUsecase.IndexInvoice(limit, offset, q, order)
+	//get dateFrom and date to
+	dateFrom, dateTo, err := h.HandlingDateFromAndDateTo(c)
+	if err != nil {
+		WriteLogErorr("[delivery][rest][invoice_handler][IndexInvoice] ", err)
+		return handleError(c, http.StatusInternalServerError, err, meta, data)
+	}
+
+	data, err := h.invoiceUsecase.IndexInvoice(limit, offset, q, order, dateFrom, dateTo)
 	if err != nil {
 		WriteLogErorr("[delivery][rest][invoice_handler][IndexInvoice] ", err)
 		return handleError(c, http.StatusInternalServerError, err, meta, data)
 	}
 
 	//meta data field
-	count, err := h.invoiceUsecase.HandlingPagination(q, limit, offset)
+	count, err := h.invoiceUsecase.HandlingPagination(q, limit, offset, dateFrom, dateTo)
 	if err != nil {
 		WriteLogErorr("[delivery][rest][invoice_handler][IndexInvoice] ", err)
 		return handleError(c, http.StatusInternalServerError, err, meta, data)

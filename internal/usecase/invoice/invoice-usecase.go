@@ -55,8 +55,8 @@ func (iu *invoiceUsecase) GetInvoice(id uuid.UUID) (model.InvoiceRespont, error)
 }
 
 // IndexInvoice implements InvoiceUsecaseInterface.
-func (iu *invoiceUsecase) IndexInvoice(limit int, offset int, q string, order []string) ([]model.InvoiceRespont, error) {
-	return iu.invoiceRepo.Index(limit, offset, q, order)
+func (iu *invoiceUsecase) IndexInvoice(limit int, offset int, q string, order []string, dateFrom string, dateTo string) ([]model.InvoiceRespont, error) {
+	return iu.invoiceRepo.Index(limit, offset, q, order, dateFrom, dateTo)
 }
 
 // UpdatedInvoice implements InvoiceUsecaseInterface.
@@ -186,8 +186,8 @@ func (iu *invoiceUsecase) validateInvoice(id uuid.UUID) (model.Invoice, error) {
 	return invoice, nil
 }
 
-func (iu *invoiceUsecase) HandlingPagination(q string, limit int, offset int) (int64, error) {
-	count, err := iu.invoiceRepo.HandlingPagination(q, limit, offset)
+func (iu *invoiceUsecase) HandlingPagination(q string, limit int, offset int, dateFrom string, dateTo string) (int64, error) {
+	count, err := iu.invoiceRepo.HandlingPagination(q, limit, offset, dateFrom, dateTo)
 	if err != nil {
 		return 0, err
 	}
