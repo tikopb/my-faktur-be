@@ -6,9 +6,11 @@ import (
 	"bemyfaktur/internal/usecase/partner"
 	"bemyfaktur/internal/usecase/payment"
 	"bemyfaktur/internal/usecase/product"
+	"errors"
 	"fmt"
 	"net/http"
 	"strings"
+	"time"
 
 	"strconv"
 
@@ -118,6 +120,31 @@ func HandlingLimitAndOffset(c echo.Context) (int, int) {
 
 	// Return the values
 	return limit, offset
+}
+
+func (h *handler) HandlingDateFromAndDateTo(c echo.Context) (string, string, error) {
+	dateFromParam := c.QueryParam("date_from")
+	dateToParam := c.QueryParam("date_to")
+	if dateFromParam == "" || dateToParam == "" {
+		return "", "", errors.New("date from and date To can't be null")
+	}
+	layout := "2006-01-02"
+
+	// parsing date From
+	dateFrom, err := time.Parse(layout, dateFromParam)
+	if err != nil {
+		return "", "", err
+	}
+	dateTo, err := time.Parse(layout, dateToParam)
+	if err != nil {
+		return "", "", err
+	}
+
+	// Formatting dateFrom and dateTo as "YYYY-MM-DD" strings
+	formattedDateFrom := dateFrom.Format("2006-01-02")
+	formattedDateTo := dateTo.Format("2006-01-02")
+
+	return formattedDateFrom, formattedDateTo, nil
 }
 
 func WriteLogErorr(msg string, err error) {

@@ -29,6 +29,7 @@ type Invoice struct {
 	OustandingPayment float64                   `json:"oustanding" gorm:"column:oustanding_payment"`
 	DocumentNo        string                    `json:"documentno" gorm:"column:documentno;not null;unique"`
 	IsPrecentage      bool                      `gorm:"column:isprecentage;default:false" json:"isprecentage"`
+	PayDate           time.Time                 `gorm:"column:pay_date"`
 }
 
 type InvoiceRequest struct {
@@ -41,6 +42,9 @@ type InvoiceRequest struct {
 	PartnerId    int                       `json:"-"`
 	CreatedById  string                    `json:"-"`
 	UpdatedById  string                    `json:"-"`
+	DateFrom     time.Time                 `json:"date_from"`
+	DateTo       time.Time                 `json:"date_to"`
+	PayDate      time.Time                 `json:"pay_date"`
 }
 
 type InvoiceRespont struct {
@@ -55,6 +59,7 @@ type InvoiceRespont struct {
 	OustandingPayment float64                   `json:"oustanding"`
 	DocumentNo        string                    `json:"documentno"`
 	IsPrecentage      bool                      `json:"isprecentage"`
+	PayDate           time.Time                 `json:"pay_date"`
 	CreatedBy         UserPartial               `json:"createdby"`
 	UpdatedBy         UserPartial               `json:"updatedby"`
 	Partner           PartnerPartialRespon      `json:"partner"`
@@ -124,6 +129,21 @@ func GetSeatchParamInvoice(q string) string {
 		value = " lower(batch_no)  LIKE " + q + " OR lower(documentno) LIKE " + q + " OR grand_total::TEXT LIKE " + q
 	} else {
 		value = " lower(batch_no)  LIKE " + q + " OR lower(documentno) LIKE " + q
+	}
+
+	return value
+}
+
+func GetSeatchParamInvoiceV2(dateFrom string, dateTo string, q string) string {
+	var value string = " invoices.created_at >='" + dateFrom + "'::date and invoices.created_at <='" + dateTo + "'::date"
+
+	if q != "" { // if q not nill then add information of documentno
+		q = "'%" + q + "%'"
+		if IsIntegerVariable(q) {
+			value = value + " and lower(batch_no)  LIKE " + q + " OR lower(documentno) LIKE " + q + " OR grand_total::TEXT LIKE " + q
+		} else {
+			value = value + " and lower(batch_no)  LIKE " + q + " OR lower(documentno) LIKE " + q
+		}
 	}
 
 	return value

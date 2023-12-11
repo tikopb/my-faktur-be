@@ -48,6 +48,7 @@ func (ir *invoiceRepo) Create(request model.InvoiceRequest, partner model.Partne
 		OustandingPayment: 0,
 		DocumentNo:        documentno,
 		IsPrecentage:      request.IsPrecentage,
+		PayDate:           request.PayDate,
 	}
 
 	if err := ir.db.Create(&invoiceData).Error; err != nil {
@@ -79,36 +80,23 @@ func (ir *invoiceRepo) Delete(id uuid.UUID) (string, error) {
 }
 
 // Index implements InvoiceRepositoryInterface.
-func (ir *invoiceRepo) Index(limit int, offset int, q string, order []string) ([]model.InvoiceRespont, error) {
+func (ir *invoiceRepo) Index(limit int, offset int, q string, order []string, dateFrom string, dateTo string) ([]model.InvoiceRespont, error) {
 	data := []model.Invoice{}
 	dataReturn := []model.InvoiceRespont{}
 
 	//order by handling
 	orderParam := ""
 	if len(order) != 0 {
-		orderParam = fmt.Sprintf(" order by %s", string(order[0]))
+		orderParam = fmt.Sprintf(" %s", string(order[0]))
 	}
 
-	//q param handler
-	if q != "" {
-		if orderParam != "" {
-			if err := ir.db.Preload("Partner").Preload("User").Preload("UserUpdated").Joins("Partner", ir.db.Where(model.GetSearchParamPartnerV2(q))).Where(model.GetSeatchParamInvoice(q)).Limit(limit).Offset(offset).Order(orderParam).Find(&data).Error; err != nil {
-				return dataReturn, err
-			}
-		} else {
-			if err := ir.db.Preload("Partner").Preload("User").Preload("UserUpdated").Joins("Partner", ir.db.Where(model.GetSearchParamPartnerV2(q))).Where(model.GetSeatchParamInvoice(q)).Limit(limit).Offset(offset).Find(&data).Error; err != nil {
-				return dataReturn, err
-			}
+	if orderParam != "" {
+		if err := ir.db.Preload("Partner").Preload("User").Preload("UserUpdated").Joins("Partner", ir.db.Where(model.GetSearchParamPartnerV2(q))).Where(model.GetSeatchParamInvoiceV2(dateFrom, dateTo, q)).Limit(limit).Offset(offset).Order(orderParam).Find(&data).Error; err != nil {
+			return dataReturn, err
 		}
 	} else {
-		if len(order) > 0 {
-			if err := ir.db.Preload("Partner").Preload("User").Preload("UserUpdated").Order(order[0]).Limit(limit).Offset(offset).Find(&data).Error; err != nil {
-				return dataReturn, err
-			}
-		} else {
-			if err := ir.db.Preload("Partner").Preload("User").Preload("UserUpdated").Limit(limit).Offset(offset).Find(&data).Error; err != nil {
-				return dataReturn, err
-			}
+		if err := ir.db.Preload("Partner").Preload("User").Preload("UserUpdated").Joins("Partner", ir.db.Where(model.GetSearchParamPartnerV2(q))).Where(model.GetSeatchParamInvoiceV2(dateFrom, dateTo, q)).Limit(limit).Offset(offset).Find(&data).Error; err != nil {
+			return dataReturn, err
 		}
 	}
 
@@ -131,6 +119,7 @@ func (ir *invoiceRepo) Index(limit int, offset int, q string, order []string) ([
 			OustandingPayment: dataPreload.OustandingPayment,
 			DocumentNo:        dataPreload.DocumentNo,
 			IsPrecentage:      dataPreload.IsPrecentage,
+			PayDate:           dataPreload.PayDate,
 			CreatedBy:         dataPreload.CreatedBy,
 			UpdatedBy:         dataPreload.UpdatedBy,
 			Partner:           dataPreload.Partner,
@@ -233,6 +222,7 @@ func (ir *invoiceRepo) ParsingInvoiceToInvoiceRequest(invoice model.Invoice) (mo
 		OustandingPayment: invoice.OustandingPayment,
 		DocumentNo:        invoice.DocumentNo,
 		IsPrecentage:      invoice.IsPrecentage,
+		PayDate:           invoice.PayDate,
 		CreatedBy:         createdBy,
 		UpdatedBy:         updateBy,
 		Partner:           partner,
@@ -254,18 +244,13 @@ func (ir *invoiceRepo) getTableName() string {
 	return "invoices"
 }
 
-func (ir *invoiceRepo) HandlingPagination(q string, limit int, offset int) (int64, error) {
+func (ir *invoiceRepo) HandlingPagination(q string, limit int, offset int, dateFrom string, dateTo string) (int64, error) {
 	var count int64 = 0
 	data := model.Invoice{}
-	//q param handler
-	if q != "" {
-		if err := ir.db.Joins("Partner", ir.db.Where(model.GetSearchParamPartnerV2(q))).Where(model.GetSeatchParamInvoice(q)).Find(&data).Count(&count).Error; err != nil {
-			return count, err
-		}
-	} else {
-		if err := ir.db.Order("created_at DESC").Limit(limit).Offset(offset).Find(&data).Count(&count).Error; err != nil {
-			return count, err
-		}
+
+	if err := ir.db.Joins("Partner", ir.db.Where(model.GetSearchParamPartnerV2(q))).Where(model.GetSeatchParamInvoiceV2(dateFrom, dateTo, q)).Find(&data).Count(&count).Error; err != nil {
+		return count, err
 	}
+
 	return count, nil
 }
