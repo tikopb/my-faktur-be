@@ -2,11 +2,19 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Launch Package",
+            "name": "start Deploy",
             "type": "go",
             "request": "launch",
             "mode": "auto",
             "program": "main.go"
+        },
+        {
+            "name": "start seeder deploy",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "main.go",
+            "args": ["db:seeder"]
         }
     ]
   }

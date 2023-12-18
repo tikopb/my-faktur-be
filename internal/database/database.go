@@ -6,6 +6,7 @@ import (
 	"github.com/spf13/viper"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 type DBConfig struct {
@@ -17,18 +18,27 @@ type DBConfig struct {
 	SSLMode  string
 }
 
-func GetDb() *gorm.DB {
+func GetDb(commans bool) *gorm.DB {
 	dbAddress := getDbAdress()
 
-	db, err := gorm.Open(postgres.Open(dbAddress), &gorm.Config{
-		TranslateError: true,
-		//Logger:         logger.Default.LogMode(logger.Info),
-	})
+	conf := gorm.Config{}
+	if commans {
+		conf = gorm.Config{
+			TranslateError: true,
+			Logger:         logger.Default.LogMode(logger.Info),
+		}
+	} else {
+		conf = gorm.Config{
+			TranslateError: true,
+		}
+	}
+
+	db, err := gorm.Open(postgres.Open(dbAddress), &conf)
 	if err != nil {
 		panic("Failed to connect into database")
 	}
 
-	seedDB(db)
+	//SeedDB(db)
 
 	return db
 }
