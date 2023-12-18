@@ -25,6 +25,20 @@ To run this project, you will need to add the following environment variables to
 
 - `be_port` (the port on which the app will run)
 
+
+### Database Migration and Seeding
+To migrate and seed the database, use the following commands:
+
+```
+go run main.go db:migrate
+```
+
+```
+go run main.go db:seed
+```
+
+> Create DB first on postgres before run migrate and seed!
+
 ## Installation
 
 Install my-projec
