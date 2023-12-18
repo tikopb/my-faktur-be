@@ -4,24 +4,23 @@ import (
 	"bemyfaktur/internal/model"
 	"time"
 
-	"github.com/bxcodec/faker/v4"
 	"github.com/google/uuid"
-
 	"gorm.io/gorm"
 )
 
 //func ProductFaker(db *gorm.DB) *models.Product {
 
-func ProductFaker(db *gorm.DB) *model.Product {
+func ProductFaker(db *gorm.DB, product model.Product) *model.Product {
 	return &model.Product{
-		Name:        faker.Name(),
-		Value:       faker.Name(),
-		Upc:         faker.Name(),
-		Description: faker.Paragraph(),
-		CreatedBy:   "38fa80ce-fe0c-403b-9d45-d8e1d15682a0",
+		ID:          product.ID,
+		Name:        product.Name,
+		Value:       product.Value,
+		Upc:         product.Upc,
+		Description: product.Description,
+		CreatedBy:   product.CreatedBy,
 		CreatedAt:   time.Time{},
 		UpdateAt:    time.Time{},
-		IsActive:    true,
+		IsActive:    product.IsActive,
 		UUID:        uuid.New(),
 	}
 }
