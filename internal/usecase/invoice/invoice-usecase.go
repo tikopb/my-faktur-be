@@ -202,3 +202,47 @@ func (iu *invoiceUsecase) HandlingPaginationLine(q string, limit int, offset int
 	}
 	return count, nil
 }
+
+// CreateInvoiceV2 implements InvoiceUsecaseInterface.
+func (iu *invoiceUsecase) CreateInvoiceV2(request model.InvoiceRequestV2, userId string) (model.InvoiceRespontV2, error) {
+	//set Partner
+	partnerData, err := iu.partnerRepo.ShowInternal(request.Header.PartnerUUID)
+	if err != nil || !partnerData.Isactive {
+		return model.InvoiceRespontV2{}, errors.New("partner not exist")
+	}
+	request.Header.PartnerId = partnerData.ID
+
+	//setCreatedBy && updateBy
+	request.Header.CreatedById = userId
+	request.Header.UpdatedById = userId
+
+	//validate product
+	//validated the product
+	lines := request.Line
+	linesPost := []model.InvoiceLineRequest{}
+	for _, line := range lines {
+		//validate product
+		product, err := iu.validateProduct(line.ProductUUID)
+		if err != nil {
+			return model.InvoiceRespontV2{}, err
+		}
+		line.ProductID = product.ID //declare the product id of int
+
+		//set createdby
+		line.CreatedById = userId
+		line.UpdatedById = userId
+		linesPost = append(linesPost, line)
+	}
+
+	header, line, err := iu.invoiceRepo.CreateInvoiceV2(request.Header, linesPost, partnerData)
+	if err != nil {
+		return model.InvoiceRespontV2{}, err
+	}
+
+	data := model.InvoiceRespontV2{
+		Header: header,
+		Line:   line,
+	}
+
+	return data, nil
+}

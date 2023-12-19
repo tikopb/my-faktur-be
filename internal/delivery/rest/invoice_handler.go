@@ -139,3 +139,29 @@ func (h *handler) DeleteInvoice(c echo.Context) error {
 	return handleError(c, http.StatusOK, errors.New("DELETE "+data+"SUCCESS"), meta, data)
 
 }
+
+// generate data invoice header and line in same time
+func (h *handler) CreateInvoiceV2(c echo.Context) error {
+	var request model.InvoiceRequestV2
+	err := json.NewDecoder(c.Request().Body).Decode(&request)
+	if err != nil {
+		WriteLogErorr("[delivery][rest][invoice_handler][CreateInvoiceV2] ", err)
+		return handleError(c, http.StatusInternalServerError, err, meta, data)
+	}
+
+	//getUserId
+	userId, err := h.middleware.GetuserId(c.Request())
+	if err != nil {
+		WriteLogErorr("[delivery][rest][invoice_handler][CreateInvoiceV2] ", err)
+		return handleError(c, http.StatusInternalServerError, err, meta, data)
+	}
+
+	data, err := h.invoiceUsecase.CreateInvoiceV2(request, userId)
+	if err != nil {
+		WriteLogErorr("[delivery][rest][invoice_handler][CreateInvoiceV2] ", err)
+		return handleError(c, http.StatusInternalServerError, err, meta, data)
+	}
+
+	return handleError(c, http.StatusOK, errors.New("CREATE "+data.Header.BatchNo+" SUCCESS"), meta, data)
+
+}
