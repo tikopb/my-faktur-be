@@ -49,6 +49,7 @@ type InvoiceRequest struct {
 
 type InvoiceRespont struct {
 	ID                uuid.UUID `json:"id"`
+	InvoiceId         int       `json:"-"`
 	CreatedAt         time.Time `json:"created_at"`
 	UpdatedAt         time.Time `json:"updated_at"`
 	GrandTotal        float64   `json:"grand_total"`
@@ -120,6 +121,15 @@ type InvoiceLineRespont struct {
 	UpdatedBy    UserPartial           `json:"updatedby"`
 	Invoice      InvoicePartialRespont `json:"invoice"`
 	Product      ProductPartialRespon  `json:"product"`
+}
+
+type InvoiceRequestV2 struct {
+	Header InvoiceRequest       `json:"header"`
+	Line   []InvoiceLineRequest `json:"line"`
+}
+type InvoiceRespontV2 struct {
+	Header InvoiceRespont       `json:"header"`
+	Line   []InvoiceLineRespont `json:"line"`
 }
 
 func GetSeatchParamInvoice(q string) string {

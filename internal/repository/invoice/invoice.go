@@ -65,6 +65,47 @@ func (ir *invoiceRepo) Create(request model.InvoiceRequest, partner model.Partne
 	return dataPreload, nil
 }
 
+// create data with header and line simultaneously
+func (ir *invoiceRepo) CreateInvoiceV2(request model.InvoiceRequest, requestLines []model.InvoiceLineRequest, partner model.Partner) (model.InvoiceRespont, []model.InvoiceLineRespont, error) {
+	tx := ir.db.Begin()
+
+	//create header
+	header, err := ir.Create(request, partner)
+	if err != nil {
+		return model.InvoiceRespont{}, []model.InvoiceLineRespont{}, err
+	}
+	tx.Commit()
+
+	returnLine := []model.InvoiceLineRespont{}
+	invoice, err := ir.ShowInternal(header.ID)
+	if err != nil {
+		return model.InvoiceRespont{}, []model.InvoiceLineRespont{}, err
+
+	}
+	for _, line := range requestLines {
+		line.InvoiceId = invoice.ID
+		dataLine, err := ir.CreateLine(line)
+		if err != nil {
+			ir.Delete(header.ID)
+			for _, lineGenerate := range returnLine {
+				ir.Delete(lineGenerate.ID)
+			}
+
+			return model.InvoiceRespont{}, []model.InvoiceLineRespont{}, err
+		}
+
+		returnLine = append(returnLine, dataLine)
+	}
+
+	headerReturn, err := ir.Show(invoice.UUID)
+	if err != nil {
+		return model.InvoiceRespont{}, []model.InvoiceLineRespont{}, err
+
+	}
+
+	return headerReturn, returnLine, nil
+}
+
 // Delete implements InvoiceRepositoryInterface.
 func (ir *invoiceRepo) Delete(id uuid.UUID) (string, error) {
 	data, err := ir.ShowInternal(id)

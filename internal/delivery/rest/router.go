@@ -38,6 +38,7 @@ func LoadRoutes(e *echo.Echo, handler *handler) {
 	invoiceGroup.GET("s/", handler.IndexInvoice, handler.middleware.CheckAuth)
 	invoiceGroup.GET("/:id", handler.GetInvoice, handler.middleware.CheckAuth)
 	invoiceGroup.POST("", handler.CreateInvoice, handler.middleware.CheckAuth)
+	invoiceGroup.POST("/v2", handler.CreateInvoiceV2, handler.middleware.CheckAuth)
 	invoiceGroup.PUT("/:id", handler.UpdateInvoice, handler.middleware.CheckAuth)
 	invoiceGroup.DELETE("/:id", handler.DeleteInvoice, handler.middleware.CheckAuth)
 

@@ -21,4 +21,6 @@ type InvoiceUsecaseInterface interface {
 
 	HandlingPagination(q string, limit int, offset int, dateFrom string, dateTo string) (int64, error)
 	HandlingPaginationLine(q string, limit int, offset int, invoiceId int) (int64, error)
+
+	CreateInvoiceV2(request model.InvoiceRequestV2, userId string) (model.InvoiceRespontV2, error)
 }
