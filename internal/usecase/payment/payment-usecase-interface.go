@@ -1,13 +1,17 @@
 package payment
 
-import "bemyfaktur/internal/model"
+import (
+	"bemyfaktur/internal/model"
+
+	"github.com/google/uuid"
+)
 
 type PaymentUsecaseInterface interface {
-	Indexpayment(limit int, offset int, q string) ([]model.PaymentRespont, error)
-	Getpayment(id int) (model.Payment, error)
+	Indexpayment(limit int, offset int, q string, order []string, dateFrom string, dateTo string) ([]model.PaymentRespont, error)
+	Getpayment(id uuid.UUID) (model.PaymentRespont, error)
 	Createpayment(request model.PaymentRequest, userId string) (model.PaymentRespont, error)
-	Updatedpayment(id int, request model.PaymentRequest) (model.PaymentRespont, error)
-	Deletepayment(id int) (string, error)
+	Updatedpayment(id uuid.UUID, request model.PaymentRequest) (model.PaymentRespont, error)
+	Deletepayment(id uuid.UUID) (string, error)
 
 	IndexLine(limit int, offset int, paymentId int, q string) ([]model.PaymentLineRespont, error)
 	GetPaymentLine(id int) (model.PaymentLine, error)
@@ -15,6 +19,6 @@ type PaymentUsecaseInterface interface {
 	UpdatedPaymentLine(id int, request model.PaymentLineRequest) (model.PaymentLineRespont, error)
 	DeletePaymentLine(id int) (string, error)
 
-	HandlingPagination(q string, limit int, offset int) (int64, error)
+	HandlingPagination(q string, limit int, offset int, dateFrom string, dateTo string) (int64, error)
 	HandlingPaginationLine(q string, limit int, offset int, paymentID int) (int64, error)
 }

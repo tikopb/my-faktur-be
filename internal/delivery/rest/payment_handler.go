@@ -19,14 +19,27 @@ func (h *handler) IndexPayment(c echo.Context) error {
 	q := c.QueryParam("q")
 	q = strings.ToLower(q)
 
-	data, err := h.paymentUsecase.Indexpayment(limit, offset, q)
+	//setOrderData
+	order, err := h.GetOrderClauses(c)
+	if err != nil {
+		return handleError(c, http.StatusInternalServerError, err, meta, data)
+	}
+
+	//get dateFrom and date to
+	dateFrom, dateTo, err := h.HandlingDateFromAndDateTo(c)
+	if err != nil {
+		WriteLogErorr("[delivery][rest][payment_handler][IndexPayment] ", err)
+		return handleError(c, http.StatusInternalServerError, err, meta, data)
+	}
+
+	data, err := h.paymentUsecase.Indexpayment(limit, offset, q, order, dateFrom, dateTo)
 	if err != nil {
 		WriteLogErorr("[delivery][rest][payment_handler][IndexPayment] ", err)
 		return handleError(c, http.StatusInternalServerError, err, meta, data)
 	}
 
 	//meta data field
-	count, err := h.paymentUsecase.HandlingPagination(q, limit, offset)
+	count, err := h.paymentUsecase.HandlingPagination(q, limit, offset, dateFrom, dateTo)
 	if err != nil {
 		WriteLogErorr("[delivery][rest][payment_handler][IndexPayment] ", err)
 		return handleError(c, http.StatusInternalServerError, err, meta, data)
@@ -42,7 +55,11 @@ func (h *handler) IndexPayment(c echo.Context) error {
 }
 
 func (h *handler) Getpayment(c echo.Context) error {
-	id := transformIdToInt(c)
+	id, err := h.parsingId(c)
+	if err != nil {
+		WriteLogErorr("[delivery][rest][payment_handler][Getpayment] ", err)
+		return handleError(c, http.StatusInternalServerError, err, meta, data)
+	}
 
 	data, err := h.paymentUsecase.Getpayment(id)
 	if err != nil {
@@ -80,8 +97,13 @@ func (h *handler) CreatePayment(c echo.Context) error {
 
 func (h *handler) UpdatePayment(c echo.Context) error {
 	var request model.PaymentRequest
-	id := transformIdToInt(c)
-	err := json.NewDecoder(c.Request().Body).Decode(&request)
+	id, err := h.parsingId(c)
+	if err != nil {
+		WriteLogErorr("[delivery][rest][payment_handler][UpdatePayment] ", err)
+		return handleError(c, http.StatusInternalServerError, err, meta, data)
+	}
+
+	err = json.NewDecoder(c.Request().Body).Decode(&request)
 	if err != nil {
 		WriteLogErorr("[delivery][rest][payment_handler][UpdatePayment] ", err)
 		return handleError(c, http.StatusInternalServerError, err, meta, data)
@@ -98,7 +120,12 @@ func (h *handler) UpdatePayment(c echo.Context) error {
 }
 
 func (h *handler) DeletePayment(c echo.Context) error {
-	id := transformIdToInt(c)
+	id, err := h.parsingId(c)
+	if err != nil {
+		WriteLogErorr("[delivery][rest][payment_handler][DeletePayment] ", err)
+		return handleError(c, http.StatusInternalServerError, err, meta, data)
+	}
+
 	data, err := h.paymentUsecase.Deletepayment(id)
 	if err != nil {
 		WriteLogErorr("[delivery][rest][payment_handler][DeletePayment] ", err)

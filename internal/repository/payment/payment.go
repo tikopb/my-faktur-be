@@ -5,7 +5,9 @@ import (
 	documentutil "bemyfaktur/internal/model/documentUtil"
 	pgUtil "bemyfaktur/internal/model/paginationUtil"
 	"errors"
+	"fmt"
 
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -24,17 +26,23 @@ func GetRepository(db *gorm.DB, docUtil documentutil.Repository, pgRepo pgUtil.R
 }
 
 // Index implements PaymentRepositoryinterface.
-func (pr *paymentRepo) Index(limit int, offset int, q string) ([]model.PaymentRespont, error) {
+func (pr *paymentRepo) Index(limit int, offset int, q string, order []string, dateFrom string, dateTo string) ([]model.PaymentRespont, error) {
 	data := []model.Payment{}
 	dataReturn := []model.PaymentRespont{}
 
+	//order by handling
+	orderParam := ""
+	if len(order) != 0 {
+		orderParam = fmt.Sprintf(" %s", string(order[0]))
+	}
+
 	//q param handler
-	if q != "" {
-		if err := pr.db.Joins("Partner", pr.db.Where(model.GetSearchParamPartnerV2(q))).Where(model.GetSeatchParamPayment(q)).Limit(limit).Offset(offset).Find(&data).Error; err != nil {
+	if orderParam != "" {
+		if err := pr.db.Preload("Partner").Preload("User").Preload("UserUpdated").Joins("Partner", pr.db.Where(model.GetSearchParamPartnerV2(q))).Where(model.GetSeatchParamPayment(q, dateFrom, dateTo)).Limit(limit).Offset(offset).Order(orderParam).Find(&data).Error; err != nil {
 			return dataReturn, err
 		}
 	} else {
-		if err := pr.db.Order("created_at DESC").Limit(limit).Offset(offset).Find(&data).Error; err != nil {
+		if err := pr.db.Preload("Partner").Preload("User").Preload("UserUpdated").Order("created_at DESC").Where(model.GetSeatchParamPayment(q, dateFrom, dateTo)).Limit(limit).Offset(offset).Find(&data).Error; err != nil {
 			return dataReturn, err
 		}
 	}
@@ -47,17 +55,16 @@ func (pr *paymentRepo) Index(limit int, offset int, q string) ([]model.PaymentRe
 
 		indexResponse := model.PaymentRespont{
 			ID:           dataPreload.ID,
-			CreatedBy:    dataPreload.CreatedBy,
-			PartnerID:    dataPreload.PartnerID,
-			Partner_name: dataPreload.Partner_name,
+			DocumentNo:   dataPreload.DocumentNo,
+			BatchNo:      dataPreload.BatchNo,
+			IsPrecentage: dataPreload.IsPrecentage,
 			GrandTotal:   dataPreload.GrandTotal,
 			Discount:     dataPreload.Discount,
-			BatchNo:      dataPreload.BatchNo,
 			Status:       dataPreload.Status,
 			DoAction:     dataPreload.DoAction,
+			CreatedBy:    dataPreload.CreatedBy,
+			UpdatedBy:    dataPreload.UpdatedBy,
 			Partner:      dataPreload.Partner,
-			DocumentNo:   dataPreload.DocumentNo,
-			IsPrecentage: dataPreload.IsPrecentage,
 		}
 		dataReturn = append(dataReturn, indexResponse)
 	}
@@ -98,29 +105,39 @@ func (pr *paymentRepo) Create(payment model.PaymentRequest) (model.PaymentRespon
 }
 
 // Show implements PaymentRepositoryinterface.
-func (pr *paymentRepo) Show(id int) (model.Payment, error) {
+func (pr *paymentRepo) Show(id uuid.UUID) (model.PaymentRespont, error) {
+	data := model.PaymentRespont{}
+
+	if err := pr.db.Preload("Partner").Preload("User").Preload("UserUpdated").Where(&model.Payment{UUID: id}).First(&data).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return model.PaymentRespont{}, errors.New("data not found")
+		}
+	}
+	return data, nil
+}
+
+func (pr *paymentRepo) ShowInternal(id uuid.UUID) (model.Payment, error) {
 	data := model.Payment{}
 
-	if err := pr.db.Preload("Partner").Preload("User").First(&data, id).Error; err != nil {
+	if err := pr.db.Preload("Partner").Preload("User").Preload("UserUpdated").Where(&model.Payment{UUID: id}).First(&data).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return data, errors.New("data not found")
+			return model.Payment{}, errors.New("data not found")
 		}
 	}
 	return data, nil
 }
 
 // Update implements PaymentRepositoryinterface.
-func (pr *paymentRepo) Update(id int, updatedPayment model.PaymentRequest) (model.PaymentRespont, error) {
+func (pr *paymentRepo) Update(id uuid.UUID, updatedPayment model.PaymentRequest) (model.PaymentRespont, error) {
 	//set var
 	data := model.PaymentRespont{}
-	paymentData, err := pr.Show(id) //get payment data
+	paymentData, err := pr.ShowInternal(id) //get payment data
 
 	if err != nil {
 		return data, err
 	}
 
 	paymentData.PartnerID = updatedPayment.PartnerID
-	//paymentData.GrandTotal = updatedPayment.GrandTotal
 	paymentData.Discount = updatedPayment.Discount
 	paymentData.IsPrecentage = updatedPayment.IsPrecentage
 	paymentData.BatchNo = updatedPayment.BatchNo
@@ -151,7 +168,7 @@ func (pr *paymentRepo) Update(id int, updatedPayment model.PaymentRequest) (mode
 }
 
 // Delete implements PaymentRepositoryinterface.
-func (pr *paymentRepo) Delete(id int) (string, error) {
+func (pr *paymentRepo) Delete(id uuid.UUID) (string, error) {
 	data, err := pr.Show(id)
 	batchNo := data.BatchNo
 	if err != nil {
@@ -193,24 +210,36 @@ func (pr *paymentRepo) handlingGrandTotal(data model.Payment) model.Payment {
 
 func (pr *paymentRepo) parsingPaymentToPaymentRespont(payment model.Payment) (model.PaymentRespont, error) {
 	data := model.PaymentRespont{}
-	dataPreload, err := pr.Show(payment.ID)
+	dataPreload, err := pr.ShowInternal(payment.UUID)
 	if err != nil {
 		return data, err
 	}
 
+	createdBy := model.UserPartial{
+		UserId:   dataPreload.User.ID,
+		Username: dataPreload.User.Username,
+	}
+	updateBy := model.UserPartial{
+		UserId:   dataPreload.UserUpdated.ID,
+		Username: dataPreload.UserUpdated.Username,
+	}
+	partner := model.PartnerPartialRespon{
+		UUID: dataPreload.Partner.UUID,
+		Name: dataPreload.Partner.Name,
+	}
+
 	data = model.PaymentRespont{
 		ID:           dataPreload.UUID,
-		CreatedBy:    dataPreload.User.Username,
-		PartnerID:    dataPreload.PartnerID,
 		GrandTotal:   dataPreload.GrandTotal,
 		Discount:     dataPreload.Discount,
 		BatchNo:      dataPreload.BatchNo,
 		Status:       dataPreload.Status,
-		Partner:      dataPreload.Partner,
 		DocumentNo:   dataPreload.DocumentNo,
 		DoAction:     dataPreload.DocAction,
 		IsPrecentage: data.IsPrecentage,
-		Partner_name: data.Partner.Name,
+		CreatedBy:    createdBy,
+		UpdatedBy:    updateBy,
+		Partner:      partner,
 	}
 	return data, nil
 }
@@ -219,12 +248,12 @@ func (pr *paymentRepo) getTableName() string {
 	return "payments"
 }
 
-func (pr *paymentRepo) HandlingPagination(q string, limit int, offset int) (int64, error) {
+func (pr *paymentRepo) HandlingPagination(q string, limit int, offset int, dateFrom string, dateTo string) (int64, error) {
 	var count int64 = 0
 	data := model.Invoice{}
 	//q param handler
 	if q != "" {
-		if err := pr.db.Joins("Partner", pr.db.Where(model.GetSearchParamPartnerV2(q))).Where(model.GetSeatchParamPayment(q)).Find(&data).Count(&count).Error; err != nil {
+		if err := pr.db.Joins("Partner", pr.db.Where(model.GetSearchParamPartnerV2(q))).Where(model.GetSeatchParamPayment(q, dateFrom, dateTo)).Find(&data).Count(&count).Error; err != nil {
 			return count, err
 		}
 	} else {
