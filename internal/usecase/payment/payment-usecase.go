@@ -6,6 +6,8 @@ import (
 	"bemyfaktur/internal/repository/invoice"
 	"bemyfaktur/internal/repository/payment"
 	"errors"
+
+	"github.com/google/uuid"
 )
 
 type paymentUsecase struct {
@@ -28,22 +30,22 @@ func (pu *paymentUsecase) Createpayment(request model.PaymentRequest, userId str
 }
 
 // Deletepayment implements PaymentUsecaseInterface.
-func (pu *paymentUsecase) Deletepayment(id int) (string, error) {
+func (pu *paymentUsecase) Deletepayment(id uuid.UUID) (string, error) {
 	return pu.paymentRepo.Delete(id)
 }
 
 // Getpayment implements PaymentUsecaseInterface.
-func (pu *paymentUsecase) Getpayment(id int) (model.Payment, error) {
+func (pu *paymentUsecase) Getpayment(id uuid.UUID) (model.PaymentRespont, error) {
 	return pu.paymentRepo.Show(id)
 }
 
 // Indexpayment implements PaymentUsecaseInterface.
-func (pu *paymentUsecase) Indexpayment(limit int, offset int, q string) ([]model.PaymentRespont, error) {
-	return pu.paymentRepo.Index(limit, offset, q)
+func (pu *paymentUsecase) Indexpayment(limit int, offset int, q string, order []string, dateFrom string, dateTo string) ([]model.PaymentRespont, error) {
+	return pu.paymentRepo.Index(limit, offset, q, order, dateFrom, dateTo)
 }
 
 // Updatedpayment implements PaymentUsecaseInterface.
-func (pu *paymentUsecase) Updatedpayment(id int, request model.PaymentRequest) (model.PaymentRespont, error) {
+func (pu *paymentUsecase) Updatedpayment(id uuid.UUID, request model.PaymentRequest) (model.PaymentRespont, error) {
 	return pu.paymentRepo.Update(id, request)
 }
 
@@ -67,7 +69,7 @@ func (pu *paymentUsecase) CreatePaymentLine(request model.PaymentLineRequest, us
 }
 
 // GetInvoiceLine implements PaymentUsecaseInterface.
-func (pu *paymentUsecase) GetPaymentLine(id int) (model.PaymentLine, error) {
+func (pu *paymentUsecase) GetPaymentLine(id uuid.UUID) (model.PaymentLineRespont, error) {
 	return pu.paymentRepo.ShowLine(id)
 }
 
@@ -77,7 +79,7 @@ func (pu *paymentUsecase) IndexLine(limit int, offset int, paymentId int, q stri
 }
 
 // UpdatedInvoiceLine implements PaymentUsecaseInterface.
-func (pu *paymentUsecase) UpdatedPaymentLine(id int, request model.PaymentLineRequest) (model.PaymentLineRespont, error) {
+func (pu *paymentUsecase) UpdatedPaymentLine(id uuid.UUID, request model.PaymentLineRequest) (model.PaymentLineRespont, error) {
 	data := model.PaymentLineRespont{}
 	invoice, err := pu.invoiceRepo.Show(request.Invoice_uuid)
 	if err != nil {
@@ -91,12 +93,12 @@ func (pu *paymentUsecase) UpdatedPaymentLine(id int, request model.PaymentLineRe
 }
 
 // DeleteInvoiceLine implements PaymentUsecaseInterface.
-func (pu *paymentUsecase) DeletePaymentLine(id int) (string, error) {
+func (pu *paymentUsecase) DeletePaymentLine(id uuid.UUID) (string, error) {
 	return pu.paymentRepo.DeleteLine(id)
 }
 
-func (pu *paymentUsecase) HandlingPagination(q string, limit int, offset int) (int64, error) {
-	count, err := pu.paymentRepo.HandlingPagination(q, limit, offset)
+func (pu *paymentUsecase) HandlingPagination(q string, limit int, offset int, dateFrom string, dateTo string) (int64, error) {
+	count, err := pu.paymentRepo.HandlingPagination(q, limit, offset, dateFrom, dateTo)
 	if err != nil {
 		return 0, err
 	}

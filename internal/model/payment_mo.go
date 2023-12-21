@@ -14,6 +14,8 @@ type Payment struct {
 	CreatedAt    time.Time                 `gorm:"column:created_at;default:CURRENT_TIMESTAMP"`
 	CreatedBy    string                    `gorm:"column:created_by" json:"created_by"`
 	User         User                      `gorm:"foreignKey:created_by"`
+	UpdatedBy    string                    `gorm:"column:updated_by" json:"updated_by"`
+	UserUpdated  User                      `gorm:"foreignKey:updated_by"`
 	PartnerID    int                       `json:"partner_id" gorm:"column:partner_id;index:idx_payment_partner_id"`
 	Partner      Partner                   `gorm:"foreignKey:partner_id"`
 	GrandTotal   float64                   `gorm:"column:grand_total;default:0"`
@@ -40,7 +42,6 @@ type PaymentRequest struct {
 
 type PaymentRespont struct {
 	ID           uuid.UUID                 `json:"id"`
-	CreatedBy    string                    `json:"created_by"`
 	DocumentNo   string                    `json:"documentno"`
 	BatchNo      string                    `json:"batchno"`
 	IsPrecentage bool                      `json:"isprecentage"`
@@ -48,9 +49,16 @@ type PaymentRespont struct {
 	Discount     float64                   `json:"discount"`
 	Status       constant.PaymentStatus    `json:"status"`
 	DoAction     constant.PaymentDocAction `json:"docaction"`
-	PartnerID    int                       `json:"partner_id"`
-	Partner_name string                    `json:"partner_name"`
-	Partner      Partner
+	CreatedBy    UserPartial               `json:"createdby"`
+	UpdatedBy    UserPartial               `json:"updatedby"`
+	Partner      PartnerPartialRespon      `json:"partner"`
+}
+
+type PaymentPartialRespont struct {
+	UUID       uuid.UUID `json:"id"`
+	BatchNo    string    `json:"batchno"`
+	DocumentNo string    `json:"documentno"`
+	Id         int       `json:"-"`
 }
 
 type PaymentLine struct {
@@ -62,6 +70,8 @@ type PaymentLine struct {
 	CreatedAt    time.Time `gorm:"column:created_at;default:CURRENT_TIMESTAMP"`
 	CreatedBy    string    `gorm:"column:created_by" json:"created_by"`
 	User         User      `gorm:"foreignKey:created_by"`
+	UpdatedBy    string    `gorm:"column:updated_by" json:"updated_by"`
+	UserUpdated  User      `gorm:"foreignKey:updated_by"`
 	InvoiceID    int       `gorm:"column:invoice_id;not null;index:idx_invoice_id" json:"invoice_id"`
 	Invoice      Invoice   `gorm:"foreignKey:invoice_id"`
 	Discount     float64   `gorm:"column:discount" json:"discount"`
@@ -76,28 +86,35 @@ type PaymentLineRequest struct {
 	Price        float64   `json:"price"`
 	Discount     float64   `json:"discount"`
 	IsPrecentage bool      `json:"isprecentage"`
-	CreatedBy    string    `json:"createdby"`
+	CreatedBy    string    `json:"-"`
+	UpdatedBy    string    `json:"-"`
 }
 
 type PaymentLineRespont struct {
-	ID           uuid.UUID `json:"id"`
-	Price        float64   `json:"price"`
-	Amount       float64   `json:"amount"`
-	BatchNo      string    `json:"batchno"`
-	Invoice_id   int       `json:"invoice_id"`
-	Discount     float64   `json:"discount"`
-	IsPrecentage bool      `json:"isprecentage"`
-	Payment      Payment
+	ID           uuid.UUID             `json:"id"`
+	Price        float64               `json:"price"`
+	Amount       float64               `json:"amount"`
+	BatchNo      string                `json:"batchno"`
+	Invoice_id   int                   `json:"invoice_id"`
+	Discount     float64               `json:"discount"`
+	IsPrecentage bool                  `json:"isprecentage"`
+	Payment      PaymentPartialRespont `json:"payment"`
+	CreatedBy    UserPartial           `json:"createdby"`
+	UpdatedBy    UserPartial           `json:"updatedby"`
+	Invoice      InvoicePartialRespont `json:"invoice"`
 }
 
-func GetSeatchParamPayment(q string) string {
+func GetSeatchParamPayment(dateFrom string, dateTo string, q string) string {
 	//searchParam := []string{"batch_no", "documentno", "p.name"}
-	var value string
-	q = "'%" + q + "%'"
-	if IsIntegerVariable(q) {
-		value = " lower(batch_no)  LIKE " + q + " OR lower(documentno) LIKE " + q + " OR grand_total::TEXT LIKE " + q
-	} else {
-		value = " lower(batch_no)  LIKE " + q + " OR lower(documentno) LIKE " + q
+	var value string = " invoices.created_at >='" + dateFrom + "'::date and invoices.created_at <='" + dateTo + "'::date"
+
+	if q != "" {
+		q = "'%" + q + "%'"
+		if IsIntegerVariable(q) {
+			value = " lower(batch_no)  LIKE " + q + " OR lower(documentno) LIKE " + q + " OR grand_total::TEXT LIKE " + q
+		} else {
+			value = " lower(batch_no)  LIKE " + q + " OR lower(documentno) LIKE " + q
+		}
 	}
 
 	return value

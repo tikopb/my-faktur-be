@@ -3,6 +3,8 @@ package payment
 import (
 	"bemyfaktur/internal/model"
 	"errors"
+
+	"github.com/google/uuid"
 )
 
 func (pr *paymentRepo) CreateLine(paymentLine model.PaymentLineRequest) (model.PaymentLineRespont, error) {
@@ -14,6 +16,7 @@ func (pr *paymentRepo) CreateLine(paymentLine model.PaymentLineRequest) (model.P
 		InvoiceID:    paymentLine.Invoice_id,
 		IsPrecentage: paymentLine.IsPrecentage,
 		CreatedBy:    paymentLine.CreatedBy,
+		UpdatedBy:    paymentLine.UpdatedBy,
 	}
 
 	//beforesave validation
@@ -47,22 +50,17 @@ func (pr *paymentRepo) IndexLine(limit int, offset int, paymentId int) ([]model.
 	paymentLine := []model.PaymentLine{}
 	data := []model.PaymentLineRespont{}
 
-	if err := pr.db.Preload("Payment").Preload("Invoice").Where(model.PaymentLine{PaymentID: paymentId}).Order("created_at").Limit(limit).Offset(offset).Find(&paymentLine).Error; err != nil {
+	if err := pr.db.Preload("Payment").Preload("Invoice").Preload("User").Preload("UserUpdated").Where(model.PaymentLine{PaymentID: paymentId}).Order("created_at").Limit(limit).Offset(offset).Find(&paymentLine).Error; err != nil {
 		return data, err
 	}
 
 	for _, paymentline := range paymentLine {
-		indexResponse := model.PaymentLineRespont{
-			ID:           paymentline.UUID,
-			BatchNo:      paymentline.Invoice.BatchNo,
-			Invoice_id:   paymentline.InvoiceID,
-			Price:        paymentline.Price,
-			Discount:     paymentline.Discount,
-			IsPrecentage: paymentline.IsPrecentage,
-			Amount:       paymentline.Amount,
-			Payment:      paymentline.Payment,
+		parsing, err := pr.parsingPaymentLineToRespont(paymentline)
+		if err != nil {
+			return []model.PaymentLineRespont{}, err
 		}
-		data = append(data, indexResponse)
+		data = append(data, parsing)
+
 	}
 
 	return data, nil
@@ -70,21 +68,32 @@ func (pr *paymentRepo) IndexLine(limit int, offset int, paymentId int) ([]model.
 }
 
 // ShowLine implements PaymentRepositoryinterface.
-func (pr *paymentRepo) ShowLine(id int) (model.PaymentLine, error) {
+func (pr *paymentRepo) ShowLine(id uuid.UUID) (model.PaymentLineRespont, error) {
 	data := model.PaymentLine{}
 
 	if err := pr.db.Preload("Payment").Preload("Invoice").Preload("User").First(&data, id).Error; err != nil {
-		return data, errors.New("daat not found")
+		return model.PaymentLineRespont{}, errors.New("data not found")
+	}
+
+	return pr.parsingPaymentLineToRespont(data)
+}
+
+// ShowLine implements PaymentRepositoryinterface.
+func (pr *paymentRepo) ShowLineInternal(id uuid.UUID) (model.PaymentLine, error) {
+	data := model.PaymentLine{}
+
+	if err := pr.db.Preload("Payment").Preload("Invoice").Preload("User").Where(model.PaymentLine{UUID: id}).First(&data).Error; err != nil {
+		return data, errors.New("data not found")
 	}
 
 	return data, nil
 }
 
 // UpdateLine implements PaymentRepositoryinterface.
-func (pr *paymentRepo) UpdateLine(id int, updatedPaymentLine model.PaymentLineRequest) (model.PaymentLineRespont, error) {
+func (pr *paymentRepo) UpdateLine(id uuid.UUID, updatedPaymentLine model.PaymentLineRequest) (model.PaymentLineRespont, error) {
 	//set var
 	data := model.PaymentLineRespont{}
-	paymentLineData, err := pr.ShowLine(id)
+	paymentLineData, err := pr.ShowLineInternal(id)
 
 	if err != nil {
 		return data, err
@@ -113,8 +122,8 @@ func (pr *paymentRepo) UpdateLine(id int, updatedPaymentLine model.PaymentLineRe
 }
 
 // DeleteLine implements PaymentRepositoryinterface.
-func (pr *paymentRepo) DeleteLine(id int) (string, error) {
-	data, err := pr.ShowLine(id)
+func (pr *paymentRepo) DeleteLine(id uuid.UUID) (string, error) {
+	data, err := pr.ShowLineInternal(id)
 
 	if err != nil {
 		return "", nil
@@ -134,8 +143,27 @@ func (pr *paymentRepo) DeleteLine(id int) (string, error) {
 }
 
 func (pr *paymentRepo) parsingPaymentLineToRespont(paymentLine model.PaymentLine) (model.PaymentLineRespont, error) {
+	createdBy := model.UserPartial{
+		UserId:   paymentLine.User.ID,
+		Username: paymentLine.User.Username,
+	}
+	updateBy := model.UserPartial{
+		UserId:   paymentLine.UserUpdated.ID,
+		Username: paymentLine.UserUpdated.Username,
+	}
+	payment := model.PaymentPartialRespont{
+		UUID:       paymentLine.Payment.UUID,
+		BatchNo:    paymentLine.Payment.BatchNo,
+		DocumentNo: paymentLine.Payment.DocumentNo,
+	}
+	invoice := model.InvoicePartialRespont{
+		UUID:       paymentLine.Invoice.UUID,
+		BatchNo:    paymentLine.Invoice.BatchNo,
+		DocumentNo: paymentLine.Invoice.DocumentNo,
+	}
+
 	data := model.PaymentLineRespont{}
-	dataPreload, err := pr.ShowLine(paymentLine.ID)
+	dataPreload, err := pr.ShowLineInternal(paymentLine.UUID)
 	if err != nil {
 		return data, err
 	}
@@ -146,9 +174,12 @@ func (pr *paymentRepo) parsingPaymentLineToRespont(paymentLine model.PaymentLine
 		Amount:       dataPreload.Amount,
 		BatchNo:      dataPreload.Invoice.BatchNo,
 		Invoice_id:   dataPreload.InvoiceID,
-		Discount:     data.Discount,
-		IsPrecentage: data.IsPrecentage,
-		Payment:      data.Payment,
+		Discount:     dataPreload.Discount,
+		IsPrecentage: dataPreload.IsPrecentage,
+		Payment:      payment,
+		CreatedBy:    createdBy,
+		UpdatedBy:    updateBy,
+		Invoice:      invoice,
 	}
 
 	return data, nil
