@@ -15,9 +15,10 @@ type PaymentRepositoryinterface interface {
 
 	IndexLine(limit int, offset int, paymentId int) ([]model.PaymentLineRespont, error)
 	CreateLine(paymentLine model.PaymentLineRequest) (model.PaymentLineRespont, error)
-	ShowLine(id int) (model.PaymentLine, error)
-	UpdateLine(id int, updatedPaymentLine model.PaymentLineRequest) (model.PaymentLineRespont, error)
-	DeleteLine(id int) (string, error)
+	ShowLine(id uuid.UUID) (model.PaymentLineRespont, error)
+	ShowLineInternal(id uuid.UUID) (model.PaymentLine, error)
+	UpdateLine(id uuid.UUID, updatedPaymentLine model.PaymentLineRequest) (model.PaymentLineRespont, error)
+	DeleteLine(id uuid.UUID) (string, error)
 
 	//save validaition
 	BeforeSave(data model.Payment) (model.Payment, error)

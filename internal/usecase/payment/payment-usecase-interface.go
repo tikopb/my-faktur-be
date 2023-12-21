@@ -14,10 +14,10 @@ type PaymentUsecaseInterface interface {
 	Deletepayment(id uuid.UUID) (string, error)
 
 	IndexLine(limit int, offset int, paymentId int, q string) ([]model.PaymentLineRespont, error)
-	GetPaymentLine(id int) (model.PaymentLine, error)
+	GetPaymentLine(id uuid.UUID) (model.PaymentLineRespont, error)
 	CreatePaymentLine(request model.PaymentLineRequest, userId string) (model.PaymentLineRespont, error)
-	UpdatedPaymentLine(id int, request model.PaymentLineRequest) (model.PaymentLineRespont, error)
-	DeletePaymentLine(id int) (string, error)
+	UpdatedPaymentLine(id uuid.UUID, request model.PaymentLineRequest) (model.PaymentLineRespont, error)
+	DeletePaymentLine(id uuid.UUID) (string, error)
 
 	HandlingPagination(q string, limit int, offset int, dateFrom string, dateTo string) (int64, error)
 	HandlingPaginationLine(q string, limit int, offset int, paymentID int) (int64, error)

@@ -45,7 +45,11 @@ func (h *handler) IndexPaymentLine(c echo.Context) error {
 }
 
 func (h *handler) GetPaymentLine(c echo.Context) error {
-	id := transformIdToInt(c)
+	id, err := h.parsingId(c)
+	if err != nil {
+		WriteLogErorr("[delivery][rest][paymentline_handler][GetPaymentLine] ", err)
+		return handleError(c, http.StatusInternalServerError, err, meta, data)
+	}
 
 	data, err := h.paymentUsecase.GetPaymentLine(id)
 	if err != nil {
@@ -84,9 +88,14 @@ func (h *handler) CreatePaymentLine(c echo.Context) error {
 
 func (h *handler) UpdatePaymentLine(c echo.Context) error {
 	//set param
-	id := transformIdToInt(c)
+	id, err := h.parsingId(c)
+	if err != nil {
+		WriteLogErorr("[delivery][rest][paymentline_handler][UpdatePaymentLine] ", err)
+		return handleError(c, http.StatusInternalServerError, err, meta, data)
+	}
+
 	var request model.PaymentLineRequest
-	err := json.NewDecoder(c.Request().Body).Decode(&request)
+	err = json.NewDecoder(c.Request().Body).Decode(&request)
 	if err != nil {
 		WriteLogErorr("[delivery][rest][paymentline_handler][UpdatePaymentLine] ", err)
 		return handleError(c, http.StatusInternalServerError, err, meta, data)
@@ -104,7 +113,11 @@ func (h *handler) UpdatePaymentLine(c echo.Context) error {
 
 func (h *handler) DeletePaymentLine(c echo.Context) error {
 	//set param
-	id := transformIdToInt(c)
+	id, err := h.parsingId(c)
+	if err != nil {
+		WriteLogErorr("[delivery][rest][paymentline_handler][DeletePaymentLine] ", err)
+		return handleError(c, http.StatusInternalServerError, err, meta, data)
+	}
 
 	data, err := h.paymentUsecase.DeletePaymentLine(id)
 	if err != nil {

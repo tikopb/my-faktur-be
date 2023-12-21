@@ -70,6 +70,8 @@ type PaymentLine struct {
 	CreatedAt    time.Time `gorm:"column:created_at;default:CURRENT_TIMESTAMP"`
 	CreatedBy    string    `gorm:"column:created_by" json:"created_by"`
 	User         User      `gorm:"foreignKey:created_by"`
+	UpdatedBy    string    `gorm:"column:updated_by" json:"updated_by"`
+	UserUpdated  User      `gorm:"foreignKey:updated_by"`
 	InvoiceID    int       `gorm:"column:invoice_id;not null;index:idx_invoice_id" json:"invoice_id"`
 	Invoice      Invoice   `gorm:"foreignKey:invoice_id"`
 	Discount     float64   `gorm:"column:discount" json:"discount"`
@@ -84,18 +86,22 @@ type PaymentLineRequest struct {
 	Price        float64   `json:"price"`
 	Discount     float64   `json:"discount"`
 	IsPrecentage bool      `json:"isprecentage"`
-	CreatedBy    string    `json:"createdby"`
+	CreatedBy    string    `json:"-"`
+	UpdatedBy    string    `json:"-"`
 }
 
 type PaymentLineRespont struct {
-	ID           uuid.UUID `json:"id"`
-	Price        float64   `json:"price"`
-	Amount       float64   `json:"amount"`
-	BatchNo      string    `json:"batchno"`
-	Invoice_id   int       `json:"invoice_id"`
-	Discount     float64   `json:"discount"`
-	IsPrecentage bool      `json:"isprecentage"`
-	Payment      Payment
+	ID           uuid.UUID             `json:"id"`
+	Price        float64               `json:"price"`
+	Amount       float64               `json:"amount"`
+	BatchNo      string                `json:"batchno"`
+	Invoice_id   int                   `json:"invoice_id"`
+	Discount     float64               `json:"discount"`
+	IsPrecentage bool                  `json:"isprecentage"`
+	Payment      PaymentPartialRespont `json:"payment"`
+	CreatedBy    UserPartial           `json:"createdby"`
+	UpdatedBy    UserPartial           `json:"updatedby"`
+	Invoice      InvoicePartialRespont `json:"invoice"`
 }
 
 func GetSeatchParamPayment(dateFrom string, dateTo string, q string) string {

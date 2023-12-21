@@ -69,7 +69,7 @@ func (pu *paymentUsecase) CreatePaymentLine(request model.PaymentLineRequest, us
 }
 
 // GetInvoiceLine implements PaymentUsecaseInterface.
-func (pu *paymentUsecase) GetPaymentLine(id int) (model.PaymentLine, error) {
+func (pu *paymentUsecase) GetPaymentLine(id uuid.UUID) (model.PaymentLineRespont, error) {
 	return pu.paymentRepo.ShowLine(id)
 }
 
@@ -79,7 +79,7 @@ func (pu *paymentUsecase) IndexLine(limit int, offset int, paymentId int, q stri
 }
 
 // UpdatedInvoiceLine implements PaymentUsecaseInterface.
-func (pu *paymentUsecase) UpdatedPaymentLine(id int, request model.PaymentLineRequest) (model.PaymentLineRespont, error) {
+func (pu *paymentUsecase) UpdatedPaymentLine(id uuid.UUID, request model.PaymentLineRequest) (model.PaymentLineRespont, error) {
 	data := model.PaymentLineRespont{}
 	invoice, err := pu.invoiceRepo.Show(request.Invoice_uuid)
 	if err != nil {
@@ -93,7 +93,7 @@ func (pu *paymentUsecase) UpdatedPaymentLine(id int, request model.PaymentLineRe
 }
 
 // DeleteInvoiceLine implements PaymentUsecaseInterface.
-func (pu *paymentUsecase) DeletePaymentLine(id int) (string, error) {
+func (pu *paymentUsecase) DeletePaymentLine(id uuid.UUID) (string, error) {
 	return pu.paymentRepo.DeleteLine(id)
 }
 
