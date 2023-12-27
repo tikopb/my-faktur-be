@@ -41,6 +41,7 @@ func (ir *invoiceRepo) Create(request model.InvoiceRequest, partner model.Partne
 		UpdatedBy:         request.UpdatedById,
 		PartnerID:         request.PartnerId,
 		GrandTotal:        0, // all new invoice data is 0
+		TotalLine:         0,
 		Discount:          request.Discount,
 		BatchNo:           request.BatchNo,
 		Status:            constant.InvoiceStatusDraft, // all new data set to draft
@@ -255,6 +256,7 @@ func (ir *invoiceRepo) ParsingInvoiceToInvoiceRequest(invoice model.Invoice) (mo
 		ID:                invoice.UUID,
 		CreatedAt:         invoice.CreatedAt,
 		UpdatedAt:         invoice.UpdateAt,
+		TotalLine:         invoice.TotalLine,
 		GrandTotal:        invoice.GrandTotal,
 		Discount:          invoice.Discount,
 		BatchNo:           invoice.BatchNo,
@@ -274,9 +276,9 @@ func (ir *invoiceRepo) ParsingInvoiceToInvoiceRequest(invoice model.Invoice) (mo
 
 func (pr *invoiceRepo) handlingGrandTotal(data model.Invoice) model.Invoice {
 	if data.IsPrecentage {
-		data.GrandTotal = data.GrandTotal - (data.GrandTotal * data.Discount / 100)
+		data.GrandTotal = data.TotalLine - (data.TotalLine * data.Discount / 100)
 	} else {
-		data.GrandTotal = data.GrandTotal - data.Discount
+		data.GrandTotal = data.TotalLine - data.Discount
 	}
 	return data
 }

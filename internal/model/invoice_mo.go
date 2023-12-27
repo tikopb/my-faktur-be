@@ -21,6 +21,7 @@ type Invoice struct {
 	UserUpdated       User                      `gorm:"foreignKey:updated_by"`
 	PartnerID         int                       `json:"partner_id" gorm:"column:partner_id;index:idx_invoice_partner_id"`
 	Partner           Partner                   `gorm:"foreignKey:partner_id"`
+	TotalLine         float64                   `gorm:"column:total_line"`
 	GrandTotal        float64                   `gorm:"column:grand_total"`
 	Discount          float64                   `json:"discount" gorm:"column:discount"`
 	BatchNo           string                    `json:"batchno" gorm:"column:batch_no;index:idx_invoice_batchno"`
@@ -52,8 +53,6 @@ type InvoiceRespont struct {
 	InvoiceId         int       `json:"-"`
 	CreatedAt         time.Time `json:"created_at"`
 	UpdatedAt         time.Time `json:"updated_at"`
-	GrandTotal        float64   `json:"grand_total"`
-	Discount          float64   `json:"discount"`
 	BatchNo           string    `json:"batchno"`
 	Status            constant.InvoiceStatus
 	DocAction         constant.InvoiceDocAction `json:"docaction"`
@@ -61,6 +60,9 @@ type InvoiceRespont struct {
 	DocumentNo        string                    `json:"documentno"`
 	IsPrecentage      bool                      `json:"isprecentage"`
 	PayDate           time.Time                 `json:"pay_date"`
+	TotalLine         float64                   `json:"total_line"`
+	Discount          float64                   `json:"discount"`
+	GrandTotal        float64                   `json:"grand_total"`
 	CreatedBy         UserPartial               `json:"createdby"`
 	UpdatedBy         UserPartial               `json:"updatedby"`
 	Partner           PartnerPartialRespon      `json:"partner"`

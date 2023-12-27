@@ -18,6 +18,7 @@ type Payment struct {
 	UserUpdated  User                      `gorm:"foreignKey:updated_by"`
 	PartnerID    int                       `json:"partner_id" gorm:"column:partner_id;index:idx_payment_partner_id"`
 	Partner      Partner                   `gorm:"foreignKey:partner_id"`
+	TotalLine    float64                   `gorm:"column:total_line;default:0"`
 	GrandTotal   float64                   `gorm:"column:grand_total;default:0"`
 	Discount     float64                   `gorm:"column:discount;default:0"`
 	BatchNo      string                    `json:"batchno" gorm:"column:batch_no"`
@@ -45,8 +46,9 @@ type PaymentRespont struct {
 	DocumentNo   string                    `json:"documentno"`
 	BatchNo      string                    `json:"batchno"`
 	IsPrecentage bool                      `json:"isprecentage"`
-	GrandTotal   float64                   `json:"grand_total"`
 	Discount     float64                   `json:"discount"`
+	TotalLine    float64                   `json:"total_line"`
+	GrandTotal   float64                   `json:"grand_total"`
 	Status       constant.PaymentStatus    `json:"status"`
 	DoAction     constant.PaymentDocAction `json:"docaction"`
 	CreatedBy    UserPartial               `json:"createdby"`
