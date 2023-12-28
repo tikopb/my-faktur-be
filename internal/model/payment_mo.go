@@ -30,9 +30,10 @@ type Payment struct {
 }
 
 type PaymentRequest struct {
-	CreatedBy    string                    `json:"created_by"`
-	PartnerID    int                       `json:"partner_id"`
-	GrandTotal   float64                   `json:"grand_total"`
+	CreatedBy    string                    `json:"-"`
+	UpdatedBy    string                    `json:"-"`
+	PartnerID    int                       `json:"-"`
+	PartnerUUID  uuid.UUID                 `json:"partner_id"`
 	Discount     float64                   `json:"discount"`
 	BatchNo      string                    `json:"batchno"`
 	Status       constant.PaymentStatus    `json:"status"`
@@ -54,6 +55,7 @@ type PaymentRespont struct {
 	CreatedBy    UserPartial               `json:"createdby"`
 	UpdatedBy    UserPartial               `json:"updatedby"`
 	Partner      PartnerPartialRespon      `json:"partner"`
+	UUID         uuid.UUID                 `json:"-"`
 }
 
 type PaymentPartialRespont struct {
@@ -61,6 +63,15 @@ type PaymentPartialRespont struct {
 	BatchNo    string    `json:"batchno"`
 	DocumentNo string    `json:"documentno"`
 	Id         int       `json:"-"`
+}
+
+type PaymentRequestV2 struct {
+	Header PaymentRequest       `json:"header"`
+	Line   []PaymentLineRequest `json:"line"`
+}
+type PaymentRespontV2 struct {
+	Header PaymentRespont       `json:"header"`
+	Line   []PaymentLineRespont `json:"line"`
 }
 
 type PaymentLine struct {
@@ -108,7 +119,7 @@ type PaymentLineRespont struct {
 
 func GetSeatchParamPayment(dateFrom string, dateTo string, q string) string {
 	//searchParam := []string{"batch_no", "documentno", "p.name"}
-	var value string = " invoices.created_at >='" + dateFrom + "'::date and invoices.created_at <='" + dateTo + "'::date"
+	var value string = " payments.created_at >='" + dateFrom + "'::date and payments.created_at <='" + dateTo + "'::date"
 
 	if q != "" {
 		q = "'%" + q + "%'"

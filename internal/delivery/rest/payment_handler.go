@@ -134,3 +134,27 @@ func (h *handler) DeletePayment(c echo.Context) error {
 
 	return handleError(c, http.StatusOK, errors.New("DELETE "+data+" SUCCESS"), meta, data)
 }
+
+func (h *handler) CreatePaymentV2(c echo.Context) error {
+	var request model.PaymentRequestV2
+	err := json.NewDecoder(c.Request().Body).Decode(&request)
+	if err != nil {
+		WriteLogErorr("[delivery][rest][payment_handler][CreatePaymentV2]", err)
+		return handleError(c, http.StatusInternalServerError, err, meta, data)
+	}
+
+	//getUserId
+	userId, err := h.middleware.GetuserId(c.Request())
+	if err != nil {
+		WriteLogErorr("[delivery][rest][payment_handler][CreatePaymentV2] ", err)
+		return handleError(c, http.StatusInternalServerError, err, meta, data)
+	}
+
+	data, err := h.paymentUsecase.CreateV2(request, userId)
+	if err != nil {
+		WriteLogErorr("[delivery][rest][payment_handler][CreatePaymentV2] ", err)
+		return handleError(c, http.StatusInternalServerError, err, meta, data)
+	}
+
+	return handleError(c, http.StatusOK, errors.New("Create "+data.Header.DocumentNo+" SUCCESS"), meta, data)
+}

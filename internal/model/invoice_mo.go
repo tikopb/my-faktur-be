@@ -34,9 +34,9 @@ type Invoice struct {
 }
 
 type InvoiceRequest struct {
-	Discount     float64 `json:"discount"`
-	BatchNo      string  `json:"batchno"`
-	Status       constant.InvoiceStatus
+	Discount     float64                   `json:"discount"`
+	BatchNo      string                    `json:"batchno"`
+	Status       constant.InvoiceStatus    `json:"status"`
 	DocAction    constant.InvoiceDocAction `json:"docaction"`
 	IsPrecentage bool                      `json:"isprecentage"`
 	PartnerUUID  uuid.UUID                 `json:"partner_id"`
@@ -49,12 +49,12 @@ type InvoiceRequest struct {
 }
 
 type InvoiceRespont struct {
-	ID                uuid.UUID `json:"id"`
-	InvoiceId         int       `json:"-"`
-	CreatedAt         time.Time `json:"created_at"`
-	UpdatedAt         time.Time `json:"updated_at"`
-	BatchNo           string    `json:"batchno"`
-	Status            constant.InvoiceStatus
+	ID                uuid.UUID                 `json:"id"`
+	InvoiceId         int                       `json:"-"`
+	CreatedAt         time.Time                 `json:"created_at"`
+	UpdatedAt         time.Time                 `json:"updated_at"`
+	BatchNo           string                    `json:"batchno"`
+	Status            constant.InvoiceStatus    `json:"status"`
 	DocAction         constant.InvoiceDocAction `json:"docaction"`
 	OustandingPayment float64                   `json:"oustanding"`
 	DocumentNo        string                    `json:"documentno"`
