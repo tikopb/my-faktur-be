@@ -9,6 +9,7 @@ import (
 type PaymentRepositoryinterface interface {
 	Index(limit int, offset int, q string, order []string, dateFrom string, dateTo string) ([]model.PaymentRespont, error)
 	Create(payment model.PaymentRequest) (model.PaymentRespont, error)
+	CreateV2(payment model.PaymentRequestV2) (model.PaymentRespontV2, error)
 	Show(id uuid.UUID) (model.PaymentRespont, error)
 	Update(id uuid.UUID, updatedPayment model.PaymentRequest) (model.PaymentRespont, error)
 	Delete(id uuid.UUID) (string, error)

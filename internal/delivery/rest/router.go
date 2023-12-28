@@ -52,9 +52,10 @@ func LoadRoutes(e *echo.Echo, handler *handler) {
 
 	//payment group
 	paymentGroup := e.Group("/payment")
-	paymentGroup.GET("", handler.IndexPayment, handler.middleware.CheckAuth)
+	paymentGroup.GET("s/", handler.IndexPayment, handler.middleware.CheckAuth)
 	paymentGroup.GET("/:id", handler.Getpayment, handler.middleware.CheckAuth)
 	paymentGroup.POST("", handler.CreatePayment, handler.middleware.CheckAuth)
+	paymentGroup.POST("/v2", handler.CreatePayment, handler.middleware.CheckAuth)
 	paymentGroup.PUT("/:id", handler.UpdatePayment, handler.middleware.CheckAuth)
 	paymentGroup.DELETE("/:id", handler.DeletePayment, handler.middleware.CheckAuth)
 

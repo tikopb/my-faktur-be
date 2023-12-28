@@ -179,7 +179,16 @@ func (ir *invoiceRepo) AfterSave(request model.InvoiceLine) error {
 	//init the sql
 	query := `
 		UPDATE invoices as i 
-		SET grand_total = (SELECT coalesce(SUM(amount),0) FROM invoice_lines WHERE invoice_id = i.id)
+		SET 
+		total_line = (
+			SELECT coalesce(SUM(amount), 0) 
+			FROM invoice_lines 
+			WHERE invoice_id = i.id
+		),
+		grand_total = CASE
+			WHEN i.isprecentage = true THEN i.total_line - (i.total_line * i.discount / 100)
+			ELSE i.total_line - i.discount
+		END
 		WHERE i.id = ?;
 	`
 	err := ir.db.Exec(query, request.InvoiceID).Error

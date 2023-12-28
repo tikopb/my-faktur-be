@@ -4,6 +4,7 @@ import (
 	"bemyfaktur/internal/model"
 	documentutil "bemyfaktur/internal/model/documentUtil"
 	pgUtil "bemyfaktur/internal/model/paginationUtil"
+
 	"errors"
 	"fmt"
 
@@ -38,11 +39,11 @@ func (pr *paymentRepo) Index(limit int, offset int, q string, order []string, da
 
 	//q param handler
 	if orderParam != "" {
-		if err := pr.db.Preload("Partner").Preload("User").Preload("UserUpdated").Joins("Partner", pr.db.Where(model.GetSearchParamPartnerV2(q))).Where(model.GetSeatchParamPayment(q, dateFrom, dateTo)).Limit(limit).Offset(offset).Order(orderParam).Find(&data).Error; err != nil {
+		if err := pr.db.Preload("Partner").Preload("User").Preload("UserUpdated").Joins("Partner", pr.db.Where(model.GetSearchParamPartnerV2(q))).Where(model.GetSeatchParamPayment(dateFrom, dateTo, q)).Limit(limit).Offset(offset).Order(orderParam).Find(&data).Error; err != nil {
 			return dataReturn, err
 		}
 	} else {
-		if err := pr.db.Preload("Partner").Preload("User").Preload("UserUpdated").Order("created_at DESC").Where(model.GetSeatchParamPayment(q, dateFrom, dateTo)).Limit(limit).Offset(offset).Find(&data).Error; err != nil {
+		if err := pr.db.Preload("Partner").Preload("User").Preload("UserUpdated").Order("created_at DESC").Where(model.GetSeatchParamPayment(dateFrom, dateTo, q)).Limit(limit).Offset(offset).Find(&data).Error; err != nil {
 			return dataReturn, err
 		}
 	}
@@ -85,6 +86,7 @@ func (pr *paymentRepo) Create(payment model.PaymentRequest) (model.PaymentRespon
 	paymentData := model.Payment{
 		CreatedBy:  payment.CreatedBy,
 		PartnerID:  payment.PartnerID,
+		UpdatedBy:  payment.UpdatedBy,
 		GrandTotal: 0,
 		Discount:   0,
 		BatchNo:    payment.BatchNo,
@@ -104,16 +106,54 @@ func (pr *paymentRepo) Create(payment model.PaymentRequest) (model.PaymentRespon
 	return dataPreload, nil
 }
 
+func (pr *paymentRepo) CreateV2(request model.PaymentRequestV2) (model.PaymentRespontV2, error) {
+	//create header
+	header, err := pr.Create(request.Header)
+	if err != nil {
+		return model.PaymentRespontV2{}, err
+	}
+
+	returnLine := []model.PaymentLineRespont{}
+
+	payment, err := pr.ShowInternal(header.UUID)
+	if err != nil {
+		return model.PaymentRespontV2{}, err
+	}
+	for _, line := range request.Line {
+		line.PaymentID = payment.ID
+		lineCreated, err := pr.CreateLine(line)
+		if err != nil {
+			pr.Delete(payment.UUID)
+			for _, lineGenerate := range returnLine {
+				pr.Delete(lineGenerate.ID)
+			}
+			return model.PaymentRespontV2{}, err
+		}
+		returnLine = append(returnLine, lineCreated)
+	}
+
+	headerReturn, err := pr.Show(header.UUID)
+	if err != nil {
+		return model.PaymentRespontV2{}, err
+	}
+
+	return model.PaymentRespontV2{
+		Header: headerReturn,
+		Line:   returnLine,
+	}, nil
+}
+
 // Show implements PaymentRepositoryinterface.
 func (pr *paymentRepo) Show(id uuid.UUID) (model.PaymentRespont, error) {
-	data := model.PaymentRespont{}
+	data := model.Payment{}
 
 	if err := pr.db.Preload("Partner").Preload("User").Preload("UserUpdated").Where(&model.Payment{UUID: id}).First(&data).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return model.PaymentRespont{}, errors.New("data not found")
 		}
 	}
-	return data, nil
+
+	return pr.parsingPaymentToPaymentRespont(data)
 }
 
 func (pr *paymentRepo) ShowInternal(id uuid.UUID) (model.Payment, error) {

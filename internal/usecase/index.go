@@ -69,7 +69,7 @@ func NewContainer(db *gorm.DB) *Container {
 	invoiceUsecase := invoiceUsecase.GetUsecase(invoiceRepo, partnerRepo, productRepo)
 
 	paymentRepo := paymentRepository.GetRepository(db, documentUtilRepo, pgUtilRepo)
-	paymentUsecase := paymentUsecase.GetUsecase(paymentRepo, invoiceRepo)
+	paymentUsecase := paymentUsecase.GetUsecase(paymentRepo, invoiceRepo, partnerRepo)
 
 	return &Container{
 		PartnerUsecase: partnerUsecase,

@@ -4,6 +4,7 @@ import (
 	"bemyfaktur/internal/model"
 	"bemyfaktur/internal/model/constant"
 	"bemyfaktur/internal/repository/invoice"
+	"bemyfaktur/internal/repository/partner"
 	"bemyfaktur/internal/repository/payment"
 	"errors"
 
@@ -13,12 +14,14 @@ import (
 type paymentUsecase struct {
 	paymentRepo payment.PaymentRepositoryinterface
 	invoiceRepo invoice.InvoiceRepositoryInterface
+	partnerRepo partner.Repository
 }
 
-func GetUsecase(paymentRepo payment.PaymentRepositoryinterface, invoiceRepo invoice.InvoiceRepositoryInterface) PaymentUsecaseInterface {
+func GetUsecase(paymentRepo payment.PaymentRepositoryinterface, invoiceRepo invoice.InvoiceRepositoryInterface, partnerRepo partner.Repository) PaymentUsecaseInterface {
 	return &paymentUsecase{
 		paymentRepo: paymentRepo,
 		invoiceRepo: invoiceRepo,
+		partnerRepo: partnerRepo,
 	}
 }
 
@@ -26,6 +29,16 @@ func GetUsecase(paymentRepo payment.PaymentRepositoryinterface, invoiceRepo invo
 // Createpayment implements PaymentUsecaseInterface.
 func (pu *paymentUsecase) Createpayment(request model.PaymentRequest, userId string) (model.PaymentRespont, error) {
 	request.CreatedBy = userId
+	request.UpdatedBy = userId
+
+	//validate the partner
+	partner, err := pu.partnerRepo.ShowInternal(request.PartnerUUID)
+	if err != nil || !partner.Isactive {
+		return model.PaymentRespont{}, errors.New("partner not exist or inactived")
+	}
+
+	request.PartnerID = partner.ID
+
 	return pu.paymentRepo.Create(request)
 }
 
@@ -95,6 +108,37 @@ func (pu *paymentUsecase) UpdatedPaymentLine(id uuid.UUID, request model.Payment
 // DeleteInvoiceLine implements PaymentUsecaseInterface.
 func (pu *paymentUsecase) DeletePaymentLine(id uuid.UUID) (string, error) {
 	return pu.paymentRepo.DeleteLine(id)
+}
+
+// CreateV2 implements PaymentUsecaseInterface.
+func (pu *paymentUsecase) CreateV2(request model.PaymentRequestV2, userId string) (model.PaymentRespontV2, error) {
+	//header validation
+	request.Header.CreatedBy = userId
+
+	//line validation
+	for _, line := range request.Line {
+		//validate invoice
+		invoice, err := pu.invoiceRepo.ShowInternal(line.Invoice_uuid)
+		if err != nil {
+			//set the value to invoice_id because relation key used with id int not uuid
+			line.Invoice_id = invoice.ID
+		} else if invoice.Status != constant.InvoiceStatusComplete {
+			return model.PaymentRespontV2{}, errors.New("invoice not in completed")
+		}
+
+		//set created by
+		line.CreatedBy = userId
+		line.UpdatedBy = userId
+	}
+
+	//hit the request
+	data, err := pu.paymentRepo.CreateV2(request)
+	if err != nil {
+		return model.PaymentRespontV2{}, err
+	}
+
+	//set return value of data
+	return data, nil
 }
 
 func (pu *paymentUsecase) HandlingPagination(q string, limit int, offset int, dateFrom string, dateTo string) (int64, error) {

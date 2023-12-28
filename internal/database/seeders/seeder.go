@@ -69,7 +69,7 @@ func RegisterSeeders(db *gorm.DB) []Seeder {
 			Status:            "CO",
 			DocAction:         "CO",
 			OustandingPayment: 150750,
-			DocumentNo:        "INV-12-DEC-2024",
+			DocumentNo:        "INV-001-DEC-2024",
 			IsPrecentage:      false,
 			PayDate:           time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC), // Replace with the appropriate field faker function for date
 		})},
@@ -98,6 +98,58 @@ func RegisterSeeders(db *gorm.DB) []Seeder {
 			IsPrecentage: true,
 			ProductID:    2,
 			InvoiceID:    1,
+		})},
+
+		//payment
+		{Seeder: fakers.PaymentFaker(db, model.Payment{
+			ID:           1,
+			CreatedBy:    "0bdfa34b-cdc4-4c4b-b087-f6b6d7cf81d5",
+			UpdatedBy:    "0bdfa34b-cdc4-4c4b-b087-f6b6d7cf81d5",
+			PartnerID:    1,
+			GrandTotal:   145750,
+			Discount:     0,
+			BatchNo:      "PAY-DUMP-1.1",
+			Status:       "DR",
+			DocAction:    "DR",
+			DocumentNo:   "PAY-001-DEC-2024",
+			IsPrecentage: false,
+		})},
+		{Seeder: fakers.PaymentFaker(db, model.Payment{
+			ID:           2,
+			CreatedBy:    "0bdfa34b-cdc4-4c4b-b087-f6b6d7cf81d5",
+			UpdatedBy:    "0bdfa34b-cdc4-4c4b-b087-f6b6d7cf81d5",
+			PartnerID:    1,
+			GrandTotal:   5000,
+			Discount:     0,
+			BatchNo:      "PAY-DUMP-1.2",
+			Status:       "DR",
+			DocAction:    "DR",
+			DocumentNo:   "PAY-002-DEC-2024",
+			IsPrecentage: false,
+		})},
+
+		//paymentline
+		{Seeder: fakers.PaymentLineFaker(db, model.PaymentLine{
+			ID:           1,
+			PaymentID:    1,
+			Price:        145750,
+			Amount:       1,
+			CreatedBy:    "0bdfa34b-cdc4-4c4b-b087-f6b6d7cf81d5",
+			UpdatedBy:    "0bdfa34b-cdc4-4c4b-b087-f6b6d7cf81d5",
+			InvoiceID:    1,
+			Discount:     0,
+			IsPrecentage: false,
+		})},
+		{Seeder: fakers.PaymentLineFaker(db, model.PaymentLine{
+			ID:           2,
+			PaymentID:    2,
+			Price:        5000,
+			Amount:       1,
+			CreatedBy:    "0bdfa34b-cdc4-4c4b-b087-f6b6d7cf81d5",
+			UpdatedBy:    "0bdfa34b-cdc4-4c4b-b087-f6b6d7cf81d5",
+			InvoiceID:    1,
+			Discount:     0,
+			IsPrecentage: false,
 		})},
 	}
 }
