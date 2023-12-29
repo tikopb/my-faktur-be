@@ -59,6 +59,7 @@ func (pu *paymentUsecase) Indexpayment(limit int, offset int, q string, order []
 
 // Updatedpayment implements PaymentUsecaseInterface.
 func (pu *paymentUsecase) Updatedpayment(id uuid.UUID, request model.PaymentRequest) (model.PaymentRespont, error) {
+
 	return pu.paymentRepo.Update(id, request)
 }
 

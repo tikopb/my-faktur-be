@@ -172,9 +172,14 @@ func (pr *paymentRepo) Update(id uuid.UUID, updatedPayment model.PaymentRequest)
 	//set var
 	data := model.PaymentRespont{}
 	paymentData, err := pr.ShowInternal(id) //get payment data
-
 	if err != nil {
 		return data, err
+	}
+
+	//updated updatedby field becaue gorm overwrite the updatedby colum ## not fixet yed!
+	err = pr.db.Exec("UPDATE payments SET updated_by = ? WHERE uuid = ?", updatedPayment.UpdatedBy, id).Error
+	if err != nil {
+		return model.PaymentRespont{}, err
 	}
 
 	paymentData.PartnerID = updatedPayment.PartnerID
@@ -195,7 +200,7 @@ func (pr *paymentRepo) Update(id uuid.UUID, updatedPayment model.PaymentRequest)
 	}
 
 	//save the data
-	if err := pr.db.Save(&paymentData).Error; err != nil {
+	if err := pr.db.Omit("updated_by").Save(&paymentData).Error; err != nil {
 		return data, err
 	}
 
@@ -209,7 +214,7 @@ func (pr *paymentRepo) Update(id uuid.UUID, updatedPayment model.PaymentRequest)
 
 // Delete implements PaymentRepositoryinterface.
 func (pr *paymentRepo) Delete(id uuid.UUID) (string, error) {
-	data, err := pr.Show(id)
+	data, err := pr.ShowInternal(id)
 	batchNo := data.BatchNo
 	if err != nil {
 		return "", err
@@ -270,16 +275,20 @@ func (pr *paymentRepo) parsingPaymentToPaymentRespont(payment model.Payment) (mo
 
 	data = model.PaymentRespont{
 		ID:           dataPreload.UUID,
-		GrandTotal:   dataPreload.GrandTotal,
-		Discount:     dataPreload.Discount,
-		BatchNo:      dataPreload.BatchNo,
-		Status:       dataPreload.Status,
 		DocumentNo:   dataPreload.DocumentNo,
+		BatchNo:      dataPreload.BatchNo,
+		IsPrecentage: dataPreload.IsPrecentage,
+		Discount:     dataPreload.Discount,
+		TotalLine:    dataPreload.TotalLine,
+		GrandTotal:   dataPreload.GrandTotal,
+		Status:       dataPreload.Status,
 		DoAction:     dataPreload.DocAction,
-		IsPrecentage: data.IsPrecentage,
+		CreatedAt:    dataPreload.CreatedAt,
+		UpdateAt:     dataPreload.UpdateAt,
 		CreatedBy:    createdBy,
 		UpdatedBy:    updateBy,
 		Partner:      partner,
+		UUID:         dataPreload.UUID,
 	}
 	return data, nil
 }

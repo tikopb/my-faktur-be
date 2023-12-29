@@ -12,6 +12,7 @@ import (
 type Payment struct {
 	ID           int                       `json:"-" gorm:"primaryKey;autoIncrement"`
 	CreatedAt    time.Time                 `gorm:"column:created_at;default:CURRENT_TIMESTAMP"`
+	UpdateAt     time.Time                 `gorm:"column:updated_at;default:current_timestamp"`
 	CreatedBy    string                    `gorm:"column:created_by" json:"created_by"`
 	User         User                      `gorm:"foreignKey:created_by"`
 	UpdatedBy    string                    `gorm:"column:updated_by" json:"updated_by"`
@@ -52,6 +53,8 @@ type PaymentRespont struct {
 	GrandTotal   float64                   `json:"grand_total"`
 	Status       constant.PaymentStatus    `json:"status"`
 	DoAction     constant.PaymentDocAction `json:"docaction"`
+	CreatedAt    time.Time                 `json:"created_at"`
+	UpdateAt     time.Time                 `json:"updated_at"`
 	CreatedBy    UserPartial               `json:"createdby"`
 	UpdatedBy    UserPartial               `json:"updatedby"`
 	Partner      PartnerPartialRespon      `json:"partner"`
@@ -93,7 +96,7 @@ type PaymentLine struct {
 }
 
 type PaymentLineRequest struct {
-	PaymentID    int       `json:"payment_id"`
+	PaymentID    int       `json:"-"`
 	Invoice_uuid uuid.UUID `json:"invoice_id"`
 	Invoice_id   int       `json:"-"`
 	Price        float64   `json:"price"`
