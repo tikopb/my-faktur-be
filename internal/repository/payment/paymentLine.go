@@ -71,7 +71,7 @@ func (pr *paymentRepo) IndexLine(limit int, offset int, paymentId int) ([]model.
 func (pr *paymentRepo) ShowLine(id uuid.UUID) (model.PaymentLineRespont, error) {
 	data := model.PaymentLine{}
 
-	if err := pr.db.Preload("Payment").Preload("Invoice").Preload("User").First(&data, id).Error; err != nil {
+	if err := pr.db.Preload("Payment").Preload("Invoice").Preload("User").Preload("UserUpdated").Where(model.PaymentLine{UUID: id}).First(&data).Error; err != nil {
 		return model.PaymentLineRespont{}, errors.New("data not found")
 	}
 
@@ -82,7 +82,7 @@ func (pr *paymentRepo) ShowLine(id uuid.UUID) (model.PaymentLineRespont, error) 
 func (pr *paymentRepo) ShowLineInternal(id uuid.UUID) (model.PaymentLine, error) {
 	data := model.PaymentLine{}
 
-	if err := pr.db.Preload("Payment").Preload("Invoice").Preload("User").Where(model.PaymentLine{UUID: id}).First(&data).Error; err != nil {
+	if err := pr.db.Preload("Payment").Preload("Invoice").Preload("User").Preload("UserUpdated").Where(model.PaymentLine{UUID: id}).First(&data).Error; err != nil {
 		return data, errors.New("data not found")
 	}
 
@@ -101,6 +101,8 @@ func (pr *paymentRepo) UpdateLine(id uuid.UUID, updatedPaymentLine model.Payment
 
 	paymentLineData.Price = updatedPaymentLine.Price
 	paymentLineData.InvoiceID = updatedPaymentLine.Invoice_id
+	paymentLineData.IsPrecentage = updatedPaymentLine.IsPrecentage
+	paymentLineData.Discount = updatedPaymentLine.Discount
 
 	//save the data
 	if err := pr.db.Save(&paymentLineData).Error; err != nil {
@@ -143,29 +145,30 @@ func (pr *paymentRepo) DeleteLine(id uuid.UUID) (string, error) {
 }
 
 func (pr *paymentRepo) parsingPaymentLineToRespont(paymentLine model.PaymentLine) (model.PaymentLineRespont, error) {
-	createdBy := model.UserPartial{
-		UserId:   paymentLine.User.ID,
-		Username: paymentLine.User.Username,
-	}
-	updateBy := model.UserPartial{
-		UserId:   paymentLine.UserUpdated.ID,
-		Username: paymentLine.UserUpdated.Username,
-	}
-	payment := model.PaymentPartialRespont{
-		UUID:       paymentLine.Payment.UUID,
-		BatchNo:    paymentLine.Payment.BatchNo,
-		DocumentNo: paymentLine.Payment.DocumentNo,
-	}
-	invoice := model.InvoicePartialRespont{
-		UUID:       paymentLine.Invoice.UUID,
-		BatchNo:    paymentLine.Invoice.BatchNo,
-		DocumentNo: paymentLine.Invoice.DocumentNo,
-	}
-
 	data := model.PaymentLineRespont{}
 	dataPreload, err := pr.ShowLineInternal(paymentLine.UUID)
 	if err != nil {
 		return data, err
+	}
+
+	createdBy := model.UserPartial{
+		UserId:   dataPreload.User.ID,
+		Username: dataPreload.User.Username,
+	}
+	updateBy := model.UserPartial{
+		UserId:   dataPreload.UserUpdated.ID,
+		Username: dataPreload.UserUpdated.Username,
+	}
+	payment := model.PaymentPartialRespont{
+		UUID:       dataPreload.Payment.UUID,
+		BatchNo:    dataPreload.Payment.BatchNo,
+		DocumentNo: dataPreload.Payment.DocumentNo,
+	}
+	invoice := model.InvoicePartialRespont{
+		UUID:               dataPreload.Invoice.UUID,
+		BatchNo:            dataPreload.Invoice.BatchNo,
+		DocumentNo:         dataPreload.Invoice.DocumentNo,
+		OutstandingPayment: dataPreload.Invoice.OustandingPayment,
 	}
 
 	data = model.PaymentLineRespont{

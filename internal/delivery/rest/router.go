@@ -55,13 +55,13 @@ func LoadRoutes(e *echo.Echo, handler *handler) {
 	paymentGroup.GET("s/", handler.IndexPayment, handler.middleware.CheckAuth)
 	paymentGroup.GET("/:id", handler.Getpayment, handler.middleware.CheckAuth)
 	paymentGroup.POST("", handler.CreatePayment, handler.middleware.CheckAuth)
-	paymentGroup.POST("/v2", handler.CreatePayment, handler.middleware.CheckAuth)
+	paymentGroup.POST("/v2", handler.CreatePaymentV2, handler.middleware.CheckAuth)
 	paymentGroup.PUT("/:id", handler.UpdatePayment, handler.middleware.CheckAuth)
 	paymentGroup.DELETE("/:id", handler.DeletePayment, handler.middleware.CheckAuth)
 
 	//group invoice
 	paymentGroupLine := e.Group("/paymentline")
-	paymentGroupLine.GET("", handler.IndexPaymentLine, handler.middleware.CheckAuth)
+	paymentGroupLine.GET("s/:id", handler.IndexPaymentLine, handler.middleware.CheckAuth)
 	paymentGroupLine.GET("/:id", handler.GetPaymentLine, handler.middleware.CheckAuth)
 	paymentGroupLine.POST("", handler.CreatePaymentLine, handler.middleware.CheckAuth)
 	paymentGroupLine.PUT("/:id", handler.UpdatePaymentLine, handler.middleware.CheckAuth)

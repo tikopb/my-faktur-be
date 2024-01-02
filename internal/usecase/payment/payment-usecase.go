@@ -59,6 +59,7 @@ func (pu *paymentUsecase) Indexpayment(limit int, offset int, q string, order []
 
 // Updatedpayment implements PaymentUsecaseInterface.
 func (pu *paymentUsecase) Updatedpayment(id uuid.UUID, request model.PaymentRequest) (model.PaymentRespont, error) {
+
 	return pu.paymentRepo.Update(id, request)
 }
 
@@ -68,14 +69,22 @@ func (pu *paymentUsecase) CreatePaymentLine(request model.PaymentLineRequest, us
 	data := model.PaymentLineRespont{}
 	invoice, err := pu.invoiceRepo.ShowInternal(request.Invoice_uuid)
 	if err != nil {
-		//set the value to invoice_id because relation key used with id int not uuid
-		request.Invoice_id = invoice.ID
 		return data, err
 	} else if invoice.Status != constant.InvoiceStatusComplete {
 		return data, errors.New("invoice not in completed")
 	}
+	//set the value to invoice_id because relation key used with id int not uuid
+	request.Invoice_id = invoice.ID
 
+	header, err := pu.paymentRepo.ShowInternal(request.PaymentUUID)
+	if err != nil {
+		return data, err
+	}
+	request.PaymentID = header.ID
+
+	//set created by and updated by
 	request.CreatedBy = userId
+	request.UpdatedBy = userId
 
 	//return value
 	return pu.paymentRepo.CreateLine(request)
@@ -87,19 +96,29 @@ func (pu *paymentUsecase) GetPaymentLine(id uuid.UUID) (model.PaymentLineRespont
 }
 
 // IndexLine implements PaymentUsecaseInterface.
-func (pu *paymentUsecase) IndexLine(limit int, offset int, paymentId int, q string) ([]model.PaymentLineRespont, error) {
-	return pu.paymentRepo.IndexLine(limit, offset, paymentId)
+func (pu *paymentUsecase) IndexLine(limit int, offset int, paymentUUID uuid.UUID, q string) ([]model.PaymentLineRespont, int, error) {
+	header, err := pu.paymentRepo.ShowInternal(paymentUUID)
+	if err != nil {
+		return []model.PaymentLineRespont{}, 0, err
+	}
+	//getting the payment_id in integer
+	paymentId := header.ID
+
+	data, err := pu.paymentRepo.IndexLine(limit, offset, paymentId)
+	return data, paymentId, err
 }
 
 // UpdatedInvoiceLine implements PaymentUsecaseInterface.
 func (pu *paymentUsecase) UpdatedPaymentLine(id uuid.UUID, request model.PaymentLineRequest) (model.PaymentLineRespont, error) {
 	data := model.PaymentLineRespont{}
-	invoice, err := pu.invoiceRepo.Show(request.Invoice_uuid)
+	invoice, err := pu.invoiceRepo.ShowInternal(request.Invoice_uuid)
 	if err != nil {
 		return data, err
 	} else if invoice.Status != constant.InvoiceStatusComplete {
 		return data, errors.New("invoice not in completed")
 	}
+	//set invoice_id
+	request.Invoice_id = invoice.ID
 
 	//return value
 	return pu.paymentRepo.UpdateLine(id, request)
@@ -111,11 +130,20 @@ func (pu *paymentUsecase) DeletePaymentLine(id uuid.UUID) (string, error) {
 }
 
 // CreateV2 implements PaymentUsecaseInterface.
-func (pu *paymentUsecase) CreateV2(request model.PaymentRequestV2, userId string) (model.PaymentRespontV2, error) {
+func (pu *paymentUsecase) CreatePaymentV2(request model.PaymentRequestV2, userId string) (model.PaymentRespontV2, error) {
 	//header validation
 	request.Header.CreatedBy = userId
+	request.Header.UpdatedBy = userId
+	// validate the partner
+	partner, err := pu.partnerRepo.ShowInternal(request.Header.PartnerUUID)
+	if err != nil || !partner.Isactive {
+		return model.PaymentRespontV2{}, errors.New("partner not exist or inactived")
+	}
+
+	request.Header.PartnerID = partner.ID
 
 	//line validation
+	linesPost := []model.PaymentLineRequest{}
 	for _, line := range request.Line {
 		//validate invoice
 		invoice, err := pu.invoiceRepo.ShowInternal(line.Invoice_uuid)
@@ -126,10 +154,16 @@ func (pu *paymentUsecase) CreateV2(request model.PaymentRequestV2, userId string
 			return model.PaymentRespontV2{}, errors.New("invoice not in completed")
 		}
 
+		line.Invoice_id = invoice.ID
+
 		//set created by
 		line.CreatedBy = userId
 		line.UpdatedBy = userId
+		linesPost = append(linesPost, line)
 	}
+
+	//define repeat line and change it into linespost it will change the data with data that already validate
+	request.Line = linesPost
 
 	//hit the request
 	data, err := pu.paymentRepo.CreateV2(request)

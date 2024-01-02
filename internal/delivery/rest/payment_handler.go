@@ -109,6 +109,16 @@ func (h *handler) UpdatePayment(c echo.Context) error {
 		return handleError(c, http.StatusInternalServerError, err, meta, data)
 	}
 
+	//getUserId
+	userId, err := h.middleware.GetuserId(c.Request())
+	if err != nil {
+		WriteLogErorr("[delivery][rest][payment_handler][UpdatePayment] ", err)
+		return handleError(c, http.StatusInternalServerError, err, meta, data)
+	}
+
+	request.UpdatedBy = userId
+	request.CreatedBy = userId
+
 	data, err := h.paymentUsecase.Updatedpayment(id, request)
 	if err != nil {
 		WriteLogErorr("[delivery][rest][payment_handler][UpdatePayment] ", err)
@@ -150,7 +160,7 @@ func (h *handler) CreatePaymentV2(c echo.Context) error {
 		return handleError(c, http.StatusInternalServerError, err, meta, data)
 	}
 
-	data, err := h.paymentUsecase.CreateV2(request, userId)
+	data, err := h.paymentUsecase.CreatePaymentV2(request, userId)
 	if err != nil {
 		WriteLogErorr("[delivery][rest][payment_handler][CreatePaymentV2] ", err)
 		return handleError(c, http.StatusInternalServerError, err, meta, data)

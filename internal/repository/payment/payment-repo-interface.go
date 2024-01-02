@@ -11,6 +11,7 @@ type PaymentRepositoryinterface interface {
 	Create(payment model.PaymentRequest) (model.PaymentRespont, error)
 	CreateV2(payment model.PaymentRequestV2) (model.PaymentRespontV2, error)
 	Show(id uuid.UUID) (model.PaymentRespont, error)
+	ShowInternal(id uuid.UUID) (model.Payment, error)
 	Update(id uuid.UUID, updatedPayment model.PaymentRequest) (model.PaymentRespont, error)
 	Delete(id uuid.UUID) (string, error)
 
