@@ -96,6 +96,7 @@ type PaymentLine struct {
 }
 
 type PaymentLineRequest struct {
+	PaymentUUID  uuid.UUID `json:"payment_id"`
 	PaymentID    int       `json:"-"`
 	Invoice_uuid uuid.UUID `json:"invoice_id"`
 	Invoice_id   int       `json:"-"`
@@ -111,7 +112,7 @@ type PaymentLineRespont struct {
 	Price        float64               `json:"price"`
 	Amount       float64               `json:"amount"`
 	BatchNo      string                `json:"batchno"`
-	Invoice_id   int                   `json:"invoice_id"`
+	Invoice_id   int                   `json:"-"`
 	Discount     float64               `json:"discount"`
 	IsPrecentage bool                  `json:"isprecentage"`
 	Payment      PaymentPartialRespont `json:"payment"`

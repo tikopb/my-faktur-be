@@ -160,7 +160,7 @@ func (h *handler) CreatePaymentV2(c echo.Context) error {
 		return handleError(c, http.StatusInternalServerError, err, meta, data)
 	}
 
-	data, err := h.paymentUsecase.CreateV2(request, userId)
+	data, err := h.paymentUsecase.CreatePaymentV2(request, userId)
 	if err != nil {
 		WriteLogErorr("[delivery][rest][payment_handler][CreatePaymentV2] ", err)
 		return handleError(c, http.StatusInternalServerError, err, meta, data)

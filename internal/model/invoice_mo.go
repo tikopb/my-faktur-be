@@ -69,10 +69,11 @@ type InvoiceRespont struct {
 }
 
 type InvoicePartialRespont struct {
-	UUID       uuid.UUID `json:"id"`
-	BatchNo    string    `json:"batchno"`
-	DocumentNo string    `json:"documentno"`
-	Id         int       `json:"-"`
+	UUID               uuid.UUID `json:"id"`
+	BatchNo            string    `json:"batchno"`
+	DocumentNo         string    `json:"documentno"`
+	Id                 int       `json:"-"`
+	OutstandingPayment float64   `json:"oustanding"`
 }
 
 // -- invoice line

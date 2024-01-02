@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
-	"strconv"
 
 	"github.com/labstack/echo/v4"
 )
@@ -13,15 +12,21 @@ import (
 func (h *handler) IndexPaymentLine(c echo.Context) error {
 	//set param
 	limit, offset := HandlingLimitAndOffset(c)
-	paymentIdParam := c.QueryParam("paymentid")
-	paymentId, err := strconv.Atoi(paymentIdParam)
+
+	//id payment get
+	paymentUUID, err := h.parsingId(c)
+	if err != nil {
+		WriteLogErorr("[delivery][rest][paymentline_handler][GetPaymentLine] ", err)
+		return handleError(c, http.StatusInternalServerError, err, meta, data)
+	}
+
 	q := c.QueryParam("q")
 	if err != nil {
 		WriteLogErorr("[delivery][rest][paymentline_handler][IndexPaymentLine] ", err)
 		return handleError(c, http.StatusInternalServerError, err, meta, data)
 	}
 
-	data, err := h.paymentUsecase.IndexLine(limit, offset, paymentId, q)
+	data, paymentId, err := h.paymentUsecase.IndexLine(limit, offset, paymentUUID, q)
 	if err != nil {
 		WriteLogErorr("[delivery][rest][paymentline_handler][IndexPaymentLine] ", err)
 
