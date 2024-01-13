@@ -36,6 +36,14 @@ func (ir *invoiceRepo) Create(request model.InvoiceRequest, partner model.Partne
 		return model.InvoiceRespont{}, err
 	}
 
+	//change the value from string to timestamp format
+	dateStr := request.PayDateString
+	date, err := time.Parse("02-01-2006", dateStr)
+	if err != nil {
+		return model.InvoiceRespont{}, err
+	}
+	request.PayDate = date
+
 	invoiceData := model.Invoice{
 		CreatedBy:         request.CreatedById,
 		UpdatedBy:         request.UpdatedById,
@@ -238,39 +246,45 @@ func (ir *invoiceRepo) Update(id uuid.UUID, request model.InvoiceRequest) (model
 }
 
 func (ir *invoiceRepo) ParsingInvoiceToInvoiceRequest(invoice model.Invoice) (model.InvoiceRespont, error) {
-	//parsing to patial verstion first!
-	createdBy := model.UserPartial{
-		UserId:   invoice.User.ID,
-		Username: invoice.User.Username,
-	}
-	updateBy := model.UserPartial{
-		UserId:   invoice.UserUpdated.ID,
-		Username: invoice.UserUpdated.Username,
-	}
-	partner := model.PartnerPartialRespon{
-		UUID: invoice.Partner.UUID,
-		Name: invoice.Partner.Name,
+
+	dataPreload, err := ir.ShowInternal(invoice.UUID)
+	if err != nil {
+		return model.InvoiceRespont{}, err
 	}
 
-	line, err := ir.IndexLine(15, 0, invoice.ID, "", []string{})
+	//parsing to patial verstion first!
+	createdBy := model.UserPartial{
+		UserId:   dataPreload.User.ID,
+		Username: dataPreload.User.Username,
+	}
+	updateBy := model.UserPartial{
+		UserId:   dataPreload.UserUpdated.ID,
+		Username: dataPreload.UserUpdated.Username,
+	}
+	partner := model.PartnerPartialRespon{
+		UUID: dataPreload.Partner.UUID,
+		Name: dataPreload.Partner.Name,
+	}
+
+	line, err := ir.IndexLine(15, 0, dataPreload.ID, "", []string{})
 	if err != nil {
 		return model.InvoiceRespont{}, err
 	}
 
 	data := model.InvoiceRespont{
-		ID:                invoice.UUID,
-		CreatedAt:         invoice.CreatedAt,
-		UpdatedAt:         invoice.UpdateAt,
-		TotalLine:         invoice.TotalLine,
-		GrandTotal:        invoice.GrandTotal,
-		Discount:          invoice.Discount,
-		BatchNo:           invoice.BatchNo,
-		Status:            invoice.Status,
-		DocAction:         invoice.DocAction,
-		OustandingPayment: invoice.OustandingPayment,
-		DocumentNo:        invoice.DocumentNo,
-		IsPrecentage:      invoice.IsPrecentage,
-		PayDate:           invoice.PayDate,
+		ID:                dataPreload.UUID,
+		CreatedAt:         dataPreload.CreatedAt,
+		UpdatedAt:         dataPreload.UpdateAt,
+		TotalLine:         dataPreload.TotalLine,
+		GrandTotal:        dataPreload.GrandTotal,
+		Discount:          dataPreload.Discount,
+		BatchNo:           dataPreload.BatchNo,
+		Status:            dataPreload.Status,
+		DocAction:         dataPreload.DocAction,
+		OustandingPayment: dataPreload.OustandingPayment,
+		DocumentNo:        dataPreload.DocumentNo,
+		IsPrecentage:      dataPreload.IsPrecentage,
+		PayDate:           dataPreload.PayDate,
 		CreatedBy:         createdBy,
 		UpdatedBy:         updateBy,
 		Partner:           partner,
