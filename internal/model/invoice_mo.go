@@ -34,18 +34,19 @@ type Invoice struct {
 }
 
 type InvoiceRequest struct {
-	Discount     float64                   `json:"discount"`
-	BatchNo      string                    `json:"batchno"`
-	Status       constant.InvoiceStatus    `json:"status"`
-	DocAction    constant.InvoiceDocAction `json:"docaction"`
-	IsPrecentage bool                      `json:"isprecentage"`
-	PartnerUUID  uuid.UUID                 `json:"partner_id"`
-	PartnerId    int                       `json:"-"`
-	CreatedById  string                    `json:"-"`
-	UpdatedById  string                    `json:"-"`
-	DateFrom     time.Time                 `json:"date_from"`
-	DateTo       time.Time                 `json:"date_to"`
-	PayDate      time.Time                 `json:"pay_date"`
+	Discount      float64                   `json:"discount"`
+	BatchNo       string                    `json:"batchno"`
+	Status        constant.InvoiceStatus    `json:"status"`
+	DocAction     constant.InvoiceDocAction `json:"docaction"`
+	IsPrecentage  bool                      `json:"isprecentage"`
+	PartnerUUID   uuid.UUID                 `json:"partner_id"`
+	PartnerId     int                       `json:"-"`
+	CreatedById   string                    `json:"-"`
+	UpdatedById   string                    `json:"-"`
+	DateFrom      time.Time                 `json:"date_from"`
+	DateTo        time.Time                 `json:"date_to"`
+	PayDateString string                    `json:"pay_date"`
+	PayDate       time.Time                 `json:"-"`
 }
 
 type InvoiceRespont struct {
