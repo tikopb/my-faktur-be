@@ -6,7 +6,6 @@ import (
 	"github.com/spf13/viper"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
 )
 
 type DBConfig struct {
@@ -25,7 +24,7 @@ func GetDb(commans bool) *gorm.DB {
 	if commans {
 		conf = gorm.Config{
 			TranslateError: true,
-			Logger:         logger.Default.LogMode(logger.Info),
+			//Logger:         logger.Default.LogMode(logger.Info),
 		}
 	} else {
 		conf = gorm.Config{

@@ -66,6 +66,7 @@ type InvoiceRespont struct {
 	CreatedBy         UserPartial               `json:"createdby"`
 	UpdatedBy         UserPartial               `json:"updatedby"`
 	Partner           PartnerPartialRespon      `json:"partner"`
+	Line              []InvoiceLineRespont      `json:"line"`
 }
 
 type InvoicePartialRespont struct {

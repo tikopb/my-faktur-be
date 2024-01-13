@@ -252,6 +252,11 @@ func (ir *invoiceRepo) ParsingInvoiceToInvoiceRequest(invoice model.Invoice) (mo
 		Name: invoice.Partner.Name,
 	}
 
+	line, err := ir.IndexLine(15, 0, invoice.ID, "", []string{})
+	if err != nil {
+		return model.InvoiceRespont{}, err
+	}
+
 	data := model.InvoiceRespont{
 		ID:                invoice.UUID,
 		CreatedAt:         invoice.CreatedAt,
@@ -269,6 +274,7 @@ func (ir *invoiceRepo) ParsingInvoiceToInvoiceRequest(invoice model.Invoice) (mo
 		CreatedBy:         createdBy,
 		UpdatedBy:         updateBy,
 		Partner:           partner,
+		Line:              line,
 	}
 
 	return data, nil
