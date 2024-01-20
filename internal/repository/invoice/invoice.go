@@ -45,11 +45,11 @@ func (ir *invoiceRepo) Create(request model.InvoiceRequest, partner model.Partne
 	request.PayDate = date
 
 	invoiceData := model.Invoice{
-		CreatedBy:         request.CreatedById,
-		UpdatedBy:         request.UpdatedById,
-		PartnerID:         request.PartnerId,
-		GrandTotal:        0, // all new invoice data is 0
-		TotalLine:         0,
+		CreatedBy: request.CreatedById,
+		UpdatedBy: request.UpdatedById,
+		PartnerID: request.PartnerId,
+		// GrandTotal:        0, // all new invoice data is 0
+		// TotalLine:         0,
 		Discount:          request.Discount,
 		BatchNo:           request.BatchNo,
 		Status:            constant.InvoiceStatusDraft, // all new data set to draft

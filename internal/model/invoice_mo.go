@@ -21,13 +21,13 @@ type Invoice struct {
 	UserUpdated       User                      `gorm:"foreignKey:updated_by"`
 	PartnerID         int                       `json:"partner_id" gorm:"column:partner_id;index:idx_invoice_partner_id"`
 	Partner           Partner                   `gorm:"foreignKey:partner_id"`
-	TotalLine         float64                   `gorm:"column:total_line"`
-	GrandTotal        float64                   `gorm:"column:grand_total"`
+	TotalLine         float64                   `gorm:"column:total_line;default:0"`
+	GrandTotal        float64                   `gorm:"column:grand_total;default:0"`
 	Discount          float64                   `json:"discount" gorm:"column:discount"`
 	BatchNo           string                    `json:"batchno" gorm:"column:batch_no;index:idx_invoice_batchno"`
 	Status            constant.InvoiceStatus    `gorm:"column:status;default:DR"`
 	DocAction         constant.InvoiceDocAction `json:"docaction" gorm:"column:docaction;default:DR"`
-	OustandingPayment float64                   `json:"oustanding" gorm:"column:oustanding_payment"`
+	OustandingPayment float64                   `gorm:"column:oustanding_payment;default:0"`
 	DocumentNo        string                    `json:"documentno" gorm:"column:documentno;not null;unique"`
 	IsPrecentage      bool                      `gorm:"column:isprecentage;default:false" json:"isprecentage"`
 	PayDate           time.Time                 `gorm:"column:pay_date"`
@@ -38,7 +38,7 @@ type InvoiceRequest struct {
 	BatchNo       string                    `json:"batchno"`
 	Status        constant.InvoiceStatus    `json:"status"`
 	DocAction     constant.InvoiceDocAction `json:"docaction"`
-	IsPrecentage  bool                      `json:"isprecentage"`
+	IsPrecentage  bool                      `json:"ispercentage"`
 	PartnerUUID   uuid.UUID                 `json:"partner_id"`
 	PartnerId     int                       `json:"-"`
 	CreatedById   string                    `json:"-"`
@@ -59,7 +59,7 @@ type InvoiceRespont struct {
 	DocAction         constant.InvoiceDocAction `json:"docaction"`
 	OustandingPayment float64                   `json:"oustanding"`
 	DocumentNo        string                    `json:"documentno"`
-	IsPrecentage      bool                      `json:"isprecentage"`
+	IsPrecentage      bool                      `json:"ispercentage"`
 	PayDate           time.Time                 `json:"pay_date"`
 	TotalLine         float64                   `json:"total_line"`
 	Discount          float64                   `json:"discount"`
@@ -91,7 +91,7 @@ type InvoiceLine struct {
 	Discount     float64   `gorm:"column:discount" json:"discount"`
 	Qty          float64   `gorm:"column:qty" json:"qty"`
 	Amount       float64   `gorm:"column:amount"`
-	IsPrecentage bool      `gorm:"column:isprecentage;default:false" json:"isprecentage"`
+	IsPrecentage bool      `gorm:"column:isprecentage;default:false" json:"ispercentage"`
 	ProductID    int       `gorm:"column:product_id;index:idx_invoiceline_productId" json:"product_id"`
 	Product      Product   `gorm:"foreignKey:ProductID"`
 	InvoiceID    int       `gorm:"column:invoice_id;not null;index:idx_invoiceline_invoiceId" json:"invoice_id"`
@@ -108,7 +108,7 @@ type InvoiceLineRequest struct {
 	Price        float64   `json:"price"`
 	Amount       float64   `json:"-"`
 	Discount     float64   `json:"discount"`
-	IsPrecentage bool      `json:"isprecentage"`
+	IsPrecentage bool      `json:"ispercentage"`
 	CreatedById  string    `json:"-"`
 	UpdatedById  string    `json:"-"`
 }
@@ -121,7 +121,7 @@ type InvoiceLineRespont struct {
 	Price        float64               `json:"price"`
 	Amount       float64               `json:"amount"`
 	Discount     float64               `json:"discount"`
-	IsPrecentage bool                  `json:"isprecentage"`
+	IsPrecentage bool                  `json:"ispercentage"`
 	CreatedBy    UserPartial           `json:"createdby"`
 	UpdatedBy    UserPartial           `json:"updatedby"`
 	Invoice      InvoicePartialRespont `json:"invoice"`
