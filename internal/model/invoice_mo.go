@@ -9,7 +9,7 @@ import (
 	"github.com/google/uuid"
 )
 
-// -- invoice
+// Invoice -- invoice
 type Invoice struct {
 	ID                int                       `json:"-" gorm:"primaryKey;autoIncrement"`
 	UUID              uuid.UUID                 `json:"id" gorm:"type:uuid;default:uuid_generate_v4();index:idx_invoice_uuid"`
@@ -78,7 +78,7 @@ type InvoicePartialRespont struct {
 	OutstandingPayment float64   `json:"oustanding"`
 }
 
-// -- invoice line
+// InvoiceLine -- invoice line
 type InvoiceLine struct {
 	ID           int       `json:"-" gorm:"primaryKey;autoIncrement"`
 	CreatedAt    time.Time `gorm:"column:created_at;default:current_timestamp"`
@@ -95,7 +95,7 @@ type InvoiceLine struct {
 	ProductID    int       `gorm:"column:product_id;index:idx_invoiceline_productId" json:"product_id"`
 	Product      Product   `gorm:"foreignKey:ProductID"`
 	InvoiceID    int       `gorm:"column:invoice_id;not null;index:idx_invoiceline_invoiceId" json:"invoice_id"`
-	Invoice      Invoice   `gorm:"foreignKey:invoice_id"`
+	Invoice      Invoice   `gorm:"foreignKey:invoice_id;constraint:OnDelete:CASCADE"`
 	UUID         uuid.UUID `json:"id" gorm:"type:uuid;default:uuid_generate_v4();index:idx_invoiceline_uuid"`
 }
 
