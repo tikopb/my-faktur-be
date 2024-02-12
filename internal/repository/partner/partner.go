@@ -151,11 +151,11 @@ func (pr *partnerRepo) Partial(q string) ([]model.PartnerPartialRespon, error) {
 
 	if q != "" {
 		stringParam := model.GetSearchParamPartnerV2(q) + " AND isactive = true "
-		if err := pr.db.Model(&model.Partner{}).Select("Name, uuid").Where(stringParam).Find(&dataReturn).Error; err != nil {
+		if err := pr.db.Model(&model.Partner{}).Select("Name, uuid").Where(stringParam).Limit(15).Find(&dataReturn).Error; err != nil {
 			return dataReturn, err
 		}
 	} else {
-		if err := pr.db.Model(&model.Partner{}).Select("Name, uuid").Where(&model.Partner{Isactive: true}).Find(&dataReturn).Error; err != nil {
+		if err := pr.db.Model(&model.Partner{}).Select("Name, uuid").Where(&model.Partner{Isactive: true}).Limit(15).Find(&dataReturn).Error; err != nil {
 			return dataReturn, err
 		}
 	}

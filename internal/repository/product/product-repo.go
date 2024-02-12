@@ -85,11 +85,11 @@ func (pr *productRepo) Partial(q string) ([]model.ProductPartialRespon, error) {
 
 	if q != "" {
 		stringParam := model.GetSeatchParamProductV2(q) + " AND isactive = true "
-		if err := pr.db.Model(&model.Product{}).Select("CONCAT(value, ' - ', name) as name, uuid").Where(stringParam).Find(&dataReturn).Error; err != nil {
+		if err := pr.db.Model(&model.Product{}).Select("CONCAT(value, ' - ', name) as name, uuid").Where(stringParam).Limit(15).Find(&dataReturn).Error; err != nil {
 			return dataReturn, err
 		}
 	} else {
-		if err := pr.db.Model(&model.Product{}).Select("CONCAT(value, ' - ', name) as name, uuid").Where(&model.Product{IsActive: true}).Find(&dataReturn).Error; err != nil {
+		if err := pr.db.Model(&model.Product{}).Select("CONCAT(value, ' - ', name) as name, uuid").Where(&model.Product{IsActive: true}).Limit(15).Find(&dataReturn).Error; err != nil {
 			return dataReturn, err
 		}
 	}
