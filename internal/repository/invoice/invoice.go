@@ -7,6 +7,7 @@ import (
 	pgUtil "bemyfaktur/internal/model/paginationUtil"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -45,11 +46,9 @@ func (ir *invoiceRepo) Create(request model.InvoiceRequest, partner model.Partne
 	request.PayDate = date
 
 	invoiceData := model.Invoice{
-		CreatedBy: request.CreatedById,
-		UpdatedBy: request.UpdatedById,
-		PartnerID: request.PartnerId,
-		// GrandTotal:        0, // all new invoice data is 0
-		// TotalLine:         0,
+		CreatedBy:         request.CreatedById,
+		UpdatedBy:         request.UpdatedById,
+		PartnerID:         request.PartnerId,
 		Discount:          request.Discount,
 		BatchNo:           request.BatchNo,
 		Status:            constant.InvoiceStatusDraft, // all new data set to draft
@@ -223,7 +222,10 @@ func (ir *invoiceRepo) Update(id uuid.UUID, request model.InvoiceRequest) (model
 	invoiceData.BatchNo = request.BatchNo
 
 	//handling Grand Total
-	invoiceData = ir.handlingGrandTotal(invoiceData)
+	invoiceData, err = ir.BeforeSave(invoiceData)
+	if err != nil {
+		return data, err
+	}
 
 	//validation docaction
 	invoiceData, err = ir.DocProcess(invoiceData, string(request.DocAction))
@@ -294,13 +296,21 @@ func (ir *invoiceRepo) ParsingInvoiceToInvoiceRequest(invoice model.Invoice) (mo
 	return data, nil
 }
 
-func (pr *invoiceRepo) handlingGrandTotal(data model.Invoice) model.Invoice {
+func (pr *invoiceRepo) BeforeSave(data model.Invoice) (model.Invoice, error) {
+
+	if strings.Contains(string(data.Status), string(constant.InvoiceStatusComplete)) {
+		return model.Invoice{}, errors.New("can't change status, data already complete")
+	} else if strings.Contains(string(data.Status), string(constant.InvoiceStatusVoid)) {
+		return model.Invoice{}, errors.New("can't change status, data already void")
+	}
+
 	if data.IsPrecentage {
 		data.GrandTotal = data.TotalLine - (data.TotalLine * data.Discount / 100)
 	} else {
 		data.GrandTotal = data.TotalLine - data.Discount
 	}
-	return data
+
+	return data, nil
 }
 
 func (ir *invoiceRepo) getTableName() string {
