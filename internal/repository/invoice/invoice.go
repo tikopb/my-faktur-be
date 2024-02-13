@@ -221,14 +221,14 @@ func (ir *invoiceRepo) Update(id uuid.UUID, request model.InvoiceRequest) (model
 	invoiceData.Discount = request.Discount
 	invoiceData.BatchNo = request.BatchNo
 
-	//handling Grand Total
-	invoiceData, err = ir.BeforeSave(invoiceData)
+	//validation docaction
+	invoiceData, err = ir.DocProcess(invoiceData, string(request.DocAction))
 	if err != nil {
 		return data, err
 	}
 
-	//validation docaction
-	invoiceData, err = ir.DocProcess(invoiceData, string(request.DocAction))
+	//handling Grand Total
+	invoiceData, err = ir.BeforeSave(invoiceData)
 	if err != nil {
 		return data, err
 	}
@@ -298,10 +298,8 @@ func (ir *invoiceRepo) ParsingInvoiceToInvoiceRequest(invoice model.Invoice) (mo
 
 func (pr *invoiceRepo) BeforeSave(data model.Invoice) (model.Invoice, error) {
 
-	if strings.Contains(string(data.Status), string(constant.InvoiceStatusComplete)) {
-		return model.Invoice{}, errors.New("can't change status, data already complete")
-	} else if strings.Contains(string(data.Status), string(constant.InvoiceStatusVoid)) {
-		return model.Invoice{}, errors.New("can't change status, data already void")
+	if !strings.Contains(string(data.Status), string(constant.InvoiceStatusDraft)) && data.DocAction != "VO" {
+		return model.Invoice{}, errors.New("can't change status, data not in draft")
 	}
 
 	if data.IsPrecentage {

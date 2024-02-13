@@ -61,5 +61,7 @@ func (ir *invoiceRepo) ReversedIt(data model.Invoice, docaction string) (model.I
 		return data, errors.New(errorMsg)
 	}
 
+	data.Status = constant.InvoiceStatus(docaction)
+	data.DocAction = constant.InvoiceDocAction(docaction)
 	return data, nil
 }
