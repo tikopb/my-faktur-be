@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 )
 
@@ -163,5 +164,33 @@ func (h *handler) CreateInvoiceV2(c echo.Context) error {
 	}
 
 	return handleError(c, http.StatusOK, errors.New("CREATE "+data.Header.BatchNo+" SUCCESS"), meta, data)
+}
 
+func (h *handler) Partialnvoice(c echo.Context) error {
+	//get parameter
+	q := c.QueryParam("q")
+	q = strings.ToLower(q)
+
+	//get partner_id
+	partner_id := c.QueryParam("partner_id")
+	if partner_id == "" {
+		err := errors.New("partner_id must be filled")
+		WriteLogErorr("[delivery][rest][invoice_handler][InvoicePartial] ", err)
+		return handleError(c, http.StatusNotFound, err, nil, nil)
+	}
+	//parsing to uuid, give erorr when failed.
+	uuidPartnerID, err := uuid.Parse(partner_id)
+	if err != nil {
+		err := errors.New("partner_id must be a valid UUID")
+		WriteLogErorr("[delivery][rest][invoice_handler][InvoicePartial] ", err)
+		return handleError(c, http.StatusNotFound, err, nil, nil)
+	}
+
+	data, err := h.invoiceUsecase.Partial(uuidPartnerID, q)
+	if err != nil {
+		WriteLogErorr("[delivery][rest][invoice_handler][InvoicePartial] ", err)
+		return handleError(c, http.StatusInternalServerError, err, nil, nil)
+	}
+
+	return handleError(c, http.StatusOK, errors.New("Get SUCCESS"), meta, data)
 }

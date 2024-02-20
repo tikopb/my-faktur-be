@@ -165,10 +165,10 @@ func (pr *paymentRepo) parsingPaymentLineToRespont(paymentLine model.PaymentLine
 		DocumentNo: dataPreload.Payment.DocumentNo,
 	}
 	invoice := model.InvoicePartialRespont{
-		UUID:               dataPreload.Invoice.UUID,
-		BatchNo:            dataPreload.Invoice.BatchNo,
-		DocumentNo:         dataPreload.Invoice.DocumentNo,
-		OutstandingPayment: dataPreload.Invoice.OustandingPayment,
+		UUID:              dataPreload.Invoice.UUID,
+		BatchNo:           dataPreload.Invoice.BatchNo,
+		Documentno:        dataPreload.Invoice.DocumentNo,
+		OustandingPayment: dataPreload.Invoice.OustandingPayment,
 	}
 
 	data = model.PaymentLineRespont{

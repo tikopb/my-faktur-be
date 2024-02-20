@@ -176,7 +176,7 @@ func (ir *invoiceRepo) handlingAmount(qty float64, price float64, isPrecentage b
 // bring updated after saved is success
 func (ir *invoiceRepo) AfterSave(request model.InvoiceLine) error {
 
-	//init the sql
+	//set the total_line
 	query := `
 		UPDATE invoices as i 
 		SET 
@@ -191,7 +191,7 @@ func (ir *invoiceRepo) AfterSave(request model.InvoiceLine) error {
 	if err != nil {
 		return err
 	}
-	//init the sql
+	//set the grand total
 	query = `
 		UPDATE invoices as i 
 		SET 
@@ -243,7 +243,7 @@ func (ir *invoiceRepo) ParsingInvoiceLineToInvoiceRequest(line model.InvoiceLine
 		Id:         dataRe.Invoice.ID,
 		UUID:       dataRe.Invoice.UUID,
 		BatchNo:    dataRe.Invoice.BatchNo,
-		DocumentNo: dataRe.Invoice.DocumentNo,
+		Documentno: dataRe.Invoice.DocumentNo,
 	}
 
 	product := model.ProductPartialRespon{

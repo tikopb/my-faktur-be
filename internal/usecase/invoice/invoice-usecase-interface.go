@@ -12,6 +12,7 @@ type InvoiceUsecaseInterface interface {
 	CreateInvoice(request model.InvoiceRequest, userId string) (model.InvoiceRespont, error)
 	UpdatedInvoice(id uuid.UUID, request model.InvoiceRequest, userId string) (model.InvoiceRespont, error)
 	DeleteInvoice(id uuid.UUID) (string, error)
+	Partial(partner_id uuid.UUID, q string) ([]model.InvoicePartialRespont, error)
 
 	IndexLine(limit int, offset int, invoiceId uuid.UUID, q string, order []string) ([]model.InvoiceLineRespont, error)
 	GetInvoiceLine(id uuid.UUID) (model.InvoiceLineRespont, error)

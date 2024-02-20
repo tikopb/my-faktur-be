@@ -27,7 +27,7 @@ type Invoice struct {
 	BatchNo           string                    `json:"batchno" gorm:"column:batch_no;index:idx_invoice_batchno"`
 	Status            constant.InvoiceStatus    `gorm:"column:status;default:DR"`
 	DocAction         constant.InvoiceDocAction `json:"docaction" gorm:"column:docaction;default:DR"`
-	OustandingPayment float64                   `gorm:"column:oustanding_payment;default:0"`
+	OustandingPayment float64                   `json:"outstanding" gorm:"column:oustanding_payment;default:0"`
 	DocumentNo        string                    `json:"documentno" gorm:"column:documentno;not null;unique"`
 	IsPrecentage      bool                      `gorm:"column:isprecentage;default:false" json:"isprecentage"`
 	PayDate           time.Time                 `gorm:"column:pay_date"`
@@ -71,11 +71,11 @@ type InvoiceRespont struct {
 }
 
 type InvoicePartialRespont struct {
-	UUID               uuid.UUID `json:"id"`
-	BatchNo            string    `json:"batchno"`
-	DocumentNo         string    `json:"documentno"`
-	Id                 int       `json:"-"`
-	OutstandingPayment float64   `json:"oustanding"`
+	UUID              uuid.UUID `json:"id"`
+	BatchNo           string    `json:"batchno"`
+	Documentno        string    `json:"documentno"`
+	OustandingPayment float64   `json:"outstanding" gorm:"oustanding_payment"`
+	Id                int       `json:"-"`
 }
 
 // InvoiceLine -- invoice line

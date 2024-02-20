@@ -34,7 +34,7 @@ func main() {
 	if arg != "" {
 		initCommands()
 	} else {
-		e.Logger.Fatal(e.Start((":4000")))
+		e.Logger.Fatal(e.Start((":13022")))
 	}
 }
 
