@@ -265,7 +265,7 @@ func (ir *invoiceRepo) Partial(partner_id int, q string) ([]model.InvoicePartial
 	if q == "" {
 		whereString = " status = 'CO' AND oustanding_payment > 0 AND partner_id = " + strconv.Itoa(partner_id)
 	} else {
-		whereString = " status = 'CO' AND oustanding_payment > 0 AND partner_id = " + strconv.Itoa(partner_id) + "and lower(batch_no)  LIKE " + q + " OR lower(documentno) LIKE " + q
+		whereString = " status = 'CO' AND oustanding_payment > 0 AND partner_id = " + strconv.Itoa(partner_id) + " and (lower(batch_no)  LIKE '%" + q + "%' OR lower(documentno) LIKE '%" + q + "%' ) "
 	}
 
 	if err := ir.db.Model(&model.Invoice{}).
