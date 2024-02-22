@@ -246,3 +246,14 @@ func (iu *invoiceUsecase) CreateInvoiceV2(request model.InvoiceRequestV2, userId
 
 	return data, nil
 }
+
+// Partial implements InvoiceUsecaseInterface.
+func (iu *invoiceUsecase) Partial(partner_id uuid.UUID, q string) ([]model.InvoicePartialRespont, error) {
+	//get partner id
+	partner, err := iu.partnerRepo.ShowInternal(partner_id)
+	if err != nil {
+		return []model.InvoicePartialRespont{}, err
+	}
+
+	return iu.invoiceRepo.Partial(partner.ID, q)
+}

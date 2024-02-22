@@ -14,6 +14,7 @@ type InvoiceRepositoryInterface interface {
 	ShowInternal(id uuid.UUID) (model.Invoice, error)
 	Update(id uuid.UUID, request model.InvoiceRequest) (model.InvoiceRespont, error)
 	Delete(id uuid.UUID) (string, error)
+	Partial(partner_id int, q string) ([]model.InvoicePartialRespont, error)
 
 	//Line
 	IndexLine(limit int, offset int, invoiceId int, q string, order []string) ([]model.InvoiceLineRespont, error)

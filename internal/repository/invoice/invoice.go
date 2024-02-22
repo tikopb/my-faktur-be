@@ -7,6 +7,7 @@ import (
 	pgUtil "bemyfaktur/internal/model/paginationUtil"
 	"errors"
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
@@ -207,6 +208,12 @@ func (ir *invoiceRepo) ShowInternal(id uuid.UUID) (model.Invoice, error) {
 
 // Update implements InvoiceRepositoryInterface.
 func (ir *invoiceRepo) Update(id uuid.UUID, request model.InvoiceRequest) (model.InvoiceRespont, error) {
+
+	//before change validation can't change when data is not in draft!
+	if !strings.Contains(string(request.Status), string(constant.InvoiceStatusDraft)) && request.DocAction != "VO" {
+		return model.InvoiceRespont{}, errors.New("can't change status, data not in draft")
+	}
+
 	//set var
 	data := model.InvoiceRespont{}
 	invoiceData, err := ir.ShowInternal(id) //get invoice Data
@@ -221,14 +228,14 @@ func (ir *invoiceRepo) Update(id uuid.UUID, request model.InvoiceRequest) (model
 	invoiceData.Discount = request.Discount
 	invoiceData.BatchNo = request.BatchNo
 
-	//handling Grand Total
-	invoiceData, err = ir.BeforeSave(invoiceData)
+	//validation docaction
+	invoiceData, err = ir.DocProcess(invoiceData, string(request.DocAction))
 	if err != nil {
 		return data, err
 	}
 
-	//validation docaction
-	invoiceData, err = ir.DocProcess(invoiceData, string(request.DocAction))
+	//handling Grand Total
+	invoiceData, err = ir.BeforeSave(invoiceData)
 	if err != nil {
 		return data, err
 	}
@@ -245,6 +252,30 @@ func (ir *invoiceRepo) Update(id uuid.UUID, request model.InvoiceRequest) (model
 	}
 
 	return dataReturn, nil
+}
+
+/*
+getting the partial of invoice where docstatus = CO, having outstanding more than and partner_id base on the parameter method
+*/
+func (ir *invoiceRepo) Partial(partner_id int, q string) ([]model.InvoicePartialRespont, error) {
+	var data []model.InvoicePartialRespont
+	//var invoices []model.Invoice
+	whereString := ""
+	//where condition
+	if q == "" {
+		whereString = " status = 'CO' AND oustanding_payment > 0 AND partner_id = " + strconv.Itoa(partner_id)
+	} else {
+		whereString = " status = 'CO' AND oustanding_payment > 0 AND partner_id = " + strconv.Itoa(partner_id) + " and (lower(batch_no)  LIKE '%" + q + "%' OR lower(documentno) LIKE '%" + q + "%' ) "
+	}
+
+	if err := ir.db.Model(&model.Invoice{}).
+		Where(whereString).
+		Limit(15).
+		Find(&data).Error; err != nil {
+		return []model.InvoicePartialRespont{}, err
+	}
+
+	return data, nil
 }
 
 func (ir *invoiceRepo) ParsingInvoiceToInvoiceRequest(invoice model.Invoice) (model.InvoiceRespont, error) {
@@ -297,12 +328,6 @@ func (ir *invoiceRepo) ParsingInvoiceToInvoiceRequest(invoice model.Invoice) (mo
 }
 
 func (pr *invoiceRepo) BeforeSave(data model.Invoice) (model.Invoice, error) {
-
-	if strings.Contains(string(data.Status), string(constant.InvoiceStatusComplete)) {
-		return model.Invoice{}, errors.New("can't change status, data already complete")
-	} else if strings.Contains(string(data.Status), string(constant.InvoiceStatusVoid)) {
-		return model.Invoice{}, errors.New("can't change status, data already void")
-	}
 
 	if data.IsPrecentage {
 		data.GrandTotal = data.TotalLine - (data.TotalLine * data.Discount / 100)
