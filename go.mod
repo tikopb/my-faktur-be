@@ -3,12 +3,12 @@ module bemyfaktur
 go 1.20
 
 require (
-	github.com/bxcodec/faker/v4 v4.0.0-beta.3
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/google/uuid v1.3.1
 	github.com/labstack/echo/v4 v4.11.2
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/viper v1.16.0
+	github.com/urfave/cli v1.22.5
 	golang.org/x/crypto v0.14.0
 	gorm.io/driver/postgres v1.5.2
 	gorm.io/gorm v1.25.3
@@ -37,7 +37,6 @@ require (
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/subosito/gotenv v1.4.2 // indirect
-	github.com/urfave/cli v1.22.5 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.2 // indirect
 	golang.org/x/net v0.17.0 // indirect

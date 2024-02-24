@@ -13,6 +13,7 @@ import (
 	"bemyfaktur/internal/usecase"
 
 	"github.com/labstack/echo/v4"
+	"github.com/spf13/viper"
 	"github.com/urfave/cli"
 )
 
@@ -31,10 +32,15 @@ func main() {
 	flag.Parse()
 	arg := flag.Arg(0)
 
+	appPort := GetEnvVariabel("be_port")
+	if appPort == "" {
+		e.Logger.Fatal("be_port config is required on env")
+	}
+
 	if arg != "" {
 		initCommands()
 	} else {
-		e.Logger.Fatal(e.Start((":13022")))
+		e.Logger.Fatal(e.Start((":" + appPort)))
 	}
 }
 
@@ -63,4 +69,15 @@ func initCommands() {
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+func GetEnvVariabel(envName string) string {
+	viper.SetConfigFile(".env")
+	err := viper.ReadInConfig()
+	if err != nil {
+		panic("env of " + envName + "not found")
+	}
+
+	value := viper.GetString(envName)
+	return value
 }

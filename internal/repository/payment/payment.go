@@ -272,6 +272,10 @@ func (pr *paymentRepo) parsingPaymentToPaymentRespont(payment model.Payment) (mo
 		UUID: dataPreload.Partner.UUID,
 		Name: dataPreload.Partner.Name,
 	}
+	line, err := pr.IndexLine(15, 0, dataPreload.ID)
+	if err != nil {
+		return model.PaymentRespont{}, err
+	}
 
 	data = model.PaymentRespont{
 		ID:           dataPreload.UUID,
@@ -289,6 +293,7 @@ func (pr *paymentRepo) parsingPaymentToPaymentRespont(payment model.Payment) (mo
 		UpdatedBy:    updateBy,
 		Partner:      partner,
 		UUID:         dataPreload.UUID,
+		Line:         line,
 	}
 	return data, nil
 }
