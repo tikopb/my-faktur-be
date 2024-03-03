@@ -91,6 +91,7 @@ func (pr *paymentRepo) Create(payment model.PaymentRequest) (model.PaymentRespon
 		Discount:   0,
 		BatchNo:    payment.BatchNo,
 		DocumentNo: documentno,
+		PayDate:    payment.PayDate,
 	}
 
 	if err := pr.db.Create(&paymentData).Error; err != nil {
@@ -186,6 +187,7 @@ func (pr *paymentRepo) Update(id uuid.UUID, updatedPayment model.PaymentRequest)
 	paymentData.Discount = updatedPayment.Discount
 	paymentData.IsPrecentage = updatedPayment.IsPrecentage
 	paymentData.BatchNo = updatedPayment.BatchNo
+	paymentData.PayDate = updatedPayment.PayDate
 
 	//validate before save
 	paymentData, err = pr.BeforeSave(paymentData)

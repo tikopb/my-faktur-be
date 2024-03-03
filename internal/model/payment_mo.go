@@ -28,6 +28,7 @@ type Payment struct {
 	DocumentNo   string                    `json:"documentno" gorm:"column:documentno;not null;unique;index:idx_payment_documentno"`
 	IsPrecentage bool                      `gorm:"column:isprecentage;default:false" json:"isprecentage"`
 	UUID         uuid.UUID                 `json:"id" gorm:"type:uuid;default:uuid_generate_v4();index:idx_payment_uuid"`
+	PayDate      time.Time                 `gorm:"column:pay_date;default:null"`
 }
 
 type PaymentRequest struct {
@@ -41,6 +42,7 @@ type PaymentRequest struct {
 	DocAction    constant.PaymentDocAction `json:"docaction"`
 	DocumentNo   string                    `json:"documentno"`
 	IsPrecentage bool                      `json:"isprecentage"`
+	PayDate      time.Time                 `json:"pay_date"`
 }
 
 type PaymentRespont struct {
