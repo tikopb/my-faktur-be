@@ -224,6 +224,17 @@ func (pr *paymentRepo) afterSave(data model.PaymentLine) error {
 		return err
 	}
 
+	//after save update total line of payment header
+	query = `
+	update payments as p set total_line = (
+		select coalesce(sum(amount), 0) from payment_lines pl where pl.payment_id = p.id) 
+		where p.id = ?
+	`
+
+	if err := pr.db.Exec(query, data.PaymentID).Error; err != nil {
+		return err
+	}
+
 	//after save update grand total of payment header
 	query = `
 	update payments as p set grand_total = (

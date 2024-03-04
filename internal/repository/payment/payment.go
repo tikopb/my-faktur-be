@@ -4,6 +4,7 @@ import (
 	"bemyfaktur/internal/model"
 	documentutil "bemyfaktur/internal/model/documentUtil"
 	pgUtil "bemyfaktur/internal/model/paginationUtil"
+	"time"
 
 	"errors"
 	"fmt"
@@ -82,6 +83,14 @@ func (pr *paymentRepo) Create(payment model.PaymentRequest) (model.PaymentRespon
 	if err != nil {
 		return data, err
 	}
+
+	//change the value from string to timestamp format
+	dateStr := payment.PayDateString
+	date, err := time.Parse("02-01-2006", dateStr)
+	if err != nil {
+		return model.PaymentRespont{}, err
+	}
+	payment.PayDate = date
 
 	paymentData := model.Payment{
 		CreatedBy:  payment.CreatedBy,
@@ -183,6 +192,14 @@ func (pr *paymentRepo) Update(id uuid.UUID, updatedPayment model.PaymentRequest)
 		return model.PaymentRespont{}, err
 	}
 
+	//change the value from string to timestamp format
+	dateStr := updatedPayment.PayDateString
+	date, err := time.Parse("02-01-2006", dateStr)
+	if err != nil {
+		return model.PaymentRespont{}, err
+	}
+	updatedPayment.PayDate = date
+
 	paymentData.PartnerID = updatedPayment.PartnerID
 	paymentData.Discount = updatedPayment.Discount
 	paymentData.IsPrecentage = updatedPayment.IsPrecentage
@@ -235,7 +252,7 @@ func (pr *paymentRepo) BeforeSave(data model.Payment) (model.Payment, error) {
 	query := `
     	select coalesce(sum(amount), 0) from payment_lines pl where payment_id = ?
 	`
-	if err := pr.db.Raw(query, data.ID).Scan(&grandTotal).Error; err != nil {
+	if err := pr.db.Exec(query, data.ID).Scan(&grandTotal).Error; err != nil {
 		return data, err
 	}
 	data.GrandTotal = grandTotal

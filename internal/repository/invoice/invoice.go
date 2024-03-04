@@ -222,11 +222,20 @@ func (ir *invoiceRepo) Update(id uuid.UUID, request model.InvoiceRequest) (model
 		return data, err
 	}
 
+	//change the value from string to timestamp format
+	dateStr := request.PayDateString
+	date, err := time.Parse("02-01-2006", dateStr)
+	if err != nil {
+		return model.InvoiceRespont{}, err
+	}
+	request.PayDate = date
+
 	invoiceData.UpdateAt = time.Now()
 	invoiceData.UpdatedBy = request.UpdatedById
 	invoiceData.PartnerID = request.PartnerId
 	invoiceData.Discount = request.Discount
 	invoiceData.BatchNo = request.BatchNo
+	invoiceData.PayDate = request.PayDate
 
 	//validation docaction
 	invoiceData, err = ir.DocProcess(invoiceData, string(request.DocAction))
