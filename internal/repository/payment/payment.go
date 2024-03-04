@@ -313,6 +313,7 @@ func (pr *paymentRepo) parsingPaymentToPaymentRespont(payment model.Payment) (mo
 		Partner:      partner,
 		UUID:         dataPreload.UUID,
 		Line:         line,
+		PayDate:      data.PayDate,
 	}
 	return data, nil
 }
