@@ -7,6 +7,7 @@ import (
 	"bemyfaktur/internal/repository/partner"
 	"bemyfaktur/internal/repository/payment"
 	"errors"
+	"fmt"
 
 	"github.com/google/uuid"
 )
@@ -147,13 +148,15 @@ func (pu *paymentUsecase) CreatePaymentV2(request model.PaymentRequestV2, userId
 	for _, line := range request.Line {
 		//validate invoice
 		invoice, err := pu.invoiceRepo.ShowInternal(line.Invoice_uuid)
+		fmt.Println(err)
 		if err != nil {
-			//set the value to invoice_id because relation key used with id int not uuid
-			line.Invoice_id = invoice.ID
+			//if err !nil then return erorr
+			return model.PaymentRespontV2{}, err
 		} else if invoice.Status != constant.InvoiceStatusComplete {
 			return model.PaymentRespontV2{}, errors.New("invoice not in completed")
 		}
 
+		//set the value to invoice_id because relation key used with id int not uuid
 		line.Invoice_id = invoice.ID
 
 		//set created by
