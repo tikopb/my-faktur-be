@@ -62,7 +62,6 @@ type PaymentRespont struct {
 	UpdatedBy    UserPartial               `json:"updatedby"`
 	Partner      PartnerPartialRespon      `json:"partner"`
 	UUID         uuid.UUID                 `json:"-"`
-	Line         []PaymentLineRespont      `json:"line"`
 	PayDate      time.Time                 `json:"pay_date"`
 }
 

@@ -100,7 +100,7 @@ func (pr *paymentRepo) Create(payment model.PaymentRequest) (model.PaymentRespon
 		Discount:   0,
 		BatchNo:    payment.BatchNo,
 		DocumentNo: documentno,
-		PayDate:    payment.PayDate,
+		//PayDate:    payment.PayDate, turn off paydate just filled when updated function
 	}
 
 	if err := pr.db.Create(&paymentData).Error; err != nil {
@@ -291,10 +291,6 @@ func (pr *paymentRepo) parsingPaymentToPaymentRespont(payment model.Payment) (mo
 		UUID: dataPreload.Partner.UUID,
 		Name: dataPreload.Partner.Name,
 	}
-	line, err := pr.IndexLine(15, 0, dataPreload.ID)
-	if err != nil {
-		return model.PaymentRespont{}, err
-	}
 
 	data = model.PaymentRespont{
 		ID:           dataPreload.UUID,
@@ -312,7 +308,6 @@ func (pr *paymentRepo) parsingPaymentToPaymentRespont(payment model.Payment) (mo
 		UpdatedBy:    updateBy,
 		Partner:      partner,
 		UUID:         dataPreload.UUID,
-		Line:         line,
 		PayDate:      data.PayDate,
 	}
 	return data, nil

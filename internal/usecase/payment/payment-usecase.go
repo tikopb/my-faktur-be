@@ -149,20 +149,23 @@ func (pu *paymentUsecase) CreatePaymentV2(request model.PaymentRequestV2, userId
 		//validate invoice
 		invoice, err := pu.invoiceRepo.ShowInternal(line.Invoice_uuid)
 		fmt.Println(err)
-		if err != nil {
+		if err == nil {
+			//set the value to invoice_id because relation key used with id int not uuid
+			line.Invoice_id = invoice.ID
+
+			//set created by
+			line.CreatedBy = userId
+			line.UpdatedBy = userId
+			linesPost = append(linesPost, line)
+		} else if err.Error() == "data not found" {
 			//if err !nil then return erorr
-			return model.PaymentRespontV2{}, err
+			return model.PaymentRespontV2{}, errors.New("data of invoice not found")
 		} else if invoice.Status != constant.InvoiceStatusComplete {
 			return model.PaymentRespontV2{}, errors.New("invoice not in completed")
+		} else if err != nil {
+			//if err !nil then return erorr
+			return model.PaymentRespontV2{}, err
 		}
-
-		//set the value to invoice_id because relation key used with id int not uuid
-		line.Invoice_id = invoice.ID
-
-		//set created by
-		line.CreatedBy = userId
-		line.UpdatedBy = userId
-		linesPost = append(linesPost, line)
 	}
 
 	//define repeat line and change it into linespost it will change the data with data that already validate
