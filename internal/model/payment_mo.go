@@ -63,6 +63,7 @@ type PaymentRespont struct {
 	Partner      PartnerPartialRespon      `json:"partner"`
 	UUID         uuid.UUID                 `json:"-"`
 	PayDate      time.Time                 `json:"pay_date"`
+	Line         []PaymentLineRespont      `json:"line"`
 }
 
 type PaymentPartialRespont struct {

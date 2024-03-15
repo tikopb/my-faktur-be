@@ -9,7 +9,7 @@ import (
 type PaymentRepositoryinterface interface {
 	Index(limit int, offset int, q string, order []string, dateFrom string, dateTo string) ([]model.PaymentRespont, error)
 	Create(payment model.PaymentRequest) (model.PaymentRespont, error)
-	CreateV2(payment model.PaymentRequestV2) (model.PaymentRespontV2, error)
+	CreateV2(payment model.PaymentRequestV2) (model.PaymentRespont, error)
 	Show(id uuid.UUID) (model.PaymentRespont, error)
 	ShowInternal(id uuid.UUID) (model.Payment, error)
 	Update(id uuid.UUID, updatedPayment model.PaymentRequest) (model.PaymentRespont, error)
@@ -24,6 +24,7 @@ type PaymentRepositoryinterface interface {
 
 	//save validaition
 	BeforeSave(data model.Payment) (model.Payment, error)
+	BeforeUpdate(data model.Payment, docaction string) (model.Payment, error)
 
 	//docValidation
 	DocProcess(data model.Payment, docaction string) (model.Payment, error)

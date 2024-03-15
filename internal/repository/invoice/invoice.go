@@ -5,10 +5,12 @@ import (
 	"bemyfaktur/internal/model/constant"
 	documentutil "bemyfaktur/internal/model/documentUtil"
 	pgUtil "bemyfaktur/internal/model/paginationUtil"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
+	"os"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -27,6 +29,11 @@ func GetRepository(db *gorm.DB, docUtil documentutil.Repository, pgRepo pgUtil.R
 		docUtil:    docUtil,
 		pgUtilRepo: pgRepo,
 	}
+}
+
+type mapperDoc struct {
+	Status   string `json:"status"`
+	Doaction string `json:"doaction"`
 }
 
 // Create implements InvoiceRepositoryInterface.
@@ -208,18 +215,16 @@ func (ir *invoiceRepo) ShowInternal(id uuid.UUID) (model.Invoice, error) {
 
 // Update implements InvoiceRepositoryInterface.
 func (ir *invoiceRepo) Update(id uuid.UUID, request model.InvoiceRequest) (model.InvoiceRespont, error) {
-
-	//before change validation can't change when data is not in draft!
-	if !strings.Contains(string(request.Status), string(constant.InvoiceStatusDraft)) && request.DocAction != "VO" {
-		return model.InvoiceRespont{}, errors.New("can't change status, data not in draft")
+	//set var
+	invoiceData, err := ir.ShowInternal(id) //get invoice Data
+	if err != nil {
+		return model.InvoiceRespont{}, err
 	}
 
-	//set var
-	data := model.InvoiceRespont{}
-	invoiceData, err := ir.ShowInternal(id) //get invoice Data
-
+	//before update validation
+	invoiceData, err = ir.BeforeUpdate(invoiceData, string(request.DocAction))
 	if err != nil {
-		return data, err
+		return model.InvoiceRespont{}, err
 	}
 
 	//change the value from string to timestamp format
@@ -240,24 +245,24 @@ func (ir *invoiceRepo) Update(id uuid.UUID, request model.InvoiceRequest) (model
 	//validation docaction
 	invoiceData, err = ir.DocProcess(invoiceData, string(request.DocAction))
 	if err != nil {
-		return data, err
+		return model.InvoiceRespont{}, err
 	}
 
 	//handling Grand Total
 	invoiceData, err = ir.BeforeSave(invoiceData)
 	if err != nil {
-		return data, err
+		return model.InvoiceRespont{}, err
 	}
 
 	//save the data
-	if err := ir.db.Updates(&invoiceData).Error; err != nil {
-		return data, err
+	if err := ir.db.Updates(&invoiceData).Where(&model.Invoice{ID: invoiceData.ID}).Error; err != nil {
+		return model.InvoiceRespont{}, err
 	}
 
 	//set return data
 	dataReturn, err := ir.ParsingInvoiceToInvoiceRequest(invoiceData)
 	if err != nil {
-		return data, err
+		return model.InvoiceRespont{}, err
 	}
 
 	return dataReturn, nil
@@ -334,6 +339,38 @@ func (ir *invoiceRepo) ParsingInvoiceToInvoiceRequest(invoice model.Invoice) (mo
 	}
 
 	return data, nil
+}
+
+// BeforeUpdate implements PaymentRepositoryinterface.
+func (pr *invoiceRepo) BeforeUpdate(data model.Invoice, docaction string) (model.Invoice, error) {
+	// Open the JSON file
+	file, err := os.Open("internal/repository/invoice/mapper.json")
+	if err != nil {
+		return model.Invoice{}, err
+	}
+	defer file.Close() // Ensure file is closed
+
+	// Read the file content
+	mapperFile, err := io.ReadAll(file)
+	if err != nil {
+		return model.Invoice{}, err
+	}
+
+	// Unmarshal the JSON data
+	var mapper []mapperDoc
+	err = json.Unmarshal(mapperFile, &mapper)
+	if err != nil {
+		return model.Invoice{}, err
+	}
+
+	// Filter elements with "DR" status
+	for _, element := range mapper {
+		if element.Status == string(data.Status) && element.Doaction == docaction {
+			return data, nil
+		}
+	}
+
+	return model.Invoice{}, errors.New("document invalid: status" + string(data.Status) + " docaction" + string(data.DocAction) + " NOT FOUND")
 }
 
 func (pr *invoiceRepo) BeforeSave(data model.Invoice) (model.Invoice, error) {

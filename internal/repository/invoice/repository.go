@@ -24,6 +24,10 @@ type InvoiceRepositoryInterface interface {
 	UpdateLine(id uuid.UUID, request model.InvoiceLineRequest) (model.InvoiceLineRespont, error)
 	DeleteLine(id uuid.UUID) (string, error)
 
+	//save validation
+	BeforeUpdate(data model.Invoice, docaction string) (model.Invoice, error)
+	BeforeSave(data model.Invoice) (model.Invoice, error)
+
 	//docValidation
 	DocProcess(data model.Invoice, docaction string) (model.Invoice, error)
 	CompleteIT(data model.Invoice, docaction string) (model.Invoice, error)

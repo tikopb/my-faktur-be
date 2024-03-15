@@ -37,7 +37,6 @@ func (ir *invoiceRepo) CompleteIT(data model.Invoice, docaction string) (model.I
 
 func (ir *invoiceRepo) ReversedIt(data model.Invoice, docaction string) (model.Invoice, error) {
 	payment := []model.Payment{}
-	data = model.Invoice{}
 
 	query := `
 		select i.documentno as documentno from payment_lines pl 
@@ -47,7 +46,7 @@ func (ir *invoiceRepo) ReversedIt(data model.Invoice, docaction string) (model.I
 	`
 
 	if err := ir.db.Raw(query, data.ID, constant.PaymentDocActionVoid).Scan(&payment).Error; err != nil {
-		return data, err
+		return model.Invoice{}, err
 	}
 
 	// Check if there is more than one payment record.

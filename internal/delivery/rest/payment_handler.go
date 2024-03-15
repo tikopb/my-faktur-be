@@ -166,5 +166,5 @@ func (h *handler) CreatePaymentV2(c echo.Context) error {
 		return handleError(c, http.StatusInternalServerError, err, meta, data)
 	}
 
-	return handleError(c, http.StatusOK, errors.New("Create "+data.Header.DocumentNo+" SUCCESS"), meta, data)
+	return handleError(c, http.StatusOK, errors.New("Create "+data.DocumentNo+" SUCCESS"), meta, data)
 }
