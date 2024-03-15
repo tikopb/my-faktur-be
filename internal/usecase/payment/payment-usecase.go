@@ -131,14 +131,14 @@ func (pu *paymentUsecase) DeletePaymentLine(id uuid.UUID) (string, error) {
 }
 
 // CreateV2 implements PaymentUsecaseInterface.
-func (pu *paymentUsecase) CreatePaymentV2(request model.PaymentRequestV2, userId string) (model.PaymentRespontV2, error) {
+func (pu *paymentUsecase) CreatePaymentV2(request model.PaymentRequestV2, userId string) (model.PaymentRespont, error) {
 	//header validation
 	request.Header.CreatedBy = userId
 	request.Header.UpdatedBy = userId
 	// validate the partner
 	partner, err := pu.partnerRepo.ShowInternal(request.Header.PartnerUUID)
 	if err != nil || !partner.Isactive {
-		return model.PaymentRespontV2{}, errors.New("partner not exist or inactived")
+		return model.PaymentRespont{}, errors.New("partner not exist or inactived")
 	}
 
 	request.Header.PartnerID = partner.ID
@@ -159,12 +159,12 @@ func (pu *paymentUsecase) CreatePaymentV2(request model.PaymentRequestV2, userId
 			linesPost = append(linesPost, line)
 		} else if err.Error() == "data not found" {
 			//if err !nil then return erorr
-			return model.PaymentRespontV2{}, errors.New("data of invoice not found")
+			return model.PaymentRespont{}, errors.New("data of invoice not found")
 		} else if invoice.Status != constant.InvoiceStatusComplete {
-			return model.PaymentRespontV2{}, errors.New("invoice not in completed")
+			return model.PaymentRespont{}, errors.New("invoice not in completed")
 		} else if err != nil {
 			//if err !nil then return erorr
-			return model.PaymentRespontV2{}, err
+			return model.PaymentRespont{}, err
 		}
 	}
 
@@ -174,7 +174,7 @@ func (pu *paymentUsecase) CreatePaymentV2(request model.PaymentRequestV2, userId
 	//hit the request
 	data, err := pu.paymentRepo.CreateV2(request)
 	if err != nil {
-		return model.PaymentRespontV2{}, err
+		return model.PaymentRespont{}, err
 	}
 
 	//set return value of data

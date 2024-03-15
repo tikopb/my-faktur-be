@@ -4,6 +4,9 @@ import (
 	"bemyfaktur/internal/model"
 	documentutil "bemyfaktur/internal/model/documentUtil"
 	pgUtil "bemyfaktur/internal/model/paginationUtil"
+	"encoding/json"
+	"io"
+	"os"
 	"time"
 
 	"errors"
@@ -25,6 +28,11 @@ func GetRepository(db *gorm.DB, docUtil documentutil.Repository, pgRepo pgUtil.R
 		docUtil:    docUtil,
 		pgUtilRepo: pgRepo,
 	}
+}
+
+type mapperDoc struct {
+	Status   string `json:"status"`
+	Doaction string `json:"doaction"`
 }
 
 // Index implements PaymentRepositoryinterface.
@@ -116,18 +124,18 @@ func (pr *paymentRepo) Create(payment model.PaymentRequest) (model.PaymentRespon
 	return dataPreload, nil
 }
 
-func (pr *paymentRepo) CreateV2(request model.PaymentRequestV2) (model.PaymentRespontV2, error) {
+func (pr *paymentRepo) CreateV2(request model.PaymentRequestV2) (model.PaymentRespont, error) {
 	//create header
 	header, err := pr.Create(request.Header)
 	if err != nil {
-		return model.PaymentRespontV2{}, err
+		return model.PaymentRespont{}, err
 	}
 
 	returnLine := []model.PaymentLineRespont{}
 
 	payment, err := pr.ShowInternal(header.UUID)
 	if err != nil {
-		return model.PaymentRespontV2{}, err
+		return model.PaymentRespont{}, err
 	}
 	for _, line := range request.Line {
 		line.PaymentID = payment.ID
@@ -137,20 +145,17 @@ func (pr *paymentRepo) CreateV2(request model.PaymentRequestV2) (model.PaymentRe
 			for _, lineGenerate := range returnLine {
 				pr.Delete(lineGenerate.ID)
 			}
-			return model.PaymentRespontV2{}, err
+			return model.PaymentRespont{}, err
 		}
 		returnLine = append(returnLine, lineCreated)
 	}
 
 	headerReturn, err := pr.Show(header.UUID)
 	if err != nil {
-		return model.PaymentRespontV2{}, err
+		return model.PaymentRespont{}, err
 	}
 
-	return model.PaymentRespontV2{
-		Header: headerReturn,
-		Line:   returnLine,
-	}, nil
+	return headerReturn, nil
 }
 
 // Show implements PaymentRepositoryinterface.
@@ -182,6 +187,11 @@ func (pr *paymentRepo) Update(id uuid.UUID, updatedPayment model.PaymentRequest)
 	//set var
 	data := model.PaymentRespont{}
 	paymentData, err := pr.ShowInternal(id) //get payment data
+	if err != nil {
+		return data, err
+	}
+
+	paymentData, err = pr.BeforeUpdate(paymentData, string(updatedPayment.DocAction))
 	if err != nil {
 		return data, err
 	}
@@ -263,6 +273,38 @@ func (pr *paymentRepo) BeforeSave(data model.Payment) (model.Payment, error) {
 	return data, nil
 }
 
+// BeforeUpdate implements PaymentRepositoryinterface.
+func (pr *paymentRepo) BeforeUpdate(data model.Payment, docaction string) (model.Payment, error) {
+	// Open the JSON file
+	file, err := os.Open("./mapper.json")
+	if err != nil {
+		return model.Payment{}, err
+	}
+	defer file.Close() // Ensure file is closed
+
+	// Read the file content
+	mapperFile, err := io.ReadAll(file)
+	if err != nil {
+		return model.Payment{}, err
+	}
+
+	// Unmarshal the JSON data
+	var mapper []mapperDoc
+	err = json.Unmarshal(mapperFile, &mapper)
+	if err != nil {
+		return model.Payment{}, err
+	}
+
+	// Filter elements with "DR" status
+	for _, element := range mapper {
+		if element.Status == string(data.Status) && element.Doaction == docaction {
+			return data, nil
+		}
+	}
+
+	return model.Payment{}, errors.New("document invalid: status" + string(data.Status) + "docaction" + string(data.DocAction) + "NOT FOUND")
+}
+
 func (pr *paymentRepo) handlingGrandTotal(data model.Payment) model.Payment {
 	if data.IsPrecentage {
 		data.GrandTotal = data.GrandTotal - (data.GrandTotal * data.Discount / 100)
@@ -292,6 +334,11 @@ func (pr *paymentRepo) parsingPaymentToPaymentRespont(payment model.Payment) (mo
 		Name: dataPreload.Partner.Name,
 	}
 
+	line, err := pr.IndexLine(15, 0, dataPreload.ID)
+	if err != nil {
+		return model.PaymentRespont{}, err
+	}
+
 	data = model.PaymentRespont{
 		ID:           dataPreload.UUID,
 		DocumentNo:   dataPreload.DocumentNo,
@@ -309,6 +356,7 @@ func (pr *paymentRepo) parsingPaymentToPaymentRespont(payment model.Payment) (mo
 		Partner:      partner,
 		UUID:         dataPreload.UUID,
 		PayDate:      data.PayDate,
+		Line:         line,
 	}
 	return data, nil
 }

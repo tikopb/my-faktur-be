@@ -1,0 +1,28 @@
+{ 
+  "mapper": [
+    {
+       "status" : "DR",
+       "doaction" :"IP"
+    },
+    {
+       "status" : "DR",
+       "doaction" :"CO"
+    },
+    {
+       "status" : "DR",
+       "doaction" :"VO"
+    },
+    {
+       "status" : "IP",
+       "doaction" :"CO"
+    },
+    {
+       "status" : "IP",
+       "doaction" :"VO"
+    },
+     {
+       "status" : "CO",
+       "doaction" :"VO"
+    }
+  ]
+}

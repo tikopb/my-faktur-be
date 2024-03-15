@@ -10,7 +10,7 @@ type PaymentUsecaseInterface interface {
 	Indexpayment(limit int, offset int, q string, order []string, dateFrom string, dateTo string) ([]model.PaymentRespont, error)
 	Getpayment(id uuid.UUID) (model.PaymentRespont, error)
 	Createpayment(request model.PaymentRequest, userId string) (model.PaymentRespont, error)
-	CreatePaymentV2(request model.PaymentRequestV2, userId string) (model.PaymentRespontV2, error)
+	CreatePaymentV2(request model.PaymentRequestV2, userId string) (model.PaymentRespont, error)
 	Updatedpayment(id uuid.UUID, request model.PaymentRequest) (model.PaymentRespont, error)
 	Deletepayment(id uuid.UUID) (string, error)
 
