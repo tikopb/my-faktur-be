@@ -150,7 +150,7 @@ func GetSeatchParamInvoice(q string) string {
 }
 
 func GetSeatchParamInvoiceV2(dateFrom string, dateTo string, q string) string {
-	var value string = " invoices.created_at >='" + dateFrom + "'::date and invoices.created_at <='" + dateTo + "'::date"
+	var value string = " invoices.created_at >='" + dateFrom + "'::date and invoices.created_at <='" + dateTo + "'::date+1"
 
 	if q != "" { // if q not nill then add information of documentno
 		q = "'%" + q + "%'"
