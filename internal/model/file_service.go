@@ -1,0 +1,25 @@
+package model
+
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
+
+type FileService struct {
+	ID          int       `gorm:"primaryKey;autoIncrement"`
+	UUID        uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4();index:idx_docService_uuid"`
+	CreatedAt   time.Time `gorm:"column:created_at;default:current_timestamp"`
+	UpdateAt    time.Time `gorm:"column:updated_at;default:current_timestamp"`
+	CreatedBy   string    `gorm:"column:created_by;" json:"created_by"`
+	User        User      `gorm:"foreignKey:created_by"`
+	UpdatedBy   string    `gorm:"column:updated_by" json:"updated_by"`
+	UserUpdated User      `gorm:"foreignKey:updated_by"`
+	FileName    string    `gorm:"column:file_name;unique;index:idx_docService_filename"`
+	UuidDoc     string    `gorm:"column:uuid_doc;index:idx_docService_uuidDoc"`
+	DocType     string    `gorm:"column:doctype;index:idx_docService_docType"`
+}
+
+type FileServiceRequest struct {
+	File64 string `json:"file64"`
+}
