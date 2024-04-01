@@ -16,10 +16,18 @@ type FileService struct {
 	UpdatedBy   string    `gorm:"column:updated_by" json:"updated_by"`
 	UserUpdated User      `gorm:"foreignKey:updated_by"`
 	FileName    string    `gorm:"column:file_name;unique;index:idx_docService_filename"`
-	UuidDoc     string    `gorm:"column:uuid_doc;index:idx_docService_uuidDoc"`
+	UuidDoc     uuid.UUID `gorm:"column:uuid_doc;index:idx_docService_uuidDoc"`
 	DocType     string    `gorm:"column:doctype;index:idx_docService_docType"`
 }
 
 type FileServiceRequest struct {
+	File64    string    `json:"file64"`
+	UuidDoc   uuid.UUID `json:"uuid_doc"`
+	DocType   string    `json:"doctype"`
+	FileName  string    `json:"-"`
+	CreatedBy string    `json:"-"`
+	UpdatedBy string    `json:"-"`
+}
+type FileServiceRespont struct {
 	File64 string `json:"file64"`
 }
