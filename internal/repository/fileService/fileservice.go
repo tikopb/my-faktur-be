@@ -3,6 +3,8 @@ package fileservice
 import (
 	"bemyfaktur/internal/model"
 	"encoding/base64"
+	"path/filepath"
+	"strings"
 
 	"gorm.io/gorm"
 )
@@ -44,4 +46,16 @@ func (f *fileserviceRepo) DecodedFile(data string) ([]byte, error) {
 func (f *fileserviceRepo) EncodedFile(data string) (string, error) {
 	encodedBytes := base64.StdEncoding.EncodeToString([]byte(data))
 	return encodedBytes, nil
+}
+
+func (f *fileserviceRepo) IsValidFileExtension(filename string) bool {
+	validExtensions := map[string]bool{
+		".jpg":  true,
+		".jpeg": true,
+		".pdf":  true,
+		".png":  true,
+	}
+	ext := strings.ToLower(filepath.Ext(filename))
+	_, isValid := validExtensions[ext]
+	return isValid
 }
