@@ -21,13 +21,13 @@ type FileService struct {
 }
 
 type FileServiceRequest struct {
-	File64    string    `json:"file64"`
+	File64    []byte    `json:"file64"`
 	UuidDoc   uuid.UUID `json:"uuid_doc"`
 	DocType   string    `json:"doctype"`
-	FileName  string    `json:"-"`
+	FileName  string    `json:"filename"`
 	CreatedBy string    `json:"-"`
-	UpdatedBy string    `json:"-"`
 }
 type FileServiceRespont struct {
-	File64 string `json:"file64"`
+	File64   string `json:"file64"`
+	FileName string `json:"filename"`
 }

@@ -175,5 +175,6 @@ func MigrateDb(db *gorm.DB) {
 		&model.Payment{},
 		&model.PaymentLine{},
 		&model.DocumentNoTemp{},
+		&model.FileService{},
 	)
 }
