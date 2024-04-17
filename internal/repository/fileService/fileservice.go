@@ -102,29 +102,19 @@ func (f *FileserviceRepo) SaveFile(request model.FileServiceRequest) (model.File
 }
 
 // DeleteFile implements Repository.
-func (f *FileserviceRepo) DeleteFile(requests []model.FileServiceRequest) ([]model.FileServiceRespont, error) {
-	returnDataLists := []model.FileServiceRespont{}
+func (f *FileserviceRepo) DeleteFile(request model.FileServiceRequest) (model.FileServiceRespont, error) {
+	returnDataLists := model.FileServiceRespont{}
 
-	//looping the array
-	for _, request := range requests {
-		//getFilename
-		filename := request.FileName
+	//getFilename
+	filename := request.FileName
+	fullPath := fmt.Sprintf("./assets/%s", filename)
 
-		fullPath := fmt.Sprintf("./assets/%s", filename)
-
-		err := os.Remove(fullPath)
-		if err != nil {
-			return []model.FileServiceRespont{}, err
-
-		}
-
-		//prepare return value
-		returnDataList := model.FileServiceRespont{
-			FileName: request.FileName,
-		}
-
-		returnDataLists = append(returnDataLists, returnDataList)
+	err := os.Remove(fullPath)
+	if err != nil {
+		return model.FileServiceRespont{}, err
 	}
+
+	returnDataLists.FileName = filename
 
 	return returnDataLists, nil
 }

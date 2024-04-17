@@ -49,6 +49,20 @@ func (f *fileServiceUsecase) SaveFile(requests []model.FileServiceRequest) ([]mo
 }
 
 // DeleteFile implements Repository.
-func (f *fileServiceUsecase) DeleteFile([]model.FileServiceRequest) ([]model.FileServiceRespont, error) {
-	panic("unimplemented")
+func (f *fileServiceUsecase) DeleteFile(requests []model.FileServiceRequest) ([]model.FileServiceRespont, error) {
+	returnPartsings := []model.FileServiceRespont{}
+	for _, request := range requests {
+		data, err := f.fileServiceRepo.DeleteFile(request)
+		if err != nil {
+			return []model.FileServiceRespont{}, err
+		}
+
+		parsingData := model.FileServiceRespont{
+			FileName: data.FileName,
+		}
+
+		returnPartsings = append(returnPartsings, parsingData)
+	}
+
+	return returnPartsings, nil
 }

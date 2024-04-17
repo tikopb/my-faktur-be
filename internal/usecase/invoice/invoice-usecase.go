@@ -6,6 +6,7 @@ import (
 	"bemyfaktur/internal/repository/invoice"
 	"bemyfaktur/internal/repository/partner"
 	"bemyfaktur/internal/repository/product"
+	"bemyfaktur/internal/usecase/fileservice"
 	"errors"
 
 	"github.com/google/uuid"
@@ -15,13 +16,15 @@ type invoiceUsecase struct {
 	invoiceRepo invoice.InvoiceRepositoryInterface
 	partnerRepo partner.Repository
 	productRepo product.Repository
+	fileService fileservice.Repository
 }
 
-func GetUsecase(invoiceRepo invoice.InvoiceRepositoryInterface, partnerRepo partner.Repository, productRepo product.Repository) InvoiceUsecaseInterface {
+func GetUsecase(invoiceRepo invoice.InvoiceRepositoryInterface, partnerRepo partner.Repository, productRepo product.Repository, fileService fileservice.Repository) InvoiceUsecaseInterface {
 	return &invoiceUsecase{
 		invoiceRepo: invoiceRepo,
 		partnerRepo: partnerRepo,
 		productRepo: productRepo,
+		fileService: fileService,
 	}
 }
 
@@ -41,7 +44,31 @@ func (iu *invoiceUsecase) CreateInvoice(request model.InvoiceRequest, userID str
 	request.CreatedById = userID
 	request.UpdatedById = userID
 
-	return iu.invoiceRepo.Create(request, partnerData)
+	preloadData, err := iu.invoiceRepo.Create(request, partnerData)
+	if err != nil {
+		return model.InvoiceRespont{}, err
+	}
+
+	//file service
+	files := request.File
+	if len(files) > 0 {
+		//field the document needed
+		for index := range files {
+			// Loop to fill the data
+			files[index].CreatedBy = preloadData.CreatedBy.UserId
+			files[index].DocType = "INV"
+			files[index].UuidDoc = preloadData.ID
+		}
+
+		//start uploud
+		fileservice, err := iu.fileService.SaveFile(files)
+		if err != nil {
+			return model.InvoiceRespont{}, err
+		}
+		preloadData.File = fileservice
+	}
+
+	return preloadData, nil
 }
 
 // DeleteInvoice implements InvoiceUsecaseInterface.
