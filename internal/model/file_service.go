@@ -1,7 +1,7 @@
 package model
 
 import (
-	"mime/multipart"
+	"os"
 	"time"
 
 	"github.com/google/uuid"
@@ -22,15 +22,16 @@ type FileService struct {
 }
 
 type FileServiceRequest struct {
-	File      *multipart.FileHeader `form:"file"`
-	File64    []byte                `json:"file64"`
-	UuidDoc   uuid.UUID             `json:"uuid_doc"`
-	DocType   string                `json:"doctype"`
-	FileName  string                `json:"filename"`
-	CreatedBy string                `json:"-"`
+	//File      *multipart.FileHeader `form:"file"`
+	File      *os.File  `form:"file"`
+	File64    []byte    `json:"file64"`
+	UuidDoc   uuid.UUID `json:"uuid_doc"`
+	DocType   string    `json:"doctype"`
+	FileName  string    `json:"filename"`
+	CreatedBy string    `json:"-"`
 }
 type FileServiceRespont struct {
-	File64   string                `json:"file64"`
-	File     *multipart.FileHeader `form:"file"`
-	FileName string                `json:"filename"`
+	File64   string   `json:"file64"`
+	File     *os.File `form:"file"`
+	FileName string   `json:"filename"`
 }

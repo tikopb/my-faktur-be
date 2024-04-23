@@ -17,17 +17,12 @@ func GetRepository(fileServiceRepo fileservice.Repository) Repository {
 }
 
 // GetFileList implements Repository.
-func (f *fileServiceUsecase) GetFileList(model.FileServiceRequest) ([]model.FileServiceRespont, error) {
-	panic("unimplemented")
+func (f *fileServiceUsecase) GetFileList(request model.FileServiceRequest) ([]model.FileServiceRespont, error) {
+	return f.fileServiceRepo.GetFileList(request)
 }
 
 // SaveFile implements Repository.
 func (f *fileServiceUsecase) SaveFile([]model.FileServiceRequest) ([]model.FileServiceRespont, error) {
-	panic("unimplemented")
-}
-
-// DeleteFile implements Repository.
-func (f *fileServiceUsecase) DeleteFile([]model.FileServiceRequest) ([]model.FileServiceRespont, error) {
 	panic("unimplemented")
 }
 
@@ -37,7 +32,7 @@ func (f *fileServiceUsecase) DeleteFile([]model.FileServiceRequest) ([]model.Fil
 // GetFileList implements Repository.
 func (f *fileServiceUsecase) GetFileList64(request model.FileServiceRequest) ([]model.FileServiceRespont, error) {
 	//get the repository of getFile
-	return f.fileServiceRepo.GetFileList(request)
+	return f.fileServiceRepo.GetFileList64(request)
 }
 
 // SaveFile implements Repository.
@@ -67,7 +62,7 @@ func (f *fileServiceUsecase) SaveFile64(requests []model.FileServiceRequest) ([]
 }
 
 // DeleteFile implements Repository.
-func (f *fileServiceUsecase) DeleteFile64(requests []model.FileServiceRequest) ([]model.FileServiceRespont, error) {
+func (f *fileServiceUsecase) DeleteFile(requests []model.FileServiceRequest) ([]model.FileServiceRespont, error) {
 	returnPartsings := []model.FileServiceRespont{}
 	for _, request := range requests {
 		data, err := f.fileServiceRepo.DeleteFile(request)

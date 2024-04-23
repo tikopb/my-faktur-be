@@ -6,7 +6,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"mime/multipart"
+	"io/fs"
 	"net/http"
 	"os"
 	"strings"
@@ -31,9 +31,37 @@ File  format
 */
 
 // GetFileList implements Repository.
-func (f *FileserviceRepo) GetFileList(model.FileServiceRequest) ([]model.FileServiceRespont, error) {
+func (f *FileserviceRepo) GetFileList(request model.FileServiceRequest) ([]model.FileServiceRespont, error) {
+	//query searching for data list
+	directorys, err := f.GetFromDb(request.UuidDoc)
+	if err != nil {
+		return []model.FileServiceRespont{}, err
 
-	panic("unimplemented")
+	}
+
+	datas := []model.FileServiceRespont{}
+	for _, directory := range directorys {
+		// Open file
+		file, err := os.Open(fmt.Sprintf("./assets/%s", directory.FileName))
+		if err != nil {
+			return []model.FileServiceRespont{}, err
+		}
+		defer file.Close()
+
+		fileInfo, err := f.GetFileStat(file)
+		if err != nil {
+			return []model.FileServiceRespont{}, err
+		}
+
+		data := model.FileServiceRespont{
+			File:     file,
+			FileName: fileInfo.Name(),
+		}
+
+		datas = append(datas, data)
+	}
+
+	return datas, nil
 }
 
 // SaveFile implements Repository.
@@ -44,8 +72,13 @@ func (f *FileserviceRepo) SaveFile(request model.FileServiceRequest) (model.File
 		return model.FileServiceRespont{}, err
 	}
 
+	file, err := f.GetFileStat(request.File)
+	if err != nil {
+		return model.FileServiceRespont{}, err
+	}
+
 	// Get rename file
-	newFileName := f.GetRenameFile(request.File.Filename)
+	newFileName := f.GetRenameFile(file.Name())
 
 	// Create file in assets directory
 	dst, err := os.Create(fmt.Sprintf("./assets/%s", newFileName))
@@ -54,13 +87,18 @@ func (f *FileserviceRepo) SaveFile(request model.FileServiceRequest) (model.File
 	}
 	defer dst.Close()
 
-	//return msg
-	return model.FileServiceRespont{}, nil
-}
+	//ad to db
+	err = f.AddToDb(request, newFileName)
+	if err != nil {
+		return model.FileServiceRespont{}, err
+	}
 
-// DeleteFile implements Repository.
-func (f *FileserviceRepo) DeleteFile(model.FileServiceRequest) (model.FileServiceRespont, error) {
-	panic("unimplemented")
+	data := model.FileServiceRespont{
+		FileName: newFileName,
+	}
+
+	//return msg
+	return data, nil
 }
 
 /*
@@ -138,7 +176,7 @@ func (f *FileserviceRepo) SaveFile64(request model.FileServiceRequest) (model.Fi
 }
 
 // DeleteFile implements Repository.
-func (f *FileserviceRepo) DeleteFile64(request model.FileServiceRequest) (model.FileServiceRespont, error) {
+func (f *FileserviceRepo) DeleteFile(request model.FileServiceRequest) (model.FileServiceRespont, error) {
 	returnDataLists := model.FileServiceRespont{}
 
 	//getFilename
@@ -193,15 +231,39 @@ func (f *FileserviceRepo) EncodeToFile64(filePath string) (string, error) {
 	return file64, nil
 }
 
-func (f *FileserviceRepo) IsValidFile(file *multipart.FileHeader) error {
+func (f *FileserviceRepo) GetFileStat(file *os.File) (fs.FileInfo, error) {
 	// Get file extension
-	ext := file.Filename[len(file.Filename)-3:]
+	fileInfo, err := file.Stat()
+	if err != nil {
+		return nil, err
+	}
+
+	return fileInfo, nil
+}
+
+func (f *FileserviceRepo) IsValidFile(file *os.File) error {
+	// Get file extension
+	fileInfo, err := f.GetFileStat(file)
+	if err != nil {
+		return err
+	}
+
+	filename := fileInfo.Name()
+	ext := getFileExtension(filename)
 
 	// Check if file extension is allowed
 	if ext != "jpg" && ext != "jpeg" && ext != "png" {
 		return errors.New("only jpg, jpeg, and png files are allowed")
 	}
 	return nil
+}
+
+func getFileExtension(filename string) string {
+	parts := strings.Split(filename, ".")
+	if len(parts) < 2 {
+		return ""
+	}
+	return parts[len(parts)-1]
 }
 
 /*
