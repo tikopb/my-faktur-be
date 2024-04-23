@@ -22,7 +22,7 @@ import (
 	userRepo "bemyfaktur/internal/repository/user"
 	authUsecase "bemyfaktur/internal/usecase/auth"
 
-	fileserviceRepo "bemyfaktur/internal/repository/fileservice"
+	fileserviceRepo "bemyfaktur/internal/repository/fileService"
 
 	midUtil "bemyfaktur/internal/delivery/auth"
 

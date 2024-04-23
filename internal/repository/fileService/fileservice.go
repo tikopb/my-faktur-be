@@ -1,4 +1,4 @@
-package fileservice
+package fileService
 
 import (
 	"bemyfaktur/internal/model"
@@ -23,8 +23,32 @@ func GetRepository(db *gorm.DB) Repository {
 	}
 }
 
+/*
+File  format
+*/
+
+// GetFileList implements Repository.
+func (f *FileserviceRepo) GetFileList(model.FileServiceRequest) ([]model.FileServiceRespont, error) {
+
+	panic("unimplemented")
+}
+
+// SaveFile implements Repository.
+func (f *FileserviceRepo) SaveFile(model.FileServiceRequest) (model.FileServiceRespont, error) {
+
+	panic("unimplemented")
+}
+
+// DeleteFile implements Repository.
+func (f *FileserviceRepo) DeleteFile(model.FileServiceRequest) (model.FileServiceRespont, error) {
+	panic("unimplemented")
+}
+
+/*
+File 64 format
+*/
 // GetFile implements Repository.
-func (f *FileserviceRepo) GetFileList(request model.FileServiceRequest) ([]model.FileServiceRespont, error) {
+func (f *FileserviceRepo) GetFileList64(request model.FileServiceRequest) ([]model.FileServiceRespont, error) {
 	returnValuelist := []model.FileServiceRespont{}
 
 	//query searching for data list
@@ -51,7 +75,7 @@ func (f *FileserviceRepo) GetFileList(request model.FileServiceRequest) ([]model
 }
 
 // SaveFile implements Repository.
-func (f *FileserviceRepo) SaveFile(request model.FileServiceRequest) (model.FileServiceRespont, error) {
+func (f *FileserviceRepo) SaveFile64(request model.FileServiceRequest) (model.FileServiceRespont, error) {
 
 	//check the file extension
 
@@ -102,7 +126,7 @@ func (f *FileserviceRepo) SaveFile(request model.FileServiceRequest) (model.File
 }
 
 // DeleteFile implements Repository.
-func (f *FileserviceRepo) DeleteFile(request model.FileServiceRequest) (model.FileServiceRespont, error) {
+func (f *FileserviceRepo) DeleteFile64(request model.FileServiceRequest) (model.FileServiceRespont, error) {
 	returnDataLists := model.FileServiceRespont{}
 
 	//getFilename
