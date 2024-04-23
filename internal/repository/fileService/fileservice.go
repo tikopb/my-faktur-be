@@ -6,6 +6,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"mime/multipart"
 	"net/http"
 	"os"
 	"time"
@@ -34,9 +35,25 @@ func (f *FileserviceRepo) GetFileList(model.FileServiceRequest) ([]model.FileSer
 }
 
 // SaveFile implements Repository.
-func (f *FileserviceRepo) SaveFile(model.FileServiceRequest) (model.FileServiceRespont, error) {
+func (f *FileserviceRepo) SaveFile(request model.FileServiceRequest) (model.FileServiceRespont, error) {
+	//check validation File
+	err := f.IsValidFile(request.File)
+	if err != nil {
+		return model.FileServiceRespont{}, err
+	}
 
-	panic("unimplemented")
+	// Get rename file
+	newFileName := f.GetRenameFile(request.File.Filename)
+
+	// Create file in assets directory
+	dst, err := os.Create(fmt.Sprintf("./assets/%s", newFileName))
+	if err != nil {
+		return model.FileServiceRespont{}, err
+	}
+	defer dst.Close()
+
+	//return msg
+	return model.FileServiceRespont{}, nil
 }
 
 // DeleteFile implements Repository.
@@ -79,7 +96,7 @@ func (f *FileserviceRepo) SaveFile64(request model.FileServiceRequest) (model.Fi
 
 	//check the file extension
 
-	validation, err := f.IsValidFile(request.File64)
+	validation, err := f.IsValidFile64(request.File64)
 	if !validation {
 		return model.FileServiceRespont{}, err
 	}
@@ -166,12 +183,23 @@ func (f *FileserviceRepo) EncodeToFile64(filePath string) (string, error) {
 	return file64, nil
 }
 
+func (f *FileserviceRepo) IsValidFile(file *multipart.FileHeader) error {
+	// Get file extension
+	ext := file.Filename[len(file.Filename)-3:]
+
+	// Check if file extension is allowed
+	if ext != "jpg" && ext != "jpeg" && ext != "png" {
+		return errors.New("only jpg, jpeg, and png files are allowed")
+	}
+	return nil
+}
+
 /*
 *
 file with validation of jpg, jpeg, pdf and png that can be only save to system
 *
 */
-func (f *FileserviceRepo) IsValidFile(fileBytes []byte) (bool, error) {
+func (f *FileserviceRepo) IsValidFile64(fileBytes []byte) (bool, error) {
 	// Define valid magic bytes for supported formats
 	validMimeTypes := map[string][]byte{
 		"image/jpeg":      {0xff, 0xd8, 0xff, 0xe0}, // JPG start marker
@@ -197,7 +225,7 @@ func (f *FileserviceRepo) IsValidFile(fileBytes []byte) (bool, error) {
 
 func (f *FileserviceRepo) GetRenameFile(originalFilename string) string {
 	// Generate new filename with format: yyyymmdd-originalFilename
-	newFilename := fmt.Sprintf("%s-%s", time.Now().Format("20060102"), originalFilename)
+	newFilename := fmt.Sprintf("%s-%s", time.Now().Format("0601021504"), originalFilename)
 	return newFilename
 }
 
