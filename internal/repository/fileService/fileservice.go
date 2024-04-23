@@ -1,4 +1,4 @@
-package fileservice
+package fileService
 
 import (
 	"bemyfaktur/internal/model"
@@ -6,10 +6,13 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"mime/multipart"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -23,14 +26,55 @@ func GetRepository(db *gorm.DB) Repository {
 	}
 }
 
+/*
+File  format
+*/
+
+// GetFileList implements Repository.
+func (f *FileserviceRepo) GetFileList(model.FileServiceRequest) ([]model.FileServiceRespont, error) {
+
+	panic("unimplemented")
+}
+
+// SaveFile implements Repository.
+func (f *FileserviceRepo) SaveFile(request model.FileServiceRequest) (model.FileServiceRespont, error) {
+	//check validation File
+	err := f.IsValidFile(request.File)
+	if err != nil {
+		return model.FileServiceRespont{}, err
+	}
+
+	// Get rename file
+	newFileName := f.GetRenameFile(request.File.Filename)
+
+	// Create file in assets directory
+	dst, err := os.Create(fmt.Sprintf("./assets/%s", newFileName))
+	if err != nil {
+		return model.FileServiceRespont{}, err
+	}
+	defer dst.Close()
+
+	//return msg
+	return model.FileServiceRespont{}, nil
+}
+
+// DeleteFile implements Repository.
+func (f *FileserviceRepo) DeleteFile(model.FileServiceRequest) (model.FileServiceRespont, error) {
+	panic("unimplemented")
+}
+
+/*
+File 64 format
+*/
 // GetFile implements Repository.
-func (f *FileserviceRepo) GetFileList(request model.FileServiceRequest) ([]model.FileServiceRespont, error) {
+func (f *FileserviceRepo) GetFileList64(request model.FileServiceRequest) ([]model.FileServiceRespont, error) {
 	returnValuelist := []model.FileServiceRespont{}
 
 	//query searching for data list
-	data := []model.FileService{}
-	if err := f.db.Where(&model.FileService{UuidDoc: request.UuidDoc}).Find(&data).Error; err != nil {
+	data, err := f.GetFromDb(request.UuidDoc)
+	if err != nil {
 		return []model.FileServiceRespont{}, err
+
 	}
 
 	//decode
@@ -51,11 +95,11 @@ func (f *FileserviceRepo) GetFileList(request model.FileServiceRequest) ([]model
 }
 
 // SaveFile implements Repository.
-func (f *FileserviceRepo) SaveFile(request model.FileServiceRequest) (model.FileServiceRespont, error) {
+func (f *FileserviceRepo) SaveFile64(request model.FileServiceRequest) (model.FileServiceRespont, error) {
 
 	//check the file extension
 
-	validation, err := f.IsValidFile(request.File64)
+	validation, err := f.IsValidFile64(request.File64)
 	if !validation {
 		return model.FileServiceRespont{}, err
 	}
@@ -64,7 +108,6 @@ func (f *FileserviceRepo) SaveFile(request model.FileServiceRequest) (model.File
 	newFileName := f.GetRenameFile(request.FileName)
 
 	//save file
-
 	// Decode the base64 encoded file
 	decodedFile, err := f.DecodedFromFile64(string(request.File64))
 	if err != nil {
@@ -81,15 +124,8 @@ func (f *FileserviceRepo) SaveFile(request model.FileServiceRequest) (model.File
 	}
 
 	//save directory to db
-	directoryFileList := model.FileService{
-		CreatedBy: request.CreatedBy,
-		UpdatedBy: request.CreatedBy,
-		FileName:  newFileName,
-		UuidDoc:   request.UuidDoc,
-		DocType:   request.DocType,
-	}
-
-	if err := f.db.Create(&directoryFileList).Error; err != nil {
+	err = f.AddToDb(request, newFileName)
+	if err != nil {
 		return model.FileServiceRespont{}, err
 	}
 
@@ -102,7 +138,7 @@ func (f *FileserviceRepo) SaveFile(request model.FileServiceRequest) (model.File
 }
 
 // DeleteFile implements Repository.
-func (f *FileserviceRepo) DeleteFile(request model.FileServiceRequest) (model.FileServiceRespont, error) {
+func (f *FileserviceRepo) DeleteFile64(request model.FileServiceRequest) (model.FileServiceRespont, error) {
 	returnDataLists := model.FileServiceRespont{}
 
 	//getFilename
@@ -114,16 +150,31 @@ func (f *FileserviceRepo) DeleteFile(request model.FileServiceRequest) (model.Fi
 		return model.FileServiceRespont{}, err
 	}
 
+	//delete from db
+	err = f.DeleteFromDb(filename)
+	if err != nil {
+		return model.FileServiceRespont{}, err
+	}
+
+	//prepare return value
 	returnDataLists.FileName = filename
 
 	return returnDataLists, nil
 }
 
 func (f *FileserviceRepo) DecodedFromFile64(fileBytes string) ([]byte, error) {
+	// Trim leading and trailing whitespace
+	fileBytes = strings.TrimSpace(fileBytes)
+
+	// Check for empty input
+	if len(fileBytes) == 0 {
+		return nil, errors.New("input is empty")
+	}
+
 	// Decode the base64 encoded file
-	decodedFile, err := base64.StdEncoding.DecodeString(string(fileBytes))
+	decodedFile, err := base64.StdEncoding.DecodeString(fileBytes)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error decoding base64: %v", err)
 	}
 
 	return decodedFile, nil
@@ -142,17 +193,28 @@ func (f *FileserviceRepo) EncodeToFile64(filePath string) (string, error) {
 	return file64, nil
 }
 
+func (f *FileserviceRepo) IsValidFile(file *multipart.FileHeader) error {
+	// Get file extension
+	ext := file.Filename[len(file.Filename)-3:]
+
+	// Check if file extension is allowed
+	if ext != "jpg" && ext != "jpeg" && ext != "png" {
+		return errors.New("only jpg, jpeg, and png files are allowed")
+	}
+	return nil
+}
+
 /*
 *
 file with validation of jpg, jpeg, pdf and png that can be only save to system
 *
 */
-func (f *FileserviceRepo) IsValidFile(fileBytes []byte) (bool, error) {
+func (f *FileserviceRepo) IsValidFile64(fileBytes []byte) (bool, error) {
 	// Define valid magic bytes for supported formats
-	validMimeTypes := map[string][]byte{
-		"image/jpeg":      {0xff, 0xd8, 0xff, 0xe0}, // JPG start marker
-		"image/png":       {0x89, 0x50, 0x4E, 0x47}, // PNG signature
-		"application/pdf": {0x25, 0x50, 0x44, 0x46}, // PDF header
+	validMimeTypes := map[string][][]byte{
+		"image/jpeg":      {{0xff, 0xd8, 0xff, 0xe0}},                                                                         // JPG start marker
+		"image/png":       {{0x89, 0x50, 0x4E, 0x47}},                                                                         // PNG signature
+		"application/pdf": {{0x25, 0x50, 0x44, 0x46}, {0x25, 0x25, 0x45, 0x4F, 0x46}, {0x25, 0x21}, {0x50, 0x4B, 0x03, 0x04}}, // PDF headers and additional bytes
 	}
 
 	// Get the first few bytes of the file
@@ -162,9 +224,14 @@ func (f *FileserviceRepo) IsValidFile(fileBytes []byte) (bool, error) {
 	mimeType := http.DetectContentType(fileBytes[:4])
 
 	// Check if mimeType is valid
-	for validType, magicBytes := range validMimeTypes {
-		if mimeType == validType && bytes.Equal(fileBytes[:len(magicBytes)], magicBytes) {
-			return true, nil
+	for validType, magicBytesList := range validMimeTypes {
+		if mimeType == validType {
+			for _, magicBytes := range magicBytesList {
+				if len(fileBytes) >= len(magicBytes) && bytes.Equal(fileBytes[:len(magicBytes)], magicBytes) {
+					return true, nil
+				}
+			}
+			break // If mimetype matches but magic bytes don't, it's invalid
 		}
 	}
 
@@ -173,7 +240,7 @@ func (f *FileserviceRepo) IsValidFile(fileBytes []byte) (bool, error) {
 
 func (f *FileserviceRepo) GetRenameFile(originalFilename string) string {
 	// Generate new filename with format: yyyymmdd-originalFilename
-	newFilename := fmt.Sprintf("%s-%s", time.Now().Format("20060102"), originalFilename)
+	newFilename := fmt.Sprintf("%s-%s", time.Now().Format("0601021504"), originalFilename)
 	return newFilename
 }
 
@@ -190,6 +257,48 @@ func (f *FileserviceRepo) SaveToFile(fileBytes []byte, filename string) error {
 	// Write the file content to disk with the new filename
 	err = os.WriteFile(fullPath, decodedFile, 0644)
 	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+/* get data infomration from db
+ */
+func (f *FileserviceRepo) GetFromDb(uuid uuid.UUID) ([]model.FileService, error) {
+	// Get data from db using UUID
+	var data []model.FileService
+	if err := f.db.Where(&model.FileService{UuidDoc: uuid}).Find(&data).Error; err != nil {
+		return nil, err
+	}
+
+	return data, nil
+}
+
+/* savind data infomration to db for access file in future
+ */
+func (f *FileserviceRepo) AddToDb(request model.FileServiceRequest, newFileName string) error {
+	//save directory to db
+	directoryFileList := model.FileService{
+		CreatedBy: request.CreatedBy,
+		UpdatedBy: request.CreatedBy,
+		FileName:  newFileName,
+		UuidDoc:   request.UuidDoc,
+		DocType:   request.DocType,
+	}
+
+	if err := f.db.Create(&directoryFileList).Error; err != nil {
+		return err
+	}
+
+	return nil
+}
+
+/* savind data infomration to db for access file in future
+ */
+func (f *FileserviceRepo) DeleteFromDb(fileName string) error {
+	//delete from db with where from filename
+	if err := f.db.Delete(&model.FileService{}).Where(&model.FileService{FileName: fileName}).Error; err != nil {
 		return err
 	}
 

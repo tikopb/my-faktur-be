@@ -61,7 +61,7 @@ func (iu *invoiceUsecase) CreateInvoice(request model.InvoiceRequest, userID str
 		}
 
 		//start uploud
-		fileservice, err := iu.fileService.SaveFile(files)
+		fileservice, err := iu.fileService.SaveFile64(files)
 		if err != nil {
 			return model.InvoiceRespont{}, err
 		}
