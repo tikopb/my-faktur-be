@@ -22,8 +22,26 @@ func (f *fileServiceUsecase) GetFileList(request model.FileServiceRequest) ([]mo
 }
 
 // SaveFile implements Repository.
-func (f *fileServiceUsecase) SaveFile([]model.FileServiceRequest) ([]model.FileServiceRespont, error) {
-	panic("unimplemented")
+func (f *fileServiceUsecase) SaveFile(requests []model.FileServiceRequest) ([]model.FileServiceRespont, error) {
+
+	if len(requests) > 5 {
+		return []model.FileServiceRespont{}, errors.New("file maximal that can be save just 5 document")
+	}
+
+	//prepare return value datas
+	datas := []model.FileServiceRespont{}
+	for _, request := range requests {
+		data, err := f.fileServiceRepo.SaveFile(request)
+		if err != nil {
+			return []model.FileServiceRespont{}, err
+		}
+
+		datas = append(datas, model.FileServiceRespont{
+			FileName: data.FileName,
+		})
+	}
+
+	return datas, nil
 }
 
 /** Byte 64 format
