@@ -50,7 +50,7 @@ func (f *fileServiceUsecase) SaveFile(requests []model.FileServiceRequest) ([]mo
 // GetFileList implements Repository.
 func (f *fileServiceUsecase) GetFileList64(request model.FileServiceRequest) ([]model.FileServiceRespont, error) {
 	//get the repository of getFile
-	return f.fileServiceRepo.GetFileList64(request)
+	return f.fileServiceRepo.GetFileList(request)
 }
 
 // SaveFile implements Repository.

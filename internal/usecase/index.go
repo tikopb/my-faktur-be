@@ -34,14 +34,15 @@ import (
 )
 
 type Container struct {
-	PartnerUsecase paUsecase.Usecase
-	ProductUsecase productUsecase.ProductUsecaseInterface
-	InvoiceUsecase invoiceUsecase.InvoiceUsecaseInterface
-	PaymentUsecase paymentUsecase.PaymentUsecaseInterface
-	DocumentUtil   documentutil.Repository
-	AuthUsecase    authUsecase.Usecase
-	PgUtil         pgUtil.Repository
-	Middleware     midUtil.MidlewareInterface
+	PartnerUsecase     paUsecase.Usecase
+	ProductUsecase     productUsecase.ProductUsecaseInterface
+	InvoiceUsecase     invoiceUsecase.InvoiceUsecaseInterface
+	PaymentUsecase     paymentUsecase.PaymentUsecaseInterface
+	FileserviceUsecase fileservice.Repository
+	DocumentUtil       documentutil.Repository
+	AuthUsecase        authUsecase.Usecase
+	PgUtil             pgUtil.Repository
+	Middleware         midUtil.MidlewareInterface
 }
 
 func NewContainer(db *gorm.DB) *Container {
@@ -78,14 +79,15 @@ func NewContainer(db *gorm.DB) *Container {
 	paymentUsecase := paymentUsecase.GetUsecase(paymentRepo, invoiceRepo, partnerRepo)
 
 	return &Container{
-		PartnerUsecase: partnerUsecase,
-		ProductUsecase: productUsecase,
-		InvoiceUsecase: invoiceUsecase,
-		PaymentUsecase: paymentUsecase,
-		DocumentUtil:   documentUtilRepo,
-		AuthUsecase:    authUsecase,
-		PgUtil:         pgUtilRepo,
-		Middleware:     middleware,
+		PartnerUsecase:     partnerUsecase,
+		ProductUsecase:     productUsecase,
+		InvoiceUsecase:     invoiceUsecase,
+		PaymentUsecase:     paymentUsecase,
+		DocumentUtil:       documentUtilRepo,
+		AuthUsecase:        authUsecase,
+		PgUtil:             pgUtilRepo,
+		Middleware:         middleware,
+		FileserviceUsecase: fileserviceUsecase,
 	}
 }
 

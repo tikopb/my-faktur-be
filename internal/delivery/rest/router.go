@@ -68,6 +68,12 @@ func LoadRoutes(e *echo.Echo, handler *handler) {
 	paymentGroupLine.PUT("/:id", handler.UpdatePaymentLine, handler.middleware.CheckAuth)
 	paymentGroupLine.DELETE("/:id", handler.DeletePaymentLine, handler.middleware.CheckAuth)
 
+	//fileservice
+	e.GET("/attachment", func(c echo.Context) error {
+		filename := c.QueryParam("name")
+		return c.File("./assets/" + filename)
+	})
+
 	//cors test
 	e.GET("/cors", handler.CorsTest)
 }
