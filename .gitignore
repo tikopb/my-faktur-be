@@ -23,5 +23,5 @@ go.work
 # ignore environemnt
 .env
 
-# ignore asset folder
-./assets 
+# Ignore ./asset directory
+./assets

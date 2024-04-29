@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/spf13/viper"
 	"gorm.io/gorm"
 )
 
@@ -198,6 +199,32 @@ func (f *FileserviceRepo) DeleteFile(request model.FileServiceRequest) (model.Fi
 	returnDataLists.FileName = filename
 
 	return returnDataLists, nil
+}
+
+// GetUrlFile implements Repository.
+func (f *FileserviceRepo) GetUrlFile(request model.FileServiceRequest) ([]model.FileServiceRespont, error) {
+	viper.SetConfigFile(".env")
+	err := viper.ReadInConfig()
+	if err != nil {
+		panic("env of " + "./filepath" + "not found")
+	}
+
+	value := viper.GetString("filepath")
+
+	dataList, err := f.GetFromDb(request.UuidDoc)
+	if err != nil {
+		return []model.FileServiceRespont{}, err
+	}
+
+	returnData := []model.FileServiceRespont{}
+	for _, data := range dataList {
+		returnData = append(returnData, model.FileServiceRespont{
+			FileName: data.FileName,
+			FileUrl:  value + data.FileName + "",
+		})
+	}
+
+	return returnData, nil
 }
 
 func (f *FileserviceRepo) DecodedFromFile64(fileBytes string) ([]byte, error) {

@@ -33,5 +33,5 @@ type FileServiceRespont struct {
 	File64   string   `json:"file64"`
 	File     *os.File `form:"file"`
 	FileName string   `json:"filename"`
-	FileUrl  []string `json:"url_file"`
+	FileUrl  string   `json:"url_file"`
 }

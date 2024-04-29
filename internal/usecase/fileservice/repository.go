@@ -12,4 +12,7 @@ type Repository interface {
 
 	//drop the meesage
 	DeleteFile([]model.FileServiceRequest) ([]model.FileServiceRespont, error)
+
+	//getFileUrl
+	GetFileUrl(model.FileServiceRequest) ([]model.FileServiceRespont, error)
 }

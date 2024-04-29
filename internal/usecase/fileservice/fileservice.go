@@ -97,3 +97,8 @@ func (f *fileServiceUsecase) DeleteFile(requests []model.FileServiceRequest) ([]
 
 	return returnPartsings, nil
 }
+
+// GetFileUrl implements Repository.
+func (f *fileServiceUsecase) GetFileUrl(request model.FileServiceRequest) ([]model.FileServiceRespont, error) {
+	return f.fileServiceRepo.GetUrlFile(request)
+}

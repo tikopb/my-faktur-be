@@ -13,4 +13,7 @@ type Repository interface {
 
 	//drop file
 	DeleteFile(model.FileServiceRequest) (model.FileServiceRespont, error)
+
+	//Get File Url
+	GetUrlFile(model.FileServiceRequest) ([]model.FileServiceRespont, error)
 }

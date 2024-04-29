@@ -50,23 +50,14 @@ func (iu *invoiceUsecase) CreateInvoice(request model.InvoiceRequest, userID str
 	}
 
 	//file service
-	files := request.File
-	if len(files) > 0 {
-		//field the document needed
-		for index := range files {
-			// Loop to fill the data
-			files[index].CreatedBy = preloadData.CreatedBy.UserId
-			files[index].DocType = "INV"
-			files[index].UuidDoc = preloadData.ID
-		}
-
-		//start uploud
-		fileservice, err := iu.fileService.SaveFile64(files)
-		if err != nil {
-			return model.InvoiceRespont{}, err
-		}
-		preloadData.File = fileservice
+	fileParam := model.FileServiceRequest{
+		UuidDoc: preloadData.ID,
 	}
+	fileUrl, err := iu.fileService.GetFileUrl(fileParam)
+	if err != nil {
+		return model.InvoiceRespont{}, err
+	}
+	preloadData.File = fileUrl
 
 	return preloadData, nil
 }

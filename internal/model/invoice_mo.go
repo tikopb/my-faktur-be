@@ -47,7 +47,7 @@ type InvoiceRequest struct {
 	DateTo        time.Time                 `json:"date_to"`
 	PayDateString string                    `json:"pay_date"`
 	PayDate       time.Time                 `json:"-"`
-	File          []FileServiceRequest      `json:"file"`
+	//File          []FileServiceRequest      `json:"file"`
 }
 
 type InvoiceRespont struct {
