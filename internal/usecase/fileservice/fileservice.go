@@ -4,6 +4,7 @@ import (
 	"bemyfaktur/internal/model"
 	fileservice "bemyfaktur/internal/repository/fileService"
 	"errors"
+	"mime/multipart"
 )
 
 type fileServiceUsecase struct {
@@ -22,26 +23,19 @@ func (f *fileServiceUsecase) GetFileList(request model.FileServiceRequest) ([]mo
 }
 
 // SaveFile implements Repository.
-func (f *fileServiceUsecase) SaveFile(requests []model.FileServiceRequest) ([]model.FileServiceRespont, error) {
+func (f *fileServiceUsecase) SaveFile(request model.FileServiceRequest, form *multipart.Form) (model.FileServiceRespont, error) {
 
-	if len(requests) > 5 {
-		return []model.FileServiceRespont{}, errors.New("file maximal that can be save just 5 document")
+	//validate just 5 file in a row!
+	if len(form.File["files"]) > 5 {
+		return model.FileServiceRespont{}, errors.New("can't save, 5 file max in a row")
 	}
 
-	//prepare return value datas
-	datas := []model.FileServiceRespont{}
-	for _, request := range requests {
-		data, err := f.fileServiceRepo.SaveFile(request)
-		if err != nil {
-			return []model.FileServiceRespont{}, err
-		}
-
-		datas = append(datas, model.FileServiceRespont{
-			FileName: data.FileName,
-		})
+	data, err := f.fileServiceRepo.SaveFile(request, form)
+	if err != nil {
+		return model.FileServiceRespont{}, err
 	}
 
-	return datas, nil
+	return data, nil
 }
 
 /** Byte 64 format
@@ -62,7 +56,7 @@ func (f *fileServiceUsecase) SaveFile64(requests []model.FileServiceRequest) ([]
 	//prepare return data list
 	dataReturnList := []model.FileServiceRespont{}
 	for _, request := range requests {
-		data, err := f.fileServiceRepo.SaveFile(request)
+		data, err := f.fileServiceRepo.SaveFile64(request)
 		if err != nil {
 			return []model.FileServiceRespont{}, err
 		}

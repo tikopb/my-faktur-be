@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
+	"mime/multipart"
 	"net/http"
 	"os"
 	"strings"
@@ -34,7 +35,7 @@ File  format
 // GetFileList implements Repository.
 func (f *FileserviceRepo) GetFileList(request model.FileServiceRequest) ([]model.FileServiceRespont, error) {
 	//query searching for data list
-	directorys, err := f.GetFromDb(request.UuidDoc)
+	directorys, err := f.GetFromDb(request.UuidDoc, request.DocType)
 	if err != nil {
 		return []model.FileServiceRespont{}, err
 
@@ -66,40 +67,40 @@ func (f *FileserviceRepo) GetFileList(request model.FileServiceRequest) ([]model
 }
 
 // SaveFile implements Repository.
-func (f *FileserviceRepo) SaveFile(request model.FileServiceRequest) (model.FileServiceRespont, error) {
-	//check validation File
-	err := f.IsValidFile(request.File)
-	if err != nil {
-		return model.FileServiceRespont{}, err
-	}
+func (f *FileserviceRepo) SaveFile(request model.FileServiceRequest, form *multipart.Form) (model.FileServiceRespont, error) {
+	//loop the file
+	for _, file := range form.File["files"] {
+		// // Check extension
+		// ext := filepath.Ext(file.Filename)
+		// allowedExtensions := map[string]bool{
+		// 	".jpg":  true,
+		// 	".jpeg": true,
+		// 	".pdf":  true,
+		// }
+		// if !allowedExtensions[strings.ToLower(ext)] {
+		// 	return model.FileServiceRespont{}, errors.New("just jpg, jpeg and pdf is allowed")
+		// }
 
-	file, err := f.GetFileStat(request.File)
-	if err != nil {
-		return model.FileServiceRespont{}, err
-	}
+		// Get rename file
+		newFileName := f.GetRenameFile(file.Filename)
 
-	// Get rename file
-	newFileName := f.GetRenameFile(file.Name())
+		// Create file in assets directory
+		dst, err := os.Create(fmt.Sprintf("./assets/%s", newFileName))
+		if err != nil {
+			return model.FileServiceRespont{}, err
+		}
+		defer dst.Close()
 
-	// Create file in assets directory
-	dst, err := os.Create(fmt.Sprintf("./assets/%s", newFileName))
-	if err != nil {
-		return model.FileServiceRespont{}, err
-	}
-	defer dst.Close()
+		//ad to db
+		err = f.AddToDb(request, newFileName)
+		if err != nil {
+			return model.FileServiceRespont{}, err
+		}
 
-	//ad to db
-	err = f.AddToDb(request, newFileName)
-	if err != nil {
-		return model.FileServiceRespont{}, err
-	}
-
-	data := model.FileServiceRespont{
-		FileName: newFileName,
 	}
 
 	//return msg
-	return data, nil
+	return model.FileServiceRespont{}, nil
 }
 
 /*
@@ -110,7 +111,7 @@ func (f *FileserviceRepo) GetFileList64(request model.FileServiceRequest) ([]mod
 	returnValuelist := []model.FileServiceRespont{}
 
 	//query searching for data list
-	data, err := f.GetFromDb(request.UuidDoc)
+	data, err := f.GetFromDb(request.UuidDoc, request.DocType)
 	if err != nil {
 		return []model.FileServiceRespont{}, err
 
@@ -201,17 +202,17 @@ func (f *FileserviceRepo) DeleteFile(request model.FileServiceRequest) (model.Fi
 	return returnDataLists, nil
 }
 
-// GetUrlFile implements Repository.
+// GetUrlFile implements Repository. used for v1 version
 func (f *FileserviceRepo) GetUrlFile(request model.FileServiceRequest) ([]model.FileServiceRespont, error) {
 	viper.SetConfigFile(".env")
 	err := viper.ReadInConfig()
 	if err != nil {
-		panic("env of " + "./filepath" + "not found")
+		panic("env of " + "url_FileService" + "not found")
 	}
 
-	value := viper.GetString("filepath")
+	url_FileService := viper.GetString("url_FileService")
 
-	dataList, err := f.GetFromDb(request.UuidDoc)
+	dataList, err := f.GetFromDb(request.UuidDoc, request.DocType)
 	if err != nil {
 		return []model.FileServiceRespont{}, err
 	}
@@ -220,7 +221,7 @@ func (f *FileserviceRepo) GetUrlFile(request model.FileServiceRequest) ([]model.
 	for _, data := range dataList {
 		returnData = append(returnData, model.FileServiceRespont{
 			FileName: data.FileName,
-			FileUrl:  value + data.FileName + "",
+			FileUrl:  url_FileService + data.FileName,
 		})
 	}
 
@@ -266,31 +267,6 @@ func (f *FileserviceRepo) GetFileStat(file *os.File) (fs.FileInfo, error) {
 	}
 
 	return fileInfo, nil
-}
-
-func (f *FileserviceRepo) IsValidFile(file *os.File) error {
-	// Get file extension
-	fileInfo, err := f.GetFileStat(file)
-	if err != nil {
-		return err
-	}
-
-	filename := fileInfo.Name()
-	ext := getFileExtension(filename)
-
-	// Check if file extension is allowed
-	if ext != "jpg" && ext != "jpeg" && ext != "png" {
-		return errors.New("only jpg, jpeg, and png files are allowed")
-	}
-	return nil
-}
-
-func getFileExtension(filename string) string {
-	parts := strings.Split(filename, ".")
-	if len(parts) < 2 {
-		return ""
-	}
-	return parts[len(parts)-1]
 }
 
 /*
@@ -354,10 +330,10 @@ func (f *FileserviceRepo) SaveToFile(fileBytes []byte, filename string) error {
 
 /* get data infomration from db
  */
-func (f *FileserviceRepo) GetFromDb(uuid uuid.UUID) ([]model.FileService, error) {
+func (f *FileserviceRepo) GetFromDb(uuid uuid.UUID, docType string) ([]model.FileService, error) {
 	// Get data from db using UUID
 	var data []model.FileService
-	if err := f.db.Where(&model.FileService{UuidDoc: uuid}).Find(&data).Error; err != nil {
+	if err := f.db.Where(&model.FileService{UuidDoc: uuid, DocType: docType}).Find(&data).Error; err != nil {
 		return nil, err
 	}
 

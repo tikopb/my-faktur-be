@@ -1,6 +1,9 @@
 package fileService
 
-import "bemyfaktur/internal/model"
+import (
+	"bemyfaktur/internal/model"
+	"mime/multipart"
+)
 
 type Repository interface {
 	//file64 format
@@ -9,7 +12,7 @@ type Repository interface {
 
 	//file format
 	GetFileList(model.FileServiceRequest) ([]model.FileServiceRespont, error)
-	SaveFile(model.FileServiceRequest) (model.FileServiceRespont, error)
+	SaveFile(model.FileServiceRequest, *multipart.Form) (model.FileServiceRespont, error)
 
 	//drop file
 	DeleteFile(model.FileServiceRequest) (model.FileServiceRespont, error)

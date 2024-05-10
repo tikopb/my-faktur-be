@@ -49,16 +49,6 @@ func (iu *invoiceUsecase) CreateInvoice(request model.InvoiceRequest, userID str
 		return model.InvoiceRespont{}, err
 	}
 
-	//file service
-	fileParam := model.FileServiceRequest{
-		UuidDoc: preloadData.ID,
-	}
-	fileUrl, err := iu.fileService.GetFileUrl(fileParam)
-	if err != nil {
-		return model.InvoiceRespont{}, err
-	}
-	preloadData.File = fileUrl
-
 	return preloadData, nil
 }
 
@@ -69,7 +59,21 @@ func (iu *invoiceUsecase) DeleteInvoice(id uuid.UUID) (string, error) {
 
 // GetInvoice implements InvoiceUsecaseInterface.
 func (iu *invoiceUsecase) GetInvoice(id uuid.UUID) (model.InvoiceRespont, error) {
-	return iu.invoiceRepo.Show(id)
+
+	preloadData, err := iu.invoiceRepo.Show(id)
+
+	//file service
+	fileParam := model.FileServiceRequest{
+		UuidDoc: preloadData.ID,
+		DocType: "INV",
+	}
+	fileUrl, err := iu.fileService.GetFileUrl(fileParam)
+	if err != nil {
+		return model.InvoiceRespont{}, err
+	}
+	preloadData.File = fileUrl
+
+	return preloadData, nil
 }
 
 // IndexInvoice implements InvoiceUsecaseInterface.
