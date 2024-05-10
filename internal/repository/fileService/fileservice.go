@@ -6,10 +6,12 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"io"
 	"io/fs"
 	"mime/multipart"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -68,21 +70,29 @@ func (f *FileserviceRepo) GetFileList(request model.FileServiceRequest) ([]model
 
 // SaveFile implements Repository.
 func (f *FileserviceRepo) SaveFile(request model.FileServiceRequest, form *multipart.Form) (model.FileServiceRespont, error) {
+
+	//count validation
+	if f.GetCountFromDb(request.UuidDoc, request.DocType) > 5 {
+		return model.FileServiceRespont{}, errors.New("max file is 5 file per document")
+	}
+
 	//loop the file
 	for _, file := range form.File["files"] {
 		// // Check extension
-		// ext := filepath.Ext(file.Filename)
-		// allowedExtensions := map[string]bool{
-		// 	".jpg":  true,
-		// 	".jpeg": true,
-		// 	".pdf":  true,
-		// }
-		// if !allowedExtensions[strings.ToLower(ext)] {
-		// 	return model.FileServiceRespont{}, errors.New("just jpg, jpeg and pdf is allowed")
-		// }
+		ext := filepath.Ext(file.Filename)
+		if !(strings.ToLower(ext) == ".jpeg" || strings.ToLower(ext) == ".jpg" || strings.ToLower(ext) == ".pdf" || strings.ToLower(ext) == ".png") {
+			return model.FileServiceRespont{}, errors.New("just file format with .jpg, .jpeg, .png and .pdf is supported")
+		}
 
 		// Get rename file
 		newFileName := f.GetRenameFile(file.Filename)
+
+		// Source
+		src, err := file.Open()
+		if err != nil {
+			return model.FileServiceRespont{}, err
+		}
+		defer src.Close()
 
 		// Create file in assets directory
 		dst, err := os.Create(fmt.Sprintf("./assets/%s", newFileName))
@@ -90,6 +100,11 @@ func (f *FileserviceRepo) SaveFile(request model.FileServiceRequest, form *multi
 			return model.FileServiceRespont{}, err
 		}
 		defer dst.Close()
+
+		// Copy
+		if _, err = io.Copy(dst, src); err != nil {
+			return model.FileServiceRespont{}, err
+		}
 
 		//ad to db
 		err = f.AddToDb(request, newFileName)
@@ -305,7 +320,7 @@ func (f *FileserviceRepo) IsValidFile64(fileBytes []byte) (bool, error) {
 
 func (f *FileserviceRepo) GetRenameFile(originalFilename string) string {
 	// Generate new filename with format: yyyymmdd-originalFilename
-	newFilename := fmt.Sprintf("%s-%s", time.Now().Format("0601021504"), originalFilename)
+	newFilename := fmt.Sprintf("%s-%s", time.Now().Format("060102150405"), strings.TrimSpace(originalFilename))
 	return newFilename
 }
 
@@ -338,6 +353,17 @@ func (f *FileserviceRepo) GetFromDb(uuid uuid.UUID, docType string) ([]model.Fil
 	}
 
 	return data, nil
+}
+
+/* get count infomration from db
+ */
+func (f *FileserviceRepo) GetCountFromDb(uuid uuid.UUID, docType string) int64 {
+	var count int64
+	if err := f.db.Model(&model.FileService{}).Where(&model.FileService{UuidDoc: uuid, DocType: docType}).Count(&count).Error; err != nil {
+		return 0
+	}
+
+	return count
 }
 
 /* savind data infomration to db for access file in future

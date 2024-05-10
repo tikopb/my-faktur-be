@@ -24,4 +24,4 @@ go.work
 .env
 
 # Ignore ./asset directory
-./assets
+my-faktur-be/assets/
