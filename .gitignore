@@ -22,3 +22,6 @@ go.work
 
 # ignore environemnt
 .env
+
+# Ignore ./asset directory
+my-faktur-be/assets/

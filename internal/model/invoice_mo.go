@@ -47,6 +47,7 @@ type InvoiceRequest struct {
 	DateTo        time.Time                 `json:"date_to"`
 	PayDateString string                    `json:"pay_date"`
 	PayDate       time.Time                 `json:"-"`
+	//File          []FileServiceRequest      `json:"file"`
 }
 
 type InvoiceRespont struct {
@@ -68,6 +69,7 @@ type InvoiceRespont struct {
 	UpdatedBy         UserPartial               `json:"updatedby"`
 	Partner           PartnerPartialRespon      `json:"partner"`
 	Line              []InvoiceLineRespont      `json:"line"`
+	File              []FileServiceRespont      `json:"file"`
 }
 
 type InvoicePartialRespont struct {

@@ -6,6 +6,7 @@ import (
 	"bemyfaktur/internal/repository/invoice"
 	"bemyfaktur/internal/repository/partner"
 	"bemyfaktur/internal/repository/product"
+	"bemyfaktur/internal/usecase/fileservice"
 	"errors"
 
 	"github.com/google/uuid"
@@ -15,13 +16,15 @@ type invoiceUsecase struct {
 	invoiceRepo invoice.InvoiceRepositoryInterface
 	partnerRepo partner.Repository
 	productRepo product.Repository
+	fileService fileservice.Repository
 }
 
-func GetUsecase(invoiceRepo invoice.InvoiceRepositoryInterface, partnerRepo partner.Repository, productRepo product.Repository) InvoiceUsecaseInterface {
+func GetUsecase(invoiceRepo invoice.InvoiceRepositoryInterface, partnerRepo partner.Repository, productRepo product.Repository, fileService fileservice.Repository) InvoiceUsecaseInterface {
 	return &invoiceUsecase{
 		invoiceRepo: invoiceRepo,
 		partnerRepo: partnerRepo,
 		productRepo: productRepo,
+		fileService: fileService,
 	}
 }
 
@@ -41,7 +44,12 @@ func (iu *invoiceUsecase) CreateInvoice(request model.InvoiceRequest, userID str
 	request.CreatedById = userID
 	request.UpdatedById = userID
 
-	return iu.invoiceRepo.Create(request, partnerData)
+	preloadData, err := iu.invoiceRepo.Create(request, partnerData)
+	if err != nil {
+		return model.InvoiceRespont{}, err
+	}
+
+	return preloadData, nil
 }
 
 // DeleteInvoice implements InvoiceUsecaseInterface.
@@ -51,7 +59,21 @@ func (iu *invoiceUsecase) DeleteInvoice(id uuid.UUID) (string, error) {
 
 // GetInvoice implements InvoiceUsecaseInterface.
 func (iu *invoiceUsecase) GetInvoice(id uuid.UUID) (model.InvoiceRespont, error) {
-	return iu.invoiceRepo.Show(id)
+
+	preloadData, err := iu.invoiceRepo.Show(id)
+
+	//file service
+	fileParam := model.FileServiceRequest{
+		UuidDoc: preloadData.ID,
+		DocType: "INV",
+	}
+	fileUrl, err := iu.fileService.GetFileUrl(fileParam)
+	if err != nil {
+		return model.InvoiceRespont{}, err
+	}
+	preloadData.File = fileUrl
+
+	return preloadData, nil
 }
 
 // IndexInvoice implements InvoiceUsecaseInterface.
