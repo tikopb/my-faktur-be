@@ -85,7 +85,7 @@ func (f *FileserviceRepo) SaveFile(request model.FileServiceRequest, form *multi
 		}
 
 		// Get rename file
-		newFileName := f.GetRenameFile(file.Filename)
+		newFileName := f.GetRenameFile(file.Filename, request.DocType)
 
 		// Source
 		src, err := file.Open()
@@ -160,7 +160,7 @@ func (f *FileserviceRepo) SaveFile64(request model.FileServiceRequest) (model.Fi
 	}
 
 	//get rename file and saved to file
-	newFileName := f.GetRenameFile(request.FileName)
+	newFileName := f.GetRenameFile(request.FileName, request.DocType)
 
 	//save file
 	// Decode the base64 encoded file
@@ -318,9 +318,9 @@ func (f *FileserviceRepo) IsValidFile64(fileBytes []byte) (bool, error) {
 	return false, errors.New("invalid file format")
 }
 
-func (f *FileserviceRepo) GetRenameFile(originalFilename string) string {
+func (f *FileserviceRepo) GetRenameFile(originalFilename string, docType string) string {
 	// Generate new filename with format: yyyymmdd-originalFilename
-	newFilename := fmt.Sprintf("%s-%s", time.Now().Format("060102150405"), strings.TrimSpace(originalFilename))
+	newFilename := fmt.Sprintf("%s-%s-%s", time.Now().Format("060102150405"), docType, strings.TrimSpace(originalFilename))
 	return newFilename
 }
 

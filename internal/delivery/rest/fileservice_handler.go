@@ -2,6 +2,7 @@ package rest
 
 import (
 	"bemyfaktur/internal/model"
+	"encoding/json"
 	"errors"
 	"net/http"
 
@@ -10,7 +11,6 @@ import (
 )
 
 func (h *handler) UploadFile(c echo.Context) error {
-
 	//getUserId
 	userId, err := h.middleware.GetuserId(c.Request())
 	if err != nil {
@@ -48,6 +48,19 @@ func (h *handler) UploadFile(c echo.Context) error {
 		return handleError(c, http.StatusInternalServerError, err, nil, nil)
 	}
 	return handleError(c, http.StatusOK, errors.New("file success uploaded"), nil, data)
+}
+
+func (h *handler) DeleteFile(c echo.Context) error {
+	//get query filename
+	request := []model.FileServiceRequest{}
+	err := json.NewDecoder(c.Request().Body).Decode(&request)
+	if err != nil {
+		WriteLogErorr("[delivery][rest][fileservice_handler][DeleteFile] ", err)
+		return handleError(c, http.StatusInternalServerError, err, meta, data)
+	}
+
+	data, err := h.fileserviceUsecase.DeleteFile(request)
+	panic("unimplmented")
 }
 
 func (h *handler) GetTheFileBaseUrl(c echo.Context) error {
