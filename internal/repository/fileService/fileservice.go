@@ -36,17 +36,22 @@ File  format
 
 // GetFileList implements Repository.
 func (f *FileserviceRepo) GetFileList(request model.FileServiceRequest) ([]model.FileServiceRespont, error) {
+	//Get File Path
+	file_path, err := f.GetFilePathFromEnv()
+	if err != nil {
+		return []model.FileServiceRespont{}, err
+	}
+
 	//query searching for data list
 	directorys, err := f.GetFromDb(request.UuidDoc, request.DocType)
 	if err != nil {
 		return []model.FileServiceRespont{}, err
-
 	}
 
 	datas := []model.FileServiceRespont{}
 	for _, directory := range directorys {
 		// Open file
-		file, err := os.Open(fmt.Sprintf("./assets/%s", directory.FileName))
+		file, err := os.Open(fmt.Sprintf("%s%s", file_path, directory.FileName))
 		if err != nil {
 			return []model.FileServiceRespont{}, err
 		}
@@ -71,8 +76,17 @@ func (f *FileserviceRepo) GetFileList(request model.FileServiceRequest) ([]model
 // SaveFile implements Repository.
 func (f *FileserviceRepo) SaveFile(request model.FileServiceRequest, form *multipart.Form) (model.FileServiceRespont, error) {
 
+	//Get File Path
+	file_path, err := f.GetFilePathFromEnv()
+	if err != nil {
+		return model.FileServiceRespont{}, err
+	}
+
+	// Get the count of files
+	fileCount := len(form.File["files"])
+
 	//count validation
-	if f.GetCountFromDb(request.UuidDoc, request.DocType) > 5 {
+	if f.GetCountFromDb(request.UuidDoc, request.DocType)+int64(fileCount) > 5 {
 		return model.FileServiceRespont{}, errors.New("max file is 5 file per document")
 	}
 
@@ -85,7 +99,7 @@ func (f *FileserviceRepo) SaveFile(request model.FileServiceRequest, form *multi
 		}
 
 		// Get rename file
-		newFileName := f.GetRenameFile(file.Filename)
+		newFileName := f.GetRenameFile(file.Filename, request.DocType)
 
 		// Source
 		src, err := file.Open()
@@ -95,7 +109,7 @@ func (f *FileserviceRepo) SaveFile(request model.FileServiceRequest, form *multi
 		defer src.Close()
 
 		// Create file in assets directory
-		dst, err := os.Create(fmt.Sprintf("./assets/%s", newFileName))
+		dst, err := os.Create(fmt.Sprintf("%s%s", file_path, newFileName))
 		if err != nil {
 			return model.FileServiceRespont{}, err
 		}
@@ -151,16 +165,20 @@ func (f *FileserviceRepo) GetFileList64(request model.FileServiceRequest) ([]mod
 
 // SaveFile implements Repository.
 func (f *FileserviceRepo) SaveFile64(request model.FileServiceRequest) (model.FileServiceRespont, error) {
+	//Get File Path
+	file_path, err := f.GetFilePathFromEnv()
+	if err != nil {
+		return model.FileServiceRespont{}, err
+	}
 
 	//check the file extension
-
 	validation, err := f.IsValidFile64(request.File64)
 	if !validation {
 		return model.FileServiceRespont{}, err
 	}
 
 	//get rename file and saved to file
-	newFileName := f.GetRenameFile(request.FileName)
+	newFileName := f.GetRenameFile(request.FileName, request.DocType)
 
 	//save file
 	// Decode the base64 encoded file
@@ -170,7 +188,7 @@ func (f *FileserviceRepo) SaveFile64(request model.FileServiceRequest) (model.Fi
 	}
 
 	// Construct the full path including the directory
-	fullPath := fmt.Sprintf("./assets/%s", newFileName)
+	fullPath := fmt.Sprintf("%s%s", file_path, newFileName)
 
 	// Write the file content to disk with the new filename
 	err = os.WriteFile(fullPath, decodedFile, 0644)
@@ -194,13 +212,20 @@ func (f *FileserviceRepo) SaveFile64(request model.FileServiceRequest) (model.Fi
 
 // DeleteFile implements Repository.
 func (f *FileserviceRepo) DeleteFile(request model.FileServiceRequest) (model.FileServiceRespont, error) {
+	//Get File Path
+	file_path, err := f.GetFilePathFromEnv()
+	if err != nil {
+		return model.FileServiceRespont{}, err
+	}
+
 	returnDataLists := model.FileServiceRespont{}
 
 	//getFilename
 	filename := request.FileName
-	fullPath := fmt.Sprintf("./assets/%s", filename)
+	fullPath := fmt.Sprintf("%s%s", file_path, filename)
 
-	err := os.Remove(fullPath)
+	//delete from os env
+	err = os.Remove(fullPath)
 	if err != nil {
 		return model.FileServiceRespont{}, err
 	}
@@ -212,7 +237,7 @@ func (f *FileserviceRepo) DeleteFile(request model.FileServiceRequest) (model.Fi
 	}
 
 	//prepare return value
-	returnDataLists.FileName = filename
+	returnDataLists.FileName = filename + " deleted "
 
 	return returnDataLists, nil
 }
@@ -225,6 +250,7 @@ func (f *FileserviceRepo) GetUrlFile(request model.FileServiceRequest) ([]model.
 		panic("env of " + "url_FileService" + "not found")
 	}
 
+	file_service_port := viper.GetString("file_service_port")
 	url_FileService := viper.GetString("url_FileService")
 
 	dataList, err := f.GetFromDb(request.UuidDoc, request.DocType)
@@ -236,7 +262,7 @@ func (f *FileserviceRepo) GetUrlFile(request model.FileServiceRequest) ([]model.
 	for _, data := range dataList {
 		returnData = append(returnData, model.FileServiceRespont{
 			FileName: data.FileName,
-			FileUrl:  url_FileService + data.FileName,
+			FileUrl:  file_service_port + url_FileService + data.FileName,
 		})
 	}
 
@@ -318,13 +344,19 @@ func (f *FileserviceRepo) IsValidFile64(fileBytes []byte) (bool, error) {
 	return false, errors.New("invalid file format")
 }
 
-func (f *FileserviceRepo) GetRenameFile(originalFilename string) string {
+func (f *FileserviceRepo) GetRenameFile(originalFilename string, docType string) string {
 	// Generate new filename with format: yyyymmdd-originalFilename
-	newFilename := fmt.Sprintf("%s-%s", time.Now().Format("060102150405"), strings.TrimSpace(originalFilename))
+	newFilename := fmt.Sprintf("%s-%s-%s", time.Now().Format("060102150405"), docType, strings.TrimSpace(originalFilename))
 	return newFilename
 }
 
 func (f *FileserviceRepo) SaveToFile(fileBytes []byte, filename string) error {
+	//Get File Path
+	file_path, err := f.GetFilePathFromEnv()
+	if err != nil {
+		return err
+	}
+
 	// Decode the base64 encoded file
 	decodedFile, err := f.DecodedFromFile64(string(fileBytes))
 	if err != nil {
@@ -332,7 +364,7 @@ func (f *FileserviceRepo) SaveToFile(fileBytes []byte, filename string) error {
 	}
 
 	// Construct the full path including the directory
-	fullPath := fmt.Sprintf("./assets/%s", filename)
+	fullPath := fmt.Sprintf("%s%s", file_path, filename)
 
 	// Write the file content to disk with the new filename
 	err = os.WriteFile(fullPath, decodedFile, 0644)
@@ -389,9 +421,19 @@ func (f *FileserviceRepo) AddToDb(request model.FileServiceRequest, newFileName 
  */
 func (f *FileserviceRepo) DeleteFromDb(fileName string) error {
 	//delete from db with where from filename
-	if err := f.db.Delete(&model.FileService{}).Where(&model.FileService{FileName: fileName}).Error; err != nil {
+	if err := f.db.Where(&model.FileService{FileName: fileName}).Delete(&model.FileService{}).Error; err != nil {
 		return err
 	}
 
 	return nil
+}
+
+// get basepath file from .env
+func (f *FileserviceRepo) GetFilePathFromEnv() (string, error) {
+	basePath := viper.GetString("assets_path")
+	if basePath == "" {
+		return "", errors.New("assets_path not found in .env file")
+	}
+
+	return basePath, nil
 }
