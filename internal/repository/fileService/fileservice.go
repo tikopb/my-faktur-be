@@ -237,7 +237,7 @@ func (f *FileserviceRepo) DeleteFile(request model.FileServiceRequest) (model.Fi
 	}
 
 	//prepare return value
-	returnDataLists.FileName = filename
+	returnDataLists.FileName = filename + " deleted "
 
 	return returnDataLists, nil
 }
@@ -421,7 +421,7 @@ func (f *FileserviceRepo) AddToDb(request model.FileServiceRequest, newFileName 
  */
 func (f *FileserviceRepo) DeleteFromDb(fileName string) error {
 	//delete from db with where from filename
-	if err := f.db.Delete(&model.FileService{}).Where(&model.FileService{FileName: fileName}).Error; err != nil {
+	if err := f.db.Where(&model.FileService{FileName: fileName}).Delete(&model.FileService{}).Error; err != nil {
 		return err
 	}
 

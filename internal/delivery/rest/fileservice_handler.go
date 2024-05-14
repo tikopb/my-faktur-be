@@ -60,7 +60,12 @@ func (h *handler) DeleteFile(c echo.Context) error {
 	}
 
 	data, err := h.fileserviceUsecase.DeleteFile(request)
-	panic("unimplmented")
+	if err != nil {
+		WriteLogErorr("[delivery][rest][fileservice_handler][DeleteFile] ", err)
+		return handleError(c, http.StatusInternalServerError, err, meta, data)
+	}
+
+	return handleError(c, http.StatusOK, errors.New("file success deleted"), nil, data)
 }
 
 func (h *handler) GetTheFileBaseUrl(c echo.Context) error {

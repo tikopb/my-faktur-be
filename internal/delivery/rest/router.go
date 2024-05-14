@@ -72,6 +72,7 @@ func LoadRoutes(e *echo.Echo, handler *handler) {
 	fileservice := e.Group("/v1/fileservice/")
 	fileservice.GET("", handler.GetTheFileBaseUrl)
 	fileservice.POST("", handler.UploadFile)
+	fileservice.DELETE("", handler.DeleteFile)
 
 	//cors test
 	e.GET("/cors", handler.CorsTest)
