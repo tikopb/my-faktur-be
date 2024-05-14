@@ -82,8 +82,11 @@ func (f *FileserviceRepo) SaveFile(request model.FileServiceRequest, form *multi
 		return model.FileServiceRespont{}, err
 	}
 
+	// Get the count of files
+	fileCount := len(form.File["files"])
+
 	//count validation
-	if f.GetCountFromDb(request.UuidDoc, request.DocType) > 5 {
+	if f.GetCountFromDb(request.UuidDoc, request.DocType)+int64(fileCount) > 5 {
 		return model.FileServiceRespont{}, errors.New("max file is 5 file per document")
 	}
 
