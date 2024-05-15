@@ -63,6 +63,13 @@ func initCommands() {
 				return nil
 			},
 		},
+		{
+			Name: "db:create",
+			Action: func(c *cli.Context) error {
+				seeders.CreateDb(db)
+				return nil
+			},
+		},
 	}
 
 	err := cmdApp.Run(os.Args)

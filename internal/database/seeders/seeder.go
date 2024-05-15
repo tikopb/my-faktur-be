@@ -5,6 +5,7 @@ import (
 	"bemyfaktur/internal/model"
 	"time"
 
+	"github.com/spf13/viper"
 	"gorm.io/gorm"
 )
 
@@ -176,5 +177,17 @@ func MigrateDb(db *gorm.DB) {
 		&model.PaymentLine{},
 		&model.DocumentNoTemp{},
 		&model.FileService{},
+		&model.Organization{},
 	)
+}
+
+func CreateDb(db *gorm.DB) {
+	viper.SetConfigFile(".env")
+	err := viper.ReadInConfig()
+	if err != nil {
+		panic("env of db_dbname not found")
+	}
+
+	value := viper.GetString("db_dbname")
+	db.Exec("create database " + value + ";")
 }
