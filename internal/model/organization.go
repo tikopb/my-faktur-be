@@ -22,10 +22,12 @@ type Organization struct {
 }
 
 type OrganizationRequest struct {
-	OrgCode     string `json:"org_code"`
-	Name        string `json:"name"`
-	Description string `json:"description"`
-	IsActive    bool   `json:"isactive"`
+	ID          uuid.UUID `json:"ID"`
+	OrgCode     string    `json:"org_code"`
+	Name        string    `json:"name"`
+	Description string    `json:"description"`
+	IsActive    bool      `json:"isactive"`
+	UserId      string    `json:"-"`
 }
 
 type OrganizationRespont struct {
