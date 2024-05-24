@@ -41,6 +41,8 @@ func (ur *userRepo) CreateUserSession(userID string) (model.UserSession, error) 
 		return model.UserSession{}, err
 	}
 
+	//get the organization ID
+
 	return model.UserSession{
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,

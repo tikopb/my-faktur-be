@@ -122,3 +122,15 @@ func (o *OrganizationRepo) ParsingOrganizationToRespont(organization model.Organ
 
 	return respont
 }
+
+// GetOrgByUserId implements Repository.
+func (o *OrganizationRepo) GetOrgByUserId(userId string) (model.OrganizationRespont, error) {
+	var data model.Organization
+	if err := o.db.Preload("User").Where(model.Organization{CreatedBy: userId}).First(&data).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return model.OrganizationRespont{}, errors.New("data not found")
+		}
+	}
+
+	return o.ParsingOrganizationToRespont(data), nil
+}
