@@ -13,6 +13,7 @@ import (
 
 type Claims struct {
 	jwt.StandardClaims
+	OrganizationId string
 }
 
 type RefreshClaims struct {
@@ -77,6 +78,7 @@ func (ur *userRepo) CheckSession(data model.UserSession) (userID string, err err
 	}
 
 	if accessToken.Valid {
+		fmt.Println("session.go line 81 of organization ID", accessTokenClaims.OrganizationId)
 		return accessTokenClaims.Subject, nil
 	}
 
@@ -110,16 +112,28 @@ func (ur *userRepo) CheckRefreshToken(RefreshToken string) (userID string, err e
 }
 
 func (ur *userRepo) generateAccessToken(userID string) (string, error) {
+	// Get the organization ID first
+	organizationId, err := ur.GetOrgByUserId(userID)
+	if err != nil {
+		return "", err
+	}
+
+	// Set the expiration time for the access token
 	accessTokenExp := time.Now().Add(ur.accessExp).Unix()
-	accessClaims := Claims{
-		jwt.StandardClaims{
+
+	// Create the access claims
+	accessClaims := &Claims{
+		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: accessTokenExp,
 			Subject:   userID,
 		},
+		OrganizationId: organizationId.String(),
 	}
 
+	// Create a new JWT with the access claims
 	accessJwt := jwt.NewWithClaims(jwt.GetSigningMethod("RS256"), accessClaims)
 
+	// Sign the JWT with the signing key
 	return accessJwt.SignedString(ur.signKey)
 }
 
