@@ -52,12 +52,15 @@ type Container struct {
 
 func NewContainer(db *gorm.DB) *Container {
 
+	organizationRepo := orgRepo.GetRepository(db)
+	organizationUsecase := orgUsecase.GetUsecase(organizationRepo)
+
 	secret := GetEnv("key_secret")
 	signKey, err := rsa.GenerateKey(rand.Reader, 4096)
 	if err != nil {
 		panic(err)
 	}
-	userRepo, err := userRepo.GetRepository(db, secret, 1, 64*1024, 4, 32, signKey, 60*time.Second, 48*time.Hour)
+	userRepo, err := userRepo.GetRepository(db, secret, 1, 64*1024, 4, 32, signKey, 60*time.Second, 48*time.Hour, organizationUsecase)
 	if err != nil {
 		panic("errorr repo")
 	}
@@ -82,9 +85,6 @@ func NewContainer(db *gorm.DB) *Container {
 
 	paymentRepo := paymentRepository.GetRepository(db, documentUtilRepo, pgUtilRepo)
 	paymentUsecase := paymentUsecase.GetUsecase(paymentRepo, invoiceRepo, partnerRepo)
-
-	organizationRepo := orgRepo.GetRepository(db)
-	organizationUsecase := orgUsecase.GetUsecase(organizationRepo)
 
 	return &Container{
 		PartnerUsecase:      partnerUsecase,

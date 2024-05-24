@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt"
+	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 )
 
@@ -42,10 +43,15 @@ func (ur *userRepo) CreateUserSession(userID string) (model.UserSession, error) 
 	}
 
 	//get the organization ID
+	orgId, err := ur.GetOrgByUserId(userID)
+	if err != nil {
+		return model.UserSession{}, err
+	}
 
 	return model.UserSession{
-		AccessToken:  accessToken,
-		RefreshToken: refreshToken,
+		AccessToken:    accessToken,
+		RefreshToken:   refreshToken,
+		OrganizationID: orgId,
 	}, nil
 }
 
@@ -206,4 +212,13 @@ func (ur *userRepo) GetuserIdFromClaims(accesstoken string) (string, error) {
 	}
 
 	return "", errors.New("unauthorized")
+}
+
+func (o *userRepo) GetOrgByUserId(userId string) (uuid.UUID, error) {
+	var data model.Organization
+	if err := o.db.Preload("User").Where(model.Organization{CreatedBy: userId}).First(&data).Error; err != nil {
+		panic("erorr")
+	}
+
+	return data.UUID, nil
 }

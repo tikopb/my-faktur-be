@@ -14,6 +14,7 @@ type Usecase interface {
 	Update(request model.OrganizationRequest) (model.OrganizationRespont, error)
 	Delete(request model.OrganizationRequest) (bool, error)
 	Partial(request model.OrganizationRequest) (model.OrganizationRespont, error)
+	GetOrgByUserId(userId string) (model.OrganizationRespont, error)
 }
 
 type organizationUsecase struct {
@@ -54,4 +55,9 @@ func (o *organizationUsecase) ShowInternal(id uuid.UUID) (model.Organization, er
 // Update implements Usecase.
 func (o *organizationUsecase) Update(request model.OrganizationRequest) (model.OrganizationRespont, error) {
 	return o.organizationRepo.Update(request)
+}
+
+// GetOrgByUserId implements Usecase.
+func (o *organizationUsecase) GetOrgByUserId(userId string) (model.OrganizationRespont, error) {
+	return o.organizationRepo.GetOrgByUserId(userId)
 }
