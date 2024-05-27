@@ -22,11 +22,6 @@ func (h *handler) IndexInvoiceLine(c echo.Context) error {
 		return handleError(c, http.StatusInternalServerError, err, meta, data)
 	}
 
-	if err != nil {
-		WriteLogErorr("[delivery][rest][invoiceLine_handler][IndexInvoiceLine] ", err)
-		return handleError(c, http.StatusInternalServerError, err, meta, data)
-	}
-
 	//setOrderData
 	order, err := h.GetOrderClauses(c)
 	if err != nil {

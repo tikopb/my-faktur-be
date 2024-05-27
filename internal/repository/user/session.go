@@ -7,11 +7,13 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt"
+	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 )
 
 type Claims struct {
 	jwt.StandardClaims
+	OrganizationId string
 }
 
 type RefreshClaims struct {
@@ -41,9 +43,16 @@ func (ur *userRepo) CreateUserSession(userID string) (model.UserSession, error) 
 		return model.UserSession{}, err
 	}
 
+	//get the organization ID
+	orgId, err := ur.GetOrgByUserId(userID)
+	if err != nil {
+		return model.UserSession{}, err
+	}
+
 	return model.UserSession{
-		AccessToken:  accessToken,
-		RefreshToken: refreshToken,
+		AccessToken:    accessToken,
+		RefreshToken:   refreshToken,
+		OrganizationID: orgId,
 	}, nil
 }
 
@@ -75,6 +84,37 @@ func (ur *userRepo) CheckSession(data model.UserSession) (userID string, err err
 	return "", errors.New("unauthorized")
 }
 
+// CheckSessionV2 same function as check session with diferent return value implements Repository.
+func (ur *userRepo) CheckSessionV2(data model.UserSession) (model.UserPartial, error) {
+	//check logout token session first!
+	if ur.checkLogOutSession(data.AccessToken) {
+		return model.UserPartial{}, errors.New("access token expired/invalid")
+	}
+
+	accessToken, err := jwt.ParseWithClaims(data.AccessToken, &Claims{}, func(token *jwt.Token) (interface{}, error) {
+		return &ur.signKey.PublicKey, nil
+	})
+
+	if err != nil {
+		return model.UserPartial{}, errors.New("access token expired/invalid")
+	}
+
+	accessTokenClaims, ok := accessToken.Claims.(*Claims)
+	if !ok {
+		return model.UserPartial{}, errors.New("unauthorized")
+	}
+
+	if accessToken.Valid {
+		return model.UserPartial{
+			UserId:         accessTokenClaims.Subject,
+			OrganizationID: accessTokenClaims.OrganizationId,
+		}, nil
+	}
+
+	return model.UserPartial{}, errors.New("unauthorized")
+
+}
+
 func (ur *userRepo) CheckRefreshToken(RefreshToken string) (userID string, err error) {
 
 	//cek logout token session first!
@@ -102,16 +142,28 @@ func (ur *userRepo) CheckRefreshToken(RefreshToken string) (userID string, err e
 }
 
 func (ur *userRepo) generateAccessToken(userID string) (string, error) {
+	// Get the organization ID first
+	organizationId, err := ur.GetOrgByUserId(userID)
+	if err != nil {
+		return "", err
+	}
+
+	// Set the expiration time for the access token
 	accessTokenExp := time.Now().Add(ur.accessExp).Unix()
-	accessClaims := Claims{
-		jwt.StandardClaims{
+
+	// Create the access claims
+	accessClaims := &Claims{
+		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: accessTokenExp,
 			Subject:   userID,
 		},
+		OrganizationId: organizationId.String(),
 	}
 
+	// Create a new JWT with the access claims
 	accessJwt := jwt.NewWithClaims(jwt.GetSigningMethod("RS256"), accessClaims)
 
+	// Sign the JWT with the signing key
 	return accessJwt.SignedString(ur.signKey)
 }
 
@@ -204,4 +256,13 @@ func (ur *userRepo) GetuserIdFromClaims(accesstoken string) (string, error) {
 	}
 
 	return "", errors.New("unauthorized")
+}
+
+func (o *userRepo) GetOrgByUserId(userId string) (uuid.UUID, error) {
+	var data model.Organization
+	if err := o.db.Preload("User").Where(model.Organization{CreatedBy: userId, IsActive: true}).First(&data).Error; err != nil {
+		panic("erorr")
+	}
+
+	return data.UUID, nil
 }

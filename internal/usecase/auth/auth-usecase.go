@@ -38,6 +38,16 @@ func (au *authStruct) CheckSession(sessionData model.UserSession) (userID string
 	return userID, nil
 }
 
+// CheckSession implements Usecase.
+func (au *authStruct) CheckSessionV2(sessionData model.UserSession) (model.UserPartial, error) {
+	data, err := au.userRepo.CheckSessionV2(sessionData)
+	if err != nil {
+		return model.UserPartial{}, err
+	}
+
+	return data, nil
+}
+
 // Login implements Usecase.
 func (au *authStruct) Login(request model.LoginRequest) (model.UserSessionRespond, error) {
 	userSessionRespond := model.UserSessionRespond{}

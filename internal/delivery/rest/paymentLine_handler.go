@@ -21,10 +21,6 @@ func (h *handler) IndexPaymentLine(c echo.Context) error {
 	}
 
 	q := c.QueryParam("q")
-	if err != nil {
-		WriteLogErorr("[delivery][rest][paymentline_handler][IndexPaymentLine] ", err)
-		return handleError(c, http.StatusInternalServerError, err, meta, data)
-	}
 
 	data, paymentId, err := h.paymentUsecase.IndexLine(limit, offset, paymentUUID, q)
 	if err != nil {

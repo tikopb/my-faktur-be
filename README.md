@@ -30,6 +30,10 @@ To run this project, you will need to add the following environment variables to
 To migrate and seed the database, use the following commands:
 
 ```
+go run main.go db:db:create
+```
+
+```
 go run main.go db:migrate
 ```
 
@@ -37,7 +41,6 @@ go run main.go db:migrate
 go run main.go db:seed
 ```
 
-> Create DB first on postgres before run migrate and seed!
 
 ## Installation
 

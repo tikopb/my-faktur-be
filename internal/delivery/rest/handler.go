@@ -4,6 +4,7 @@ import (
 	"bemyfaktur/internal/usecase/auth"
 	"bemyfaktur/internal/usecase/fileservice"
 	"bemyfaktur/internal/usecase/invoice"
+	"bemyfaktur/internal/usecase/organization"
 	"bemyfaktur/internal/usecase/partner"
 	"bemyfaktur/internal/usecase/payment"
 	"bemyfaktur/internal/usecase/product"
@@ -30,15 +31,16 @@ var meta interface{}
 var data interface{}
 
 type handler struct {
-	partnerUsecase     partner.Usecase
-	productUsecase     product.ProductUsecaseInterface
-	invoiceUsecase     invoice.InvoiceUsecaseInterface
-	paymentUsecase     payment.PaymentUsecaseInterface
-	fileserviceUsecase fileservice.Repository
-	authUsecase        auth.Usecase
-	db                 *gorm.DB
-	pgUtilRepo         pgUtil.Repository
-	middleware         midUtil.MidlewareInterface
+	partnerUsecase      partner.Usecase
+	productUsecase      product.ProductUsecaseInterface
+	invoiceUsecase      invoice.InvoiceUsecaseInterface
+	paymentUsecase      payment.PaymentUsecaseInterface
+	fileserviceUsecase  fileservice.Repository
+	authUsecase         auth.Usecase
+	db                  *gorm.DB
+	pgUtilRepo          pgUtil.Repository
+	middleware          midUtil.MidlewareInterface
+	organizationUsecase organization.Usecase
 }
 
 type handlerRespont struct {
@@ -48,18 +50,19 @@ type handlerRespont struct {
 	Data    interface{} `json:"data"`
 }
 
-func NewHandler(partnerUsecase partner.Usecase, productUsecase product.ProductUsecaseInterface, invoiceUsecase invoice.InvoiceUsecaseInterface, paymentUsecase payment.PaymentUsecaseInterface, fileserviceUsecase fileservice.Repository, pgRepo pgUtil.Repository, authUsecase auth.Usecase, middleware midUtil.MidlewareInterface, db *gorm.DB) *handler {
+func NewHandler(partnerUsecase partner.Usecase, productUsecase product.ProductUsecaseInterface, invoiceUsecase invoice.InvoiceUsecaseInterface, paymentUsecase payment.PaymentUsecaseInterface, fileserviceUsecase fileservice.Repository, pgRepo pgUtil.Repository, authUsecase auth.Usecase, organizationUsecase organization.Usecase, middleware midUtil.MidlewareInterface, db *gorm.DB) *handler {
 
 	return &handler{
-		partnerUsecase:     partnerUsecase,
-		productUsecase:     productUsecase,
-		invoiceUsecase:     invoiceUsecase,
-		paymentUsecase:     paymentUsecase,
-		fileserviceUsecase: fileserviceUsecase,
-		authUsecase:        authUsecase,
-		pgUtilRepo:         pgRepo,
-		db:                 db,
-		middleware:         middleware,
+		partnerUsecase:      partnerUsecase,
+		productUsecase:      productUsecase,
+		invoiceUsecase:      invoiceUsecase,
+		paymentUsecase:      paymentUsecase,
+		fileserviceUsecase:  fileserviceUsecase,
+		authUsecase:         authUsecase,
+		pgUtilRepo:          pgRepo,
+		db:                  db,
+		middleware:          middleware,
+		organizationUsecase: organizationUsecase,
 	}
 }
 

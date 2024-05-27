@@ -11,6 +11,8 @@ type Repository interface {
 	Show(request model.OrganizationRequest) (model.OrganizationRespont, error)
 	ShowInternal(id uuid.UUID) (model.Organization, error)
 	Update(request model.OrganizationRequest) (model.OrganizationRespont, error)
-	Delete(request model.OrganizationRequest) error
+	Delete(request model.OrganizationRequest) (bool, error)
 	Partial(request model.OrganizationRequest) (model.OrganizationRespont, error)
+
+	GetOrgByUserId(userId string) (model.OrganizationRespont, error)
 }

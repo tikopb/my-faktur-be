@@ -2,6 +2,7 @@ package user
 
 import (
 	"bemyfaktur/internal/model"
+	"bemyfaktur/internal/usecase/organization"
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rsa"
@@ -22,6 +23,7 @@ type userRepo struct {
 	signKey        *rsa.PrivateKey
 	accessExp      time.Duration
 	refreshTimeout time.Duration
+	OrgUsecase     organization.Usecase
 }
 
 func GetRepository(
@@ -33,6 +35,7 @@ func GetRepository(
 	signKey *rsa.PrivateKey,
 	accessExp time.Duration,
 	refreshTimeout time.Duration,
+	OrgUsecase organization.Usecase,
 ) (Repository, error) {
 	block, err := aes.NewCipher([]byte(secret))
 	if err != nil {

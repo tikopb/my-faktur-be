@@ -44,3 +44,18 @@ func (am *authMiddleware) GetValueParamHeader(r *http.Request, param string) (st
 	}
 	return value, nil
 }
+
+// GetUserInformation Getting the user information of user implements MidlewareInterface.
+func (am *authMiddleware) GetUserInformation(r *http.Request) (model.UserPartial, error) {
+	sessionData, err := am.GetSessionData(r)
+	if err != nil {
+		return model.UserPartial{}, err
+	}
+
+	user, err := am.authUsecase.CheckSessionV2(sessionData)
+	if err != nil {
+		return model.UserPartial{}, err
+	}
+
+	return user, nil
+}

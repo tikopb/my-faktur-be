@@ -2,6 +2,8 @@ package model
 
 import (
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type User struct {
@@ -25,8 +27,9 @@ type LoginRequest struct {
 }
 
 type UserSession struct {
-	AccessToken  string `json:"access_token"`
-	RefreshToken string `json:"refresh_token"`
+	AccessToken    string    `json:"access_token"`
+	RefreshToken   string    `json:"refresh_token"`
+	OrganizationID uuid.UUID `json:"org_id"`
 }
 
 type UserSessionRespond struct {
@@ -35,8 +38,9 @@ type UserSessionRespond struct {
 }
 
 type UserPartial struct {
-	UserId   string `json:"user_uuid"`
-	Username string `json:"username"`
+	UserId         string `json:"user_uuid"`
+	Username       string `json:"username"`
+	OrganizationID string `json:"org_id"`
 }
 
 type RefreshSession struct {
