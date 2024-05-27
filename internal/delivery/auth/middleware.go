@@ -18,6 +18,7 @@ type MidlewareInterface interface {
 	CheckAuth(next echo.HandlerFunc) echo.HandlerFunc
 	GetSessionData(r *http.Request) (model.UserSession, error)
 	GetuserId(r *http.Request) (string, error)
+	GetUserInformation(r *http.Request) (model.UserPartial, error)
 	GetValueParamHeader(r *http.Request, param string) (string, error)
 }
 

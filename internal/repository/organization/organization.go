@@ -28,6 +28,10 @@ func (o *OrganizationRepo) Create(request model.OrganizationRequest) (model.Orga
 		Name:        request.Name,
 		Description: request.Description,
 		IsActive:    true,
+		CreatedBy:   request.UserId,
+		UpdatedBy:   request.UserId,
+		CreatedAt:   time.Now(),
+		UpdateAt:    time.Now(),
 	}
 
 	if err := o.db.Create(&orgData).Error; err != nil {
@@ -40,7 +44,7 @@ func (o *OrganizationRepo) Create(request model.OrganizationRequest) (model.Orga
 	return dataPreload, nil
 }
 
-// On delete system cant delete the data system just will inactive the orgazniation data
+// On delete system cant delete the data system just will inactive the organization data
 func (o *OrganizationRepo) Delete(request model.OrganizationRequest) (bool, error) {
 	data, err := o.ShowInternal(request.ID)
 	if err != nil {

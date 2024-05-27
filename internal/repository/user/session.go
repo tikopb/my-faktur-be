@@ -78,11 +78,41 @@ func (ur *userRepo) CheckSession(data model.UserSession) (userID string, err err
 	}
 
 	if accessToken.Valid {
-		fmt.Println("session.go line 81 of organization ID", accessTokenClaims.OrganizationId)
 		return accessTokenClaims.Subject, nil
 	}
 
 	return "", errors.New("unauthorized")
+}
+
+// CheckSessionV2 same function as check session with diferent return value implements Repository.
+func (ur *userRepo) CheckSessionV2(data model.UserSession) (model.UserPartial, error) {
+	//check logout token session first!
+	if ur.checkLogOutSession(data.AccessToken) {
+		return model.UserPartial{}, errors.New("access token expired/invalid")
+	}
+
+	accessToken, err := jwt.ParseWithClaims(data.AccessToken, &Claims{}, func(token *jwt.Token) (interface{}, error) {
+		return &ur.signKey.PublicKey, nil
+	})
+
+	if err != nil {
+		return model.UserPartial{}, errors.New("access token expired/invalid")
+	}
+
+	accessTokenClaims, ok := accessToken.Claims.(*Claims)
+	if !ok {
+		return model.UserPartial{}, errors.New("unauthorized")
+	}
+
+	if accessToken.Valid {
+		return model.UserPartial{
+			UserId:         accessTokenClaims.Subject,
+			OrganizationID: accessTokenClaims.OrganizationId,
+		}, nil
+	}
+
+	return model.UserPartial{}, errors.New("unauthorized")
+
 }
 
 func (ur *userRepo) CheckRefreshToken(RefreshToken string) (userID string, err error) {
@@ -230,7 +260,7 @@ func (ur *userRepo) GetuserIdFromClaims(accesstoken string) (string, error) {
 
 func (o *userRepo) GetOrgByUserId(userId string) (uuid.UUID, error) {
 	var data model.Organization
-	if err := o.db.Preload("User").Where(model.Organization{CreatedBy: userId}).First(&data).Error; err != nil {
+	if err := o.db.Preload("User").Where(model.Organization{CreatedBy: userId, IsActive: true}).First(&data).Error; err != nil {
 		panic("erorr")
 	}
 

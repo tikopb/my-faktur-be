@@ -38,8 +38,9 @@ type UserSessionRespond struct {
 }
 
 type UserPartial struct {
-	UserId   string `json:"user_uuid"`
-	Username string `json:"username"`
+	UserId         string `json:"user_uuid"`
+	Username       string `json:"username"`
+	OrganizationID string `json:"org_id"`
 }
 
 type RefreshSession struct {

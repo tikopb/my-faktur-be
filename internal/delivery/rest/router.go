@@ -70,9 +70,15 @@ func LoadRoutes(e *echo.Echo, handler *handler) {
 
 	//fileservice
 	fileservice := e.Group("/v1/fileservice/")
-	fileservice.GET("", handler.GetTheFileBaseUrl)
-	fileservice.POST("", handler.UploadFile)
-	fileservice.DELETE("", handler.DeleteFile)
+	fileservice.GET("", handler.GetTheFileBaseUrl, handler.middleware.CheckAuth)
+	fileservice.POST("", handler.UploadFile, handler.middleware.CheckAuth)
+	fileservice.DELETE("", handler.DeleteFile, handler.middleware.CheckAuth)
+
+	//organization
+	organizationGroup := e.Group("/v1/organization/")
+	organizationGroup.GET("", handler.GetOrganization, handler.middleware.CheckAuth)
+	organizationGroup.POST("", handler.CreateOrganization, handler.middleware.CheckAuth)
+	organizationGroup.DELETE("", handler.DeleteOrganization, handler.middleware.CheckAuth)
 
 	//cors test
 	e.GET("/cors", handler.CorsTest)
