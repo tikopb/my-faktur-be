@@ -31,7 +31,7 @@ func (h *handler) CreateOrganization(c echo.Context) error {
 		return handleError(c, http.StatusInternalServerError, err, meta, data)
 	}
 
-	return handleError(c, http.StatusOK, nil, nil, data)
+	return handleError(c, http.StatusOK, errors.New("create success"), nil, data)
 }
 
 func (h *handler) GetOrganization(c echo.Context) error {
