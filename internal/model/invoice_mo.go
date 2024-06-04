@@ -31,6 +31,8 @@ type Invoice struct {
 	DocumentNo        string                    `json:"documentno" gorm:"column:documentno;not null;unique"`
 	IsPrecentage      bool                      `gorm:"column:isprecentage;default:false" json:"isprecentage"`
 	PayDate           time.Time                 `gorm:"column:pay_date"`
+	OrganizationId    int                       `gorm:"column:org_id;index:idx_invoice_org_id"`
+	Organization      *Organization             `gorm:"foreignKey:org_id"`
 }
 
 type InvoiceRequest struct {
@@ -82,23 +84,25 @@ type InvoicePartialRespont struct {
 
 // InvoiceLine -- invoice line
 type InvoiceLine struct {
-	ID           int       `json:"-" gorm:"primaryKey;autoIncrement"`
-	CreatedAt    time.Time `gorm:"column:created_at;default:current_timestamp"`
-	UpdateAt     time.Time `gorm:"column:updated_at;default:current_timestamp"`
-	CreatedBy    string    `gorm:"column:created_by;" json:"created_by"`
-	User         User      `gorm:"foreignKey:created_by"`
-	UpdatedBy    string    `gorm:"column:updated_by" json:"updated_by"`
-	UserUpdated  User      `gorm:"foreignKey:updated_by"`
-	Price        float64   `gorm:"column:price" json:"price"`
-	Discount     float64   `gorm:"column:discount" json:"discount"`
-	Qty          float64   `gorm:"column:qty" json:"qty"`
-	Amount       float64   `gorm:"column:amount"`
-	IsPrecentage bool      `gorm:"column:isprecentage;default:false" json:"ispercentage"`
-	ProductID    int       `gorm:"column:product_id;index:idx_invoiceline_productId" json:"product_id"`
-	Product      Product   `gorm:"foreignKey:ProductID"`
-	InvoiceID    int       `gorm:"column:invoice_id;not null;index:idx_invoiceline_invoiceId" json:"invoice_id"`
-	Invoice      Invoice   `gorm:"foreignKey:invoice_id;constraint:OnDelete:CASCADE"`
-	UUID         uuid.UUID `json:"id" gorm:"type:uuid;default:uuid_generate_v4();index:idx_invoiceline_uuid"`
+	ID             int           `json:"-" gorm:"primaryKey;autoIncrement"`
+	CreatedAt      time.Time     `gorm:"column:created_at;default:current_timestamp"`
+	UpdateAt       time.Time     `gorm:"column:updated_at;default:current_timestamp"`
+	CreatedBy      string        `gorm:"column:created_by;" json:"created_by"`
+	User           User          `gorm:"foreignKey:created_by"`
+	UpdatedBy      string        `gorm:"column:updated_by" json:"updated_by"`
+	UserUpdated    User          `gorm:"foreignKey:updated_by"`
+	Price          float64       `gorm:"column:price" json:"price"`
+	Discount       float64       `gorm:"column:discount" json:"discount"`
+	Qty            float64       `gorm:"column:qty" json:"qty"`
+	Amount         float64       `gorm:"column:amount"`
+	IsPrecentage   bool          `gorm:"column:isprecentage;default:false" json:"ispercentage"`
+	ProductID      int           `gorm:"column:product_id;index:idx_invoiceline_productId" json:"product_id"`
+	Product        Product       `gorm:"foreignKey:ProductID"`
+	InvoiceID      int           `gorm:"column:invoice_id;not null;index:idx_invoiceline_invoiceId" json:"invoice_id"`
+	Invoice        Invoice       `gorm:"foreignKey:invoice_id;constraint:OnDelete:CASCADE"`
+	UUID           uuid.UUID     `json:"id" gorm:"type:uuid;default:uuid_generate_v4();index:idx_invoiceline_uuid"`
+	OrganizationId int           `gorm:"column:org_id;index:idx_invoiceline_org_id"`
+	Organization   *Organization `gorm:"foreignKey:org_id"`
 }
 
 type InvoiceLineRequest struct {

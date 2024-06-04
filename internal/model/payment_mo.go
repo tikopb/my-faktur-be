@@ -10,25 +10,27 @@ import (
 )
 
 type Payment struct {
-	ID           int                       `json:"-" gorm:"primaryKey;autoIncrement"`
-	CreatedAt    time.Time                 `gorm:"column:created_at;default:CURRENT_TIMESTAMP"`
-	UpdateAt     time.Time                 `gorm:"column:updated_at;default:current_timestamp"`
-	CreatedBy    string                    `gorm:"column:created_by" json:"created_by"`
-	User         User                      `gorm:"foreignKey:created_by"`
-	UpdatedBy    string                    `gorm:"column:updated_by" json:"updated_by"`
-	UserUpdated  User                      `gorm:"foreignKey:updated_by"`
-	PartnerID    int                       `json:"partner_id" gorm:"column:partner_id;index:idx_payment_partner_id"`
-	Partner      Partner                   `gorm:"foreignKey:partner_id"`
-	TotalLine    float64                   `gorm:"column:total_line;default:0"`
-	GrandTotal   float64                   `gorm:"column:grand_total;default:0"`
-	Discount     float64                   `gorm:"column:discount;default:0"`
-	BatchNo      string                    `json:"batchno" gorm:"column:batch_no"`
-	Status       constant.PaymentStatus    `gorm:"column:status;default:DR;index:idx_payment_docstatus"`
-	DocAction    constant.PaymentDocAction `gorm:"column:docaction;default:DR"`
-	DocumentNo   string                    `json:"documentno" gorm:"column:documentno;not null;unique;index:idx_payment_documentno"`
-	IsPrecentage bool                      `gorm:"column:isprecentage;default:false" json:"isprecentage"`
-	UUID         uuid.UUID                 `json:"id" gorm:"type:uuid;default:uuid_generate_v4();index:idx_payment_uuid"`
-	PayDate      time.Time                 `gorm:"column:pay_date;default:null"`
+	ID             int                       `json:"-" gorm:"primaryKey;autoIncrement"`
+	CreatedAt      time.Time                 `gorm:"column:created_at;default:CURRENT_TIMESTAMP"`
+	UpdateAt       time.Time                 `gorm:"column:updated_at;default:current_timestamp"`
+	CreatedBy      string                    `gorm:"column:created_by" json:"created_by"`
+	User           User                      `gorm:"foreignKey:created_by"`
+	UpdatedBy      string                    `gorm:"column:updated_by" json:"updated_by"`
+	UserUpdated    User                      `gorm:"foreignKey:updated_by"`
+	PartnerID      int                       `json:"partner_id" gorm:"column:partner_id;index:idx_payment_partner_id"`
+	Partner        Partner                   `gorm:"foreignKey:partner_id"`
+	TotalLine      float64                   `gorm:"column:total_line;default:0"`
+	GrandTotal     float64                   `gorm:"column:grand_total;default:0"`
+	Discount       float64                   `gorm:"column:discount;default:0"`
+	BatchNo        string                    `json:"batchno" gorm:"column:batch_no"`
+	Status         constant.PaymentStatus    `gorm:"column:status;default:DR;index:idx_payment_docstatus"`
+	DocAction      constant.PaymentDocAction `gorm:"column:docaction;default:DR"`
+	DocumentNo     string                    `json:"documentno" gorm:"column:documentno;not null;unique;index:idx_payment_documentno"`
+	IsPrecentage   bool                      `gorm:"column:isprecentage;default:false" json:"isprecentage"`
+	UUID           uuid.UUID                 `json:"id" gorm:"type:uuid;default:uuid_generate_v4();index:idx_payment_uuid"`
+	PayDate        time.Time                 `gorm:"column:pay_date;default:null"`
+	OrganizationId int                       `gorm:"column:org_id;index:idx_payment_org_id"`
+	Organization   *Organization             `gorm:"foreignKey:org_id"`
 }
 
 type PaymentRequest struct {
@@ -83,21 +85,23 @@ type PaymentRespontV2 struct {
 }
 
 type PaymentLine struct {
-	ID           int       `json:"-" gorm:"primaryKey;autoIncrement"`
-	PaymentID    int       `gorm:"column:payment_id;index:idx_payment_id"`
-	Payment      Payment   `gorm:"foreignKey:payment_id"`
-	Price        float64   `gorm:"column:price"`
-	Amount       float64   `gorm:"column:amount"`
-	CreatedAt    time.Time `gorm:"column:created_at;default:CURRENT_TIMESTAMP"`
-	CreatedBy    string    `gorm:"column:created_by" json:"created_by"`
-	User         User      `gorm:"foreignKey:created_by"`
-	UpdatedBy    string    `gorm:"column:updated_by" json:"updated_by"`
-	UserUpdated  User      `gorm:"foreignKey:updated_by"`
-	InvoiceID    int       `gorm:"column:invoice_id;not null;index:idx_invoice_id" json:"invoice_id"`
-	Invoice      Invoice   `gorm:"foreignKey:invoice_id"`
-	Discount     float64   `gorm:"column:discount" json:"discount"`
-	IsPrecentage bool      `gorm:"column:isprecentage;default:false" json:"isprecentage"`
-	UUID         uuid.UUID `json:"id" gorm:"type:uuid;default:uuid_generate_v4();index:idx_paymentLine_uuid"`
+	ID             int           `json:"-" gorm:"primaryKey;autoIncrement"`
+	PaymentID      int           `gorm:"column:payment_id;index:idx_payment_id"`
+	Payment        Payment       `gorm:"foreignKey:payment_id"`
+	Price          float64       `gorm:"column:price"`
+	Amount         float64       `gorm:"column:amount"`
+	CreatedAt      time.Time     `gorm:"column:created_at;default:CURRENT_TIMESTAMP"`
+	CreatedBy      string        `gorm:"column:created_by" json:"created_by"`
+	User           User          `gorm:"foreignKey:created_by"`
+	UpdatedBy      string        `gorm:"column:updated_by" json:"updated_by"`
+	UserUpdated    User          `gorm:"foreignKey:updated_by"`
+	InvoiceID      int           `gorm:"column:invoice_id;not null;index:idx_invoice_id" json:"invoice_id"`
+	Invoice        Invoice       `gorm:"foreignKey:invoice_id"`
+	Discount       float64       `gorm:"column:discount" json:"discount"`
+	IsPrecentage   bool          `gorm:"column:isprecentage;default:false" json:"isprecentage"`
+	UUID           uuid.UUID     `json:"id" gorm:"type:uuid;default:uuid_generate_v4();index:idx_paymentLine_uuid"`
+	OrganizationId int           `gorm:"column:org_id;index:idx_paymentline_org_id"`
+	Organization   *Organization `gorm:"foreignKey:org_id"`
 }
 
 type PaymentLineRequest struct {
