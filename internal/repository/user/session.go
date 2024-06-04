@@ -7,13 +7,13 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt"
-	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 )
 
 type Claims struct {
 	jwt.StandardClaims
-	OrganizationId string
+	OrganizationUUId string
+	OrganizationId   int
 }
 
 type RefreshClaims struct {
@@ -44,15 +44,16 @@ func (ur *userRepo) CreateUserSession(userID string) (model.UserSession, error) 
 	}
 
 	//get the organization ID
-	orgId, err := ur.GetOrgByUserId(userID)
+	org, err := ur.GetOrgByUserId(userID)
 	if err != nil {
 		return model.UserSession{}, err
 	}
 
 	return model.UserSession{
-		AccessToken:    accessToken,
-		RefreshToken:   refreshToken,
-		OrganizationID: orgId,
+		AccessToken:      accessToken,
+		RefreshToken:     refreshToken,
+		OrganizationID:   org.ID,
+		OrganizationUUID: org.UUID,
 	}, nil
 }
 
@@ -106,8 +107,9 @@ func (ur *userRepo) CheckSessionV2(data model.UserSession) (model.UserPartial, e
 
 	if accessToken.Valid {
 		return model.UserPartial{
-			UserId:         accessTokenClaims.Subject,
-			OrganizationID: accessTokenClaims.OrganizationId,
+			UserId:           accessTokenClaims.Subject,
+			OrganizationID:   accessTokenClaims.OrganizationId,
+			OrganizationUUID: accessTokenClaims.OrganizationUUId,
 		}, nil
 	}
 
@@ -143,7 +145,7 @@ func (ur *userRepo) CheckRefreshToken(RefreshToken string) (userID string, err e
 
 func (ur *userRepo) generateAccessToken(userID string) (string, error) {
 	// Get the organization ID first
-	organizationId, err := ur.GetOrgByUserId(userID)
+	org, err := ur.GetOrgByUserId(userID)
 	if err != nil {
 		return "", err
 	}
@@ -157,7 +159,8 @@ func (ur *userRepo) generateAccessToken(userID string) (string, error) {
 			ExpiresAt: accessTokenExp,
 			Subject:   userID,
 		},
-		OrganizationId: organizationId.String(),
+		OrganizationId:   org.ID,
+		OrganizationUUId: org.UUID.String(),
 	}
 
 	// Create a new JWT with the access claims
@@ -258,11 +261,11 @@ func (ur *userRepo) GetuserIdFromClaims(accesstoken string) (string, error) {
 	return "", errors.New("unauthorized")
 }
 
-func (o *userRepo) GetOrgByUserId(userId string) (uuid.UUID, error) {
+func (o *userRepo) GetOrgByUserId(userId string) (model.Organization, error) {
 	var data model.Organization
 	if err := o.db.Preload("User").Where(model.Organization{CreatedBy: userId, IsActive: true}).First(&data).Error; err != nil {
 		panic("erorr")
 	}
 
-	return data.UUID, nil
+	return data, nil
 }

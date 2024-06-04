@@ -44,7 +44,7 @@ func (h *handler) GetOrganization(c echo.Context) error {
 
 	//set the value and get request
 	request := model.OrganizationRequest{
-		OrgCode: user.OrganizationID,
+		OrgCode: user.OrganizationUUID,
 	}
 	data, err := h.organizationUsecase.Show(request)
 	if err != nil {
@@ -65,7 +65,7 @@ func (h *handler) DeleteOrganization(c echo.Context) error {
 	}
 	//set the value and get request
 	request := model.OrganizationRequest{
-		OrgCode: user.OrganizationID,
+		OrgCode: user.OrganizationUUID,
 	}
 	data, err := h.organizationUsecase.Delete(request)
 	if err != nil {

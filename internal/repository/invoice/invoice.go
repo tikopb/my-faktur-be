@@ -65,6 +65,7 @@ func (ir *invoiceRepo) Create(request model.InvoiceRequest, partner model.Partne
 		DocumentNo:        documentno,
 		IsPrecentage:      request.IsPrecentage,
 		PayDate:           request.PayDate,
+		OrganizationId:    request.OrganizationId,
 	}
 
 	if err := ir.db.Create(&invoiceData).Error; err != nil {

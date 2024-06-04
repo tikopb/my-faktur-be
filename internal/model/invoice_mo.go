@@ -36,20 +36,20 @@ type Invoice struct {
 }
 
 type InvoiceRequest struct {
-	Discount      float64                   `json:"discount"`
-	BatchNo       string                    `json:"batchno"`
-	Status        constant.InvoiceStatus    `json:"status"`
-	DocAction     constant.InvoiceDocAction `json:"docaction"`
-	IsPrecentage  bool                      `json:"ispercentage"`
-	PartnerUUID   uuid.UUID                 `json:"partner_id"`
-	PartnerId     int                       `json:"-"`
-	CreatedById   string                    `json:"-"`
-	UpdatedById   string                    `json:"-"`
-	DateFrom      time.Time                 `json:"date_from"`
-	DateTo        time.Time                 `json:"date_to"`
-	PayDateString string                    `json:"pay_date"`
-	PayDate       time.Time                 `json:"-"`
-	//File          []FileServiceRequest      `json:"file"`
+	Discount       float64                   `json:"discount"`
+	BatchNo        string                    `json:"batchno"`
+	Status         constant.InvoiceStatus    `json:"status"`
+	DocAction      constant.InvoiceDocAction `json:"docaction"`
+	IsPrecentage   bool                      `json:"ispercentage"`
+	PartnerUUID    uuid.UUID                 `json:"partner_id"`
+	PartnerId      int                       `json:"-"`
+	CreatedById    string                    `json:"-"`
+	UpdatedById    string                    `json:"-"`
+	OrganizationId int                       `json:"-"`
+	DateFrom       time.Time                 `json:"date_from"`
+	DateTo         time.Time                 `json:"date_to"`
+	PayDateString  string                    `json:"pay_date"`
+	PayDate        time.Time                 `json:"-"`
 }
 
 type InvoiceRespont struct {
@@ -106,17 +106,18 @@ type InvoiceLine struct {
 }
 
 type InvoiceLineRequest struct {
-	InvoiceUUId  uuid.UUID `json:"invoice_id"`
-	InvoiceId    int       `json:"-"`
-	ProductUUID  uuid.UUID `json:"product_id"`
-	ProductID    int       `json:"-"`
-	Qty          float64   `json:"qty"`
-	Price        float64   `json:"price"`
-	Amount       float64   `json:"-"`
-	Discount     float64   `json:"discount"`
-	IsPrecentage bool      `json:"ispercentage"`
-	CreatedById  string    `json:"-"`
-	UpdatedById  string    `json:"-"`
+	InvoiceUUId    uuid.UUID `json:"invoice_id"`
+	InvoiceId      int       `json:"-"`
+	ProductUUID    uuid.UUID `json:"product_id"`
+	ProductID      int       `json:"-"`
+	Qty            float64   `json:"qty"`
+	Price          float64   `json:"price"`
+	Amount         float64   `json:"-"`
+	Discount       float64   `json:"discount"`
+	IsPrecentage   bool      `json:"ispercentage"`
+	CreatedById    string    `json:"-"`
+	UpdatedById    string    `json:"-"`
+	OrganizationId int       `json:"-"`
 }
 
 type InvoiceLineRespont struct {
@@ -141,6 +142,10 @@ type InvoiceRequestV2 struct {
 type InvoiceRespontV2 struct {
 	Header InvoiceRespont       `json:"header"`
 	Line   []InvoiceLineRespont `json:"line"`
+}
+type InvoiceRespontV3 struct {
+	Data InvoiceRespontV2   `json:"data"`
+	File FileServiceRespont `json:"file"`
 }
 
 func GetSeatchParamInvoice(q string) string {

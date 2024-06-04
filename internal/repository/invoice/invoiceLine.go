@@ -15,15 +15,16 @@ func (ir *invoiceRepo) CreateLine(request model.InvoiceLineRequest) (model.Invoi
 	tx := ir.db.Begin()
 
 	data := model.InvoiceLine{
-		InvoiceID:    request.InvoiceId,
-		ProductID:    request.ProductID,
-		Price:        request.Price,
-		Discount:     request.Discount,
-		Qty:          request.Qty,
-		IsPrecentage: request.IsPrecentage,
-		Amount:       ir.handlingAmount(request.Qty, request.Price, request.IsPrecentage, request.Discount),
-		CreatedBy:    request.CreatedById,
-		UpdatedBy:    request.CreatedById,
+		InvoiceID:      request.InvoiceId,
+		ProductID:      request.ProductID,
+		Price:          request.Price,
+		Discount:       request.Discount,
+		Qty:            request.Qty,
+		IsPrecentage:   request.IsPrecentage,
+		Amount:         ir.handlingAmount(request.Qty, request.Price, request.IsPrecentage, request.Discount),
+		CreatedBy:      request.CreatedById,
+		UpdatedBy:      request.CreatedById,
+		OrganizationId: request.OrganizationId,
 	}
 
 	//saved data
