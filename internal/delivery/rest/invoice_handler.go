@@ -166,6 +166,63 @@ func (h *handler) CreateInvoiceV2(c echo.Context) error {
 	return handleError(c, http.StatusOK, errors.New("CREATE "+data.Header.BatchNo+" SUCCESS"), meta, data)
 }
 
+/*
+generate data invoice header and line in same time with form-data format! and handling file in one file at a time
+api handler base on form-data format
+*/
+func (h *handler) CreateInvoiceV3(c echo.Context) error {
+	// File validation
+	form, err := c.MultipartForm()
+	if err != nil {
+		return err
+	}
+
+	var request model.InvoiceRequestV2
+	err = json.Unmarshal([]byte(c.Request().FormValue("data")), &request)
+	if err != nil {
+		WriteLogErorr("[delivery][rest][invoice_handler][CreateInvoiceV2] ", err)
+		return handleError(c, http.StatusInternalServerError, err, meta, data)
+	}
+
+	//getUserId
+	userInf, err := h.middleware.GetUserInformation(c.Request())
+	if err != nil {
+		WriteLogErorr("[delivery][rest][invoice_handler][CreateInvoiceV2] ", err)
+		return handleError(c, http.StatusInternalServerError, err, meta, data)
+	}
+
+	//set org_id
+	request.Header.OrganizationId = userInf.OrganizationID
+	data, err := h.invoiceUsecase.CreateInvoiceV2(request, userInf.UserId)
+	if err != nil {
+		WriteLogErorr("[delivery][rest][invoice_handler][CreateInvoiceV2] ", err)
+		return handleError(c, http.StatusInternalServerError, err, meta, data)
+	}
+
+	//extract the form-data format
+	fileRequest := model.FileServiceRequest{
+		File:      nil,
+		File64:    nil,
+		UuidDoc:   data.Header.ID,
+		DocType:   "INV",
+		FileName:  "",
+		CreatedBy: userInf.UserId,
+	}
+
+	//send to usecase of file service
+	dataFile, err := h.fileserviceUsecase.SaveFile(fileRequest, form)
+	if err != nil {
+		return handleError(c, http.StatusInternalServerError, err, nil, nil)
+	}
+
+	returnData := model.InvoiceRespontV3{
+		Data: data,
+		File: dataFile,
+	}
+
+	return handleError(c, http.StatusOK, errors.New("CREATE "+data.Header.BatchNo+" SUCCESS"), meta, returnData)
+}
+
 func (h *handler) Partialnvoice(c echo.Context) error {
 	//get parameter
 	q := c.QueryParam("q")

@@ -29,9 +29,10 @@ type LoginRequest struct {
 }
 
 type UserSession struct {
-	AccessToken    string    `json:"access_token"`
-	RefreshToken   string    `json:"refresh_token"`
-	OrganizationID uuid.UUID `json:"org_id"`
+	AccessToken      string    `json:"access_token"`
+	RefreshToken     string    `json:"refresh_token"`
+	OrganizationID   int       `json:"org_id"`
+	OrganizationUUID uuid.UUID `json:"org_uuid"`
 }
 
 type UserSessionRespond struct {
@@ -40,9 +41,10 @@ type UserSessionRespond struct {
 }
 
 type UserPartial struct {
-	UserId         string `json:"user_uuid"`
-	Username       string `json:"username"`
-	OrganizationID string `json:"org_id"`
+	UserId           string `json:"user_uuid"`
+	Username         string `json:"username"`
+	OrganizationUUID string `json:"org_uuid"`
+	OrganizationID   int    `json:"org_id"`
 }
 
 type RefreshSession struct {
