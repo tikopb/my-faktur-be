@@ -7,14 +7,14 @@ import (
 )
 
 type User struct {
-	ID             string        `gorm:"primaryKey;autoIncrement" json:"-"`
-	Username       string        `gorm:"unique" json:"username"`
-	Hash           string        `json:"-"`
-	FullName       string        `gorm:"column:full_name" json:"full_name"`
-	CreatedAt      time.Time     `gorm:"column:created_at" json:"created_at"`
-	IsActive       bool          `gorm:"column:isactive" json:"isactive"`
-	OrganizationId int           `gorm:"column:org_id;index:idx_user_org_id"`
-	Organization   *Organization `gorm:"foreignKey:org_id"`
+	ID        string    `gorm:"primaryKey;autoIncrement" json:"-"`
+	Username  string    `gorm:"unique" json:"username"`
+	Hash      string    `json:"-"`
+	FullName  string    `gorm:"column:full_name" json:"full_name"`
+	CreatedAt time.Time `gorm:"column:created_at" json:"created_at"`
+	IsActive  bool      `gorm:"column:isactive" json:"isactive"`
+	// OrganizationId int           `gorm:"column:org_id;index:idx_user_org_id"`
+	// Organization   *Organization `gorm:"foreignKey:org_id"`
 }
 
 type RegisterRequest struct {

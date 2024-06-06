@@ -4,14 +4,13 @@ import (
 	"bemyfaktur/internal/model"
 	"time"
 
-	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
 func InvoiceFaker(db *gorm.DB, invoice model.Invoice) *model.Invoice {
 	return &model.Invoice{
 		ID:                invoice.ID,
-		UUID:              uuid.New(),
+		UUID:              invoice.UUID,
 		CreatedAt:         time.Time{},
 		UpdateAt:          time.Time{},
 		CreatedBy:         invoice.CreatedBy,
@@ -26,23 +25,25 @@ func InvoiceFaker(db *gorm.DB, invoice model.Invoice) *model.Invoice {
 		DocumentNo:        invoice.DocumentNo,
 		IsPrecentage:      invoice.IsPrecentage,
 		PayDate:           invoice.PayDate,
+		OrganizationId:    invoice.OrganizationId,
 	}
 }
 
 func InvoiceLineFaker(db *gorm.DB, line model.InvoiceLine) *model.InvoiceLine {
 	return &model.InvoiceLine{
-		ID:           line.ID,
-		CreatedAt:    time.Time{},
-		UpdateAt:     time.Time{},
-		CreatedBy:    line.CreatedBy,
-		UpdatedBy:    line.UpdatedBy,
-		Price:        line.Price,
-		Discount:     line.Discount,
-		Qty:          line.Qty,
-		Amount:       line.Amount,
-		IsPrecentage: line.IsPrecentage,
-		ProductID:    line.ProductID,
-		InvoiceID:    line.InvoiceID,
-		UUID:         uuid.New(),
+		ID:             line.ID,
+		CreatedAt:      time.Time{},
+		UpdateAt:       time.Time{},
+		CreatedBy:      line.CreatedBy,
+		UpdatedBy:      line.UpdatedBy,
+		Price:          line.Price,
+		Discount:       line.Discount,
+		Qty:            line.Qty,
+		Amount:         line.Amount,
+		IsPrecentage:   line.IsPrecentage,
+		ProductID:      line.ProductID,
+		InvoiceID:      line.InvoiceID,
+		UUID:           line.UUID,
+		OrganizationId: line.OrganizationId,
 	}
 }
