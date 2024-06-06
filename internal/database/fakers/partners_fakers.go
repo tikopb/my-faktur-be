@@ -17,7 +17,7 @@ func PartnerFaker(db *gorm.DB, partner model.Partner) *model.Partner {
 		CreatedBy:      partner.CreatedBy,
 		DNAmount:       0,
 		CNAmount:       0,
-		Isactive:       true,
+		Isactive:       partner.Isactive,
 		Code:           partner.Code,
 		UUID:           partner.UUID,
 		OrganizationId: partner.OrganizationId,
