@@ -21,7 +21,6 @@ func RegisterSeeders(db *gorm.DB) []Seeder {
 
 		//organization
 		{Seeder: fakers.OrganizationFakers(db, model.Organization{
-			ID:          1,
 			UUID:        StringParsingToUUID("11b98639-986d-4d55-857a-e0167e80a968"),
 			CreatedAt:   time.Now(),
 			UpdateAt:    time.Now(),
@@ -35,7 +34,6 @@ func RegisterSeeders(db *gorm.DB) []Seeder {
 
 		//products
 		{Seeder: fakers.ProductFaker(db, model.Product{
-			ID:             1,
 			Name:           "MARKUS",
 			Value:          "C-1.1",
 			Upc:            "502.611.51",
@@ -44,9 +42,9 @@ func RegisterSeeders(db *gorm.DB) []Seeder {
 			IsActive:       true,
 			UUID:           StringParsingToUUID("c2a063aa-eba5-4dbe-b32a-14e1c1be6758"),
 			OrganizationId: 1,
+			CreatedAt:      time.Now(),
 		})},
 		{Seeder: fakers.ProductFaker(db, model.Product{
-			ID:             2,
 			Name:           "TROTTEN",
 			Value:          "D-1.1",
 			Upc:            "794.295.79",
@@ -55,9 +53,9 @@ func RegisterSeeders(db *gorm.DB) []Seeder {
 			IsActive:       true,
 			UUID:           StringParsingToUUID("42c4fbaa-17e0-4cb7-b5c8-388fbe5ddf11"),
 			OrganizationId: 1,
+			CreatedAt:      time.Now(),
 		})},
 		{Seeder: fakers.ProductFaker(db, model.Product{
-			ID:             3,
 			Name:           "UPPSPEL",
 			Value:          "T-1.1",
 			Upc:            "704.998.40",
@@ -66,11 +64,11 @@ func RegisterSeeders(db *gorm.DB) []Seeder {
 			IsActive:       false,
 			UUID:           StringParsingToUUID("0bb233e1-04ed-4d59-a322-ad4fa621d528"),
 			OrganizationId: 1,
+			CreatedAt:      time.Now(),
 		})},
 
 		//partners
 		{Seeder: fakers.PartnerFaker(db, model.Partner{
-			ID:             1,
 			Name:           "IKEA-SUPP-ID",
 			CreatedBy:      "0bdfa34b-cdc4-4c4b-b087-f6b6d7cf81d5",
 			DNAmount:       0,
@@ -81,7 +79,6 @@ func RegisterSeeders(db *gorm.DB) []Seeder {
 			OrganizationId: 1,
 		})},
 		{Seeder: fakers.PartnerFaker(db, model.Partner{
-			ID:             2,
 			Name:           "IKEA-SUPP-MY",
 			CreatedBy:      "0bdfa34b-cdc4-4c4b-b087-f6b6d7cf81d5",
 			DNAmount:       0,
@@ -94,7 +91,6 @@ func RegisterSeeders(db *gorm.DB) []Seeder {
 
 		//invoice
 		{Seeder: fakers.InvoiceFaker(db, model.Invoice{
-			ID:                1,
 			CreatedBy:         "0bdfa34b-cdc4-4c4b-b087-f6b6d7cf81d5",
 			UpdatedBy:         "0bdfa34b-cdc4-4c4b-b087-f6b6d7cf81d5",
 			PartnerID:         1,
@@ -113,7 +109,6 @@ func RegisterSeeders(db *gorm.DB) []Seeder {
 
 		//invoiceline
 		{Seeder: fakers.InvoiceLineFaker(db, model.InvoiceLine{
-			ID:             1,
 			CreatedBy:      "0bdfa34b-cdc4-4c4b-b087-f6b6d7cf81d5",
 			UpdatedBy:      "0bdfa34b-cdc4-4c4b-b087-f6b6d7cf81d5",
 			Price:          5000,
@@ -127,7 +122,6 @@ func RegisterSeeders(db *gorm.DB) []Seeder {
 			OrganizationId: 1,
 		})},
 		{Seeder: fakers.InvoiceLineFaker(db, model.InvoiceLine{
-			ID:             2,
 			CreatedBy:      "0bdfa34b-cdc4-4c4b-b087-f6b6d7cf81d5",
 			UpdatedBy:      "0bdfa34b-cdc4-4c4b-b087-f6b6d7cf81d5",
 			Price:          150000,
@@ -143,7 +137,6 @@ func RegisterSeeders(db *gorm.DB) []Seeder {
 
 		//payment
 		{Seeder: fakers.PaymentFaker(db, model.Payment{
-			ID:             1,
 			CreatedBy:      "0bdfa34b-cdc4-4c4b-b087-f6b6d7cf81d5",
 			UpdatedBy:      "0bdfa34b-cdc4-4c4b-b087-f6b6d7cf81d5",
 			PartnerID:      1,
@@ -158,7 +151,6 @@ func RegisterSeeders(db *gorm.DB) []Seeder {
 			OrganizationId: 1,
 		})},
 		{Seeder: fakers.PaymentFaker(db, model.Payment{
-			ID:             2,
 			CreatedBy:      "0bdfa34b-cdc4-4c4b-b087-f6b6d7cf81d5",
 			UpdatedBy:      "0bdfa34b-cdc4-4c4b-b087-f6b6d7cf81d5",
 			PartnerID:      1,
@@ -175,7 +167,6 @@ func RegisterSeeders(db *gorm.DB) []Seeder {
 
 		//paymentline
 		{Seeder: fakers.PaymentLineFaker(db, model.PaymentLine{
-			ID:             1,
 			PaymentID:      1,
 			Price:          145750,
 			Amount:         1,
@@ -188,7 +179,6 @@ func RegisterSeeders(db *gorm.DB) []Seeder {
 			OrganizationId: 1,
 		})},
 		{Seeder: fakers.PaymentLineFaker(db, model.PaymentLine{
-			ID:             2,
 			PaymentID:      2,
 			Price:          5000,
 			Amount:         1,
@@ -199,6 +189,16 @@ func RegisterSeeders(db *gorm.DB) []Seeder {
 			IsPrecentage:   false,
 			UUID:           StringParsingToUUID("a6fb839e-d14c-429a-a31e-fe70234acba9"),
 			OrganizationId: 1,
+		})},
+		{Seeder: fakers.FileServiceFakers(db, model.FileService{
+			UUID:      StringParsingToUUID("3c6de723-b737-4389-ba30-8c5fc962c6fa"),
+			CreatedAt: time.Now(),
+			UpdateAt:  time.Now(),
+			CreatedBy: "0bdfa34b-cdc4-4c4b-b087-f6b6d7cf81d5",
+			UpdatedBy: "0bdfa34b-cdc4-4c4b-b087-f6b6d7cf81d5",
+			FileName:  "markus.jpg",
+			UuidDoc:   StringParsingToUUID("cef1eac1-b36b-4df0-84be-b40c229a996b"),
+			DocType:   "INV",
 		})},
 	}
 }
