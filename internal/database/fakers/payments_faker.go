@@ -9,7 +9,6 @@ import (
 
 func PaymentFaker(db *gorm.DB, payment model.Payment) *model.Payment {
 	return &model.Payment{
-		ID:             payment.ID,
 		CreatedAt:      time.Time{},
 		CreatedBy:      payment.CreatedBy,
 		UpdatedBy:      payment.UpdatedBy,
@@ -28,7 +27,6 @@ func PaymentFaker(db *gorm.DB, payment model.Payment) *model.Payment {
 
 func PaymentLineFaker(db *gorm.DB, line model.PaymentLine) *model.PaymentLine {
 	return &model.PaymentLine{
-		ID:             line.ID,
 		PaymentID:      line.PaymentID,
 		Price:          line.Price,
 		Amount:         line.Amount,

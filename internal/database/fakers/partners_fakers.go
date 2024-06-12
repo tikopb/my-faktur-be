@@ -2,7 +2,6 @@ package fakers
 
 import (
 	"bemyfaktur/internal/model"
-	"time"
 
 	"gorm.io/gorm"
 )
@@ -13,7 +12,7 @@ func PartnerFaker(db *gorm.DB, partner model.Partner) *model.Partner {
 
 	return &model.Partner{
 		Name:           partner.Name,
-		CreatedAt:      time.Time{},
+		CreatedAt:      partner.CreatedAt,
 		CreatedBy:      partner.CreatedBy,
 		DNAmount:       0,
 		CNAmount:       0,
