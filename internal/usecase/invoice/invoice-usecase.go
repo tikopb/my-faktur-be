@@ -8,6 +8,7 @@ import (
 	"bemyfaktur/internal/repository/product"
 	"bemyfaktur/internal/usecase/fileservice"
 	"errors"
+	"mime/multipart"
 
 	"github.com/google/uuid"
 )
@@ -16,10 +17,10 @@ type invoiceUsecase struct {
 	invoiceRepo invoice.InvoiceRepositoryInterface
 	partnerRepo partner.Repository
 	productRepo product.Repository
-	fileService fileservice.Repository
+	fileService fileservice.Usecase
 }
 
-func GetUsecase(invoiceRepo invoice.InvoiceRepositoryInterface, partnerRepo partner.Repository, productRepo product.Repository, fileService fileservice.Repository) InvoiceUsecaseInterface {
+func GetUsecase(invoiceRepo invoice.InvoiceRepositoryInterface, partnerRepo partner.Repository, productRepo product.Repository, fileService fileservice.Usecase) InvoiceUsecaseInterface {
 	return &invoiceUsecase{
 		invoiceRepo: invoiceRepo,
 		partnerRepo: partnerRepo,
@@ -65,7 +66,6 @@ func (iu *invoiceUsecase) GetInvoice(id uuid.UUID) (model.InvoiceRespont, error)
 	//file service
 	fileParam := model.FileServiceRequest{
 		UuidDoc: preloadData.ID,
-		DocType: "INV",
 	}
 	fileUrl, err := iu.fileService.GetFileUrl(fileParam)
 	if err != nil {
@@ -312,6 +312,35 @@ func (iu *invoiceUsecase) CreateInvoiceV3(request model.InvoiceRequestV2, userId
 	}
 
 	return data, nil
+}
+
+// Update Invoicev3 implements InvoiceUsecaseInterface.
+func (iu *invoiceUsecase) UpdateInvoiceV3(id uuid.UUID, request model.InvoiceRequest, form multipart.Form) (model.InvoiceRespontV3, error) {
+
+	header, err := iu.invoiceRepo.Update(id, request)
+	if err != nil {
+		return model.InvoiceRespontV3{}, err
+	}
+
+	data := model.InvoiceRespontV2{
+		Header: header,
+	}
+
+	//--send to update the file needed
+	//- get the data first
+	//file service
+	fileParam := model.FileServiceRequest{
+		UuidDoc: data.ID,
+	}
+
+	deletedFiles, err := iu.fileService.GetFileList(fileParam)
+	if err != nil {
+		return model.InvoiceRespontV3{}, err
+	}
+
+	iu.fileService.DeleteAndUpdateV1(request, deletedFiles, form)
+
+	return invoiceRespont, nil
 }
 
 // Partial implements InvoiceUsecaseInterface.

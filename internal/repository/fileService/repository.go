@@ -19,4 +19,7 @@ type Repository interface {
 
 	//Get File Url
 	GetUrlFile(model.FileServiceRequest) ([]model.FileServiceRespont, error)
+
+	//update and delete file use for V1 fileservice update
+	DeleteAndUpdateV1(request model.FileServiceRequest, requestDeleted model.FileServiceRespont, form *multipart.Form) (model.FileServiceRespont, error)
 }

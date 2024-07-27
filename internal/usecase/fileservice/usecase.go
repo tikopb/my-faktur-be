@@ -5,7 +5,7 @@ import (
 	"mime/multipart"
 )
 
-type Repository interface {
+type Usecase interface {
 	SaveFile64([]model.FileServiceRequest) ([]model.FileServiceRespont, error)
 	GetFileList64(model.FileServiceRequest) ([]model.FileServiceRespont, error)
 
@@ -18,4 +18,7 @@ type Repository interface {
 
 	//getFileUrl
 	GetFileUrl(model.FileServiceRequest) ([]model.FileServiceRespont, error)
+
+	//Delete and update v1
+	DeleteAndUpdateV1(request model.FileServiceRequest, requestDeleted []model.FileServiceRespont, form *multipart.Form) (model.FileServiceRespont, error)
 }

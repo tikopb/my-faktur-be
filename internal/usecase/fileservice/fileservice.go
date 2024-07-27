@@ -11,7 +11,7 @@ type fileServiceUsecase struct {
 	fileServiceRepo fileservice.Repository
 }
 
-func GetRepository(fileServiceRepo fileservice.Repository) Repository {
+func GetRepository(fileServiceRepo fileservice.Repository) Usecase {
 	return &fileServiceUsecase{
 		fileServiceRepo: fileServiceRepo,
 	}
@@ -95,4 +95,18 @@ func (f *fileServiceUsecase) DeleteFile(requests []model.FileServiceRequest) ([]
 // GetFileUrl implements Repository.
 func (f *fileServiceUsecase) GetFileUrl(request model.FileServiceRequest) ([]model.FileServiceRespont, error) {
 	return f.fileServiceRepo.GetUrlFile(request)
+}
+
+func (f *fileServiceUsecase) DeleteAndUpdateV1(request model.FileServiceRequest, requestDeleted []model.FileServiceRespont, form *multipart.Form) ([]model.FileServiceRespont, error) {
+	datas := []model.FileServiceRespont{}
+	for _, deleteFile := range requestDeleted {
+		//run repository DeleteAndUpdateV1
+		data, err := f.fileServiceRepo.DeleteAndUpdateV1(request, deleteFile, form)
+		append(datas, data)
+		if err != nil {
+			return []model.FileServiceRespont{}, err
+		}
+	}
+
+	return datas, nil
 }

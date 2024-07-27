@@ -6,6 +6,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"github.com/labstack/gommon/log"
 	"io"
 	"io/fs"
 	"mime/multipart"
@@ -436,4 +437,27 @@ func (f *FileserviceRepo) GetFilePathFromEnv() (string, error) {
 	}
 
 	return basePath, nil
+}
+
+// update and delete file use for V1 fileservice update
+func (f *FileserviceRepo) DeleteAndUpdateV1(request model.FileServiceRequest, requestDeleted model.FileServiceRespont, form *multipart.Form) (model.FileServiceRespont, error) {
+	//start to delete
+	deletedRequest := model.FileServiceRequest{
+		FileName: requestDeleted.FileName,
+	}
+
+	fileDeleted, err := f.DeleteFile(deletedRequest)
+	if err != nil {
+		return model.FileServiceRespont{}, err
+	}
+
+	log.Info(fileDeleted, "deleted file", fileDeleted.FileName)
+
+	//start uploading new file
+	fileUplouaded, err := f.SaveFile(request, form)
+	if err != nil {
+		return model.FileServiceRespont{}, err
+	}
+
+	return fileUplouaded, nil
 }

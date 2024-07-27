@@ -35,7 +35,7 @@ type handler struct {
 	productUsecase      product.ProductUsecaseInterface
 	invoiceUsecase      invoice.InvoiceUsecaseInterface
 	paymentUsecase      payment.PaymentUsecaseInterface
-	fileserviceUsecase  fileservice.Repository
+	fileserviceUsecase  fileservice.Usecase
 	authUsecase         auth.Usecase
 	db                  *gorm.DB
 	pgUtilRepo          pgUtil.Repository
@@ -50,7 +50,7 @@ type handlerRespont struct {
 	Data    interface{} `json:"data"`
 }
 
-func NewHandler(partnerUsecase partner.Usecase, productUsecase product.ProductUsecaseInterface, invoiceUsecase invoice.InvoiceUsecaseInterface, paymentUsecase payment.PaymentUsecaseInterface, fileserviceUsecase fileservice.Repository, pgRepo pgUtil.Repository, authUsecase auth.Usecase, organizationUsecase organization.Usecase, middleware midUtil.MidlewareInterface, db *gorm.DB) *handler {
+func NewHandler(partnerUsecase partner.Usecase, productUsecase product.ProductUsecaseInterface, invoiceUsecase invoice.InvoiceUsecaseInterface, paymentUsecase payment.PaymentUsecaseInterface, fileserviceUsecase fileservice.Usecase, pgRepo pgUtil.Repository, authUsecase auth.Usecase, organizationUsecase organization.Usecase, middleware midUtil.MidlewareInterface, db *gorm.DB) *handler {
 
 	return &handler{
 		partnerUsecase:      partnerUsecase,

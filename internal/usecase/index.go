@@ -42,7 +42,7 @@ type Container struct {
 	ProductUsecase      productUsecase.ProductUsecaseInterface
 	InvoiceUsecase      invoiceUsecase.InvoiceUsecaseInterface
 	PaymentUsecase      paymentUsecase.PaymentUsecaseInterface
-	FileserviceUsecase  fileservice.Repository
+	FileserviceUsecase  fileservice.Usecase
 	DocumentUtil        documentutil.Repository
 	AuthUsecase         authUsecase.Usecase
 	PgUtil              pgUtil.Repository
