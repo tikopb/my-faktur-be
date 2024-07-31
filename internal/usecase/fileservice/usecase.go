@@ -14,11 +14,12 @@ type Usecase interface {
 	GetFileList(model.FileServiceRequest) ([]model.FileServiceRespont, error)
 
 	//drop the meesage
-	DeleteFile([]model.FileServiceRequest) ([]model.FileServiceRespont, error)
+	DeleteFile(model.FileServiceRequest) (model.FileServiceRespont, error)
+	DeleteMultipleFiles([]model.FileServiceRequest) ([]model.FileServiceRespont, error)
 
 	//getFileUrl
 	GetFileUrl(model.FileServiceRequest) ([]model.FileServiceRespont, error)
 
 	//Delete and update v1
-	DeleteAndUpdateV1(request model.FileServiceRequest, requestDeleted []model.FileServiceRespont, form *multipart.Form) (model.FileServiceRespont, error)
+	DeleteAndUpdateV1(request model.FileServiceRequest, form *multipart.Form) (model.FileServiceRespont, error)
 }
