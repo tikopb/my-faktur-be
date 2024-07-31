@@ -59,7 +59,7 @@ func (h *handler) DeleteFile(c echo.Context) error {
 		return handleError(c, http.StatusInternalServerError, err, meta, data)
 	}
 
-	data, err := h.fileserviceUsecase.DeleteFile(request)
+	data, err := h.fileserviceUsecase.DeleteMultipleFiles(request)
 	if err != nil {
 		WriteLogErorr("[delivery][rest][fileservice_handler][DeleteFile] ", err)
 		return handleError(c, http.StatusInternalServerError, err, meta, data)

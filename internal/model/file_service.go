@@ -1,6 +1,7 @@
 package model
 
 import (
+	"bemyfaktur/internal/model/constant"
 	"os"
 	"time"
 
@@ -22,12 +23,13 @@ type FileService struct {
 }
 
 type FileServiceRequest struct {
-	File      *os.File  `form:"file"`
-	File64    []byte    `json:"file64"`
-	UuidDoc   uuid.UUID `json:"uuid_doc"`
-	DocType   string    `json:"doctype"`
-	FileName  string    `json:"filename"`
-	CreatedBy string    `json:"-"`
+	File       *os.File            `form:"file"`
+	File64     []byte              `json:"file64"`
+	UuidDoc    uuid.UUID           `json:"uuid_doc"`
+	DocType    string              `json:"doctype"`
+	FileName   string              `json:"filename"`
+	CreatedBy  string              `json:"-"`
+	FileAction constant.FileAction `json:"image_action"`
 }
 type FileServiceRespont struct {
 	File64   string   `json:"file64"`

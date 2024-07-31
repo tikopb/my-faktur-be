@@ -25,4 +25,6 @@ go.work
 
 # Ignore ./asset directory
 my-faktur-be/assets/
-/asset/*
+/asset
+
+/.idea

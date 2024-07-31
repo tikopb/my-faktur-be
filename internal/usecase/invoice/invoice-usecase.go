@@ -324,23 +324,32 @@ func (iu *invoiceUsecase) UpdateInvoiceV3(id uuid.UUID, request model.InvoiceReq
 
 	data := model.InvoiceRespontV2{
 		Header: header,
+		Line:   header.Line,
 	}
 
-	//--send to update the file needed
-	//- get the data first
-	//file service
-	fileParam := model.FileServiceRequest{
-		UuidDoc: data.ID,
+	//start update the document
+	//just update when form is updated
+	returnData := model.InvoiceRespontV3{}
+	imageActionStr := form.Value["image_action"][0]
+	if imageActionStr == string(constant.FileActionUpdate) {
+		if len(form.File["files"]) > 0 {
+			fileRequest := model.FileServiceRequest{
+				UuidDoc: data.Header.ID,
+				DocType: "INV",
+			}
+			files, err := iu.fileService.DeleteAndUpdateV1(fileRequest, &form)
+			if err != nil {
+				return model.InvoiceRespontV3{}, err
+			}
+
+			returnData = model.InvoiceRespontV3{
+				Data: data,
+				File: files,
+			}
+		}
 	}
 
-	deletedFiles, err := iu.fileService.GetFileList(fileParam)
-	if err != nil {
-		return model.InvoiceRespontV3{}, err
-	}
-
-	iu.fileService.DeleteAndUpdateV1(request, deletedFiles, form)
-
-	return invoiceRespont, nil
+	return returnData, nil
 }
 
 // Partial implements InvoiceUsecaseInterface.

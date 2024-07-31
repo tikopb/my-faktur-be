@@ -4,6 +4,7 @@ import (
 	"bemyfaktur/internal/model"
 	fileservice "bemyfaktur/internal/repository/fileService"
 	"errors"
+	"fmt"
 	"mime/multipart"
 )
 
@@ -73,11 +74,21 @@ func (f *fileServiceUsecase) SaveFile64(requests []model.FileServiceRequest) ([]
 	return dataReturnList, nil
 }
 
-// DeleteFile implements Repository.
-func (f *fileServiceUsecase) DeleteFile(requests []model.FileServiceRequest) ([]model.FileServiceRespont, error) {
+// DeleteFile implements Usecase.
+func (f *fileServiceUsecase) DeleteFile(request model.FileServiceRequest) (model.FileServiceRespont, error) {
+	data, err := f.fileServiceRepo.DeleteFile(request)
+	if err != nil {
+		return model.FileServiceRespont{}, err
+	}
+
+	return data, nil
+}
+
+// implement DeleteFile but with recursive
+func (f *fileServiceUsecase) DeleteMultipleFiles(requests []model.FileServiceRequest) ([]model.FileServiceRespont, error) {
 	returnPartsings := []model.FileServiceRespont{}
 	for _, request := range requests {
-		data, err := f.fileServiceRepo.DeleteFile(request)
+		data, err := f.DeleteFile(request)
 		if err != nil {
 			return []model.FileServiceRespont{}, err
 		}
@@ -97,16 +108,33 @@ func (f *fileServiceUsecase) GetFileUrl(request model.FileServiceRequest) ([]mod
 	return f.fileServiceRepo.GetUrlFile(request)
 }
 
-func (f *fileServiceUsecase) DeleteAndUpdateV1(request model.FileServiceRequest, requestDeleted []model.FileServiceRespont, form *multipart.Form) ([]model.FileServiceRespont, error) {
-	datas := []model.FileServiceRespont{}
-	for _, deleteFile := range requestDeleted {
-		//run repository DeleteAndUpdateV1
-		data, err := f.fileServiceRepo.DeleteAndUpdateV1(request, deleteFile, form)
-		append(datas, data)
-		if err != nil {
-			return []model.FileServiceRespont{}, err
-		}
+// DeleteAndUpdateV1 implements Usecase.
+func (f *fileServiceUsecase) DeleteAndUpdateV1(request model.FileServiceRequest, form *multipart.Form) (model.FileServiceRespont, error) {
+	//get the file list first
+	files, err := f.GetFileList(request)
+	if err != nil {
+		return model.FileServiceRespont{}, err
 	}
 
-	return datas, nil
+	for _, file := range files {
+		//set the varibel translate from respont to request
+		requestDeleted := model.FileServiceRequest{
+			FileName: file.FileName,
+		}
+		//delete file first
+		deletedInfo, err := f.DeleteFile(requestDeleted)
+		if err != nil {
+			return model.FileServiceRespont{}, err
+		}
+
+		fmt.Println(deletedInfo)
+	}
+
+	//upload new file
+	data, err := f.SaveFile(request, form)
+	if err != nil {
+		return model.FileServiceRespont{}, err
+	}
+
+	return data, nil
 }
