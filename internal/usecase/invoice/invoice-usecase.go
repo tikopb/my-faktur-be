@@ -8,6 +8,7 @@ import (
 	"bemyfaktur/internal/repository/product"
 	"bemyfaktur/internal/usecase/fileservice"
 	"errors"
+	"mime/multipart"
 
 	"github.com/google/uuid"
 )
@@ -16,10 +17,10 @@ type invoiceUsecase struct {
 	invoiceRepo invoice.InvoiceRepositoryInterface
 	partnerRepo partner.Repository
 	productRepo product.Repository
-	fileService fileservice.Repository
+	fileService fileservice.Usecase
 }
 
-func GetUsecase(invoiceRepo invoice.InvoiceRepositoryInterface, partnerRepo partner.Repository, productRepo product.Repository, fileService fileservice.Repository) InvoiceUsecaseInterface {
+func GetUsecase(invoiceRepo invoice.InvoiceRepositoryInterface, partnerRepo partner.Repository, productRepo product.Repository, fileService fileservice.Usecase) InvoiceUsecaseInterface {
 	return &invoiceUsecase{
 		invoiceRepo: invoiceRepo,
 		partnerRepo: partnerRepo,
@@ -65,7 +66,6 @@ func (iu *invoiceUsecase) GetInvoice(id uuid.UUID) (model.InvoiceRespont, error)
 	//file service
 	fileParam := model.FileServiceRequest{
 		UuidDoc: preloadData.ID,
-		DocType: "INV",
 	}
 	fileUrl, err := iu.fileService.GetFileUrl(fileParam)
 	if err != nil {
@@ -312,6 +312,45 @@ func (iu *invoiceUsecase) CreateInvoiceV3(request model.InvoiceRequestV2, userId
 	}
 
 	return data, nil
+}
+
+// Update Invoicev3 implements InvoiceUsecaseInterface.
+func (iu *invoiceUsecase) UpdateInvoiceV3(id uuid.UUID, request model.InvoiceRequest, form multipart.Form) (model.InvoiceRespontV3, error) {
+
+	header, err := iu.invoiceRepo.Update(id, request)
+	if err != nil {
+		return model.InvoiceRespontV3{}, err
+	}
+
+	data := model.InvoiceRespontV2{
+		Header: header,
+		Line:   header.Line,
+	}
+
+	//start update the document
+	//just update when form is updated
+	returnData := model.InvoiceRespontV3{}
+	imageActionStr := form.Value["image_action"][0]
+	if imageActionStr == string(constant.FileActionUpdate) {
+		if len(form.File["files"]) > 0 {
+			fileRequest := model.FileServiceRequest{
+				UuidDoc:   data.Header.ID,
+				DocType:   "INV",
+				CreatedBy: data.Header.CreatedBy.UserId,
+			}
+			files, err := iu.fileService.DeleteAndUpdateV1(fileRequest, &form)
+			if err != nil {
+				return model.InvoiceRespontV3{}, err
+			}
+
+			returnData = model.InvoiceRespontV3{
+				Data: data,
+				File: files,
+			}
+		}
+	}
+
+	return returnData, nil
 }
 
 // Partial implements InvoiceUsecaseInterface.

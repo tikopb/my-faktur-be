@@ -11,6 +11,12 @@ type Organization struct {
 	UUID        uuid.UUID `json:"id" gorm:"type:uuid;default:uuid_generate_v4();index:idx_invoice_uuid"`
 	CreatedAt   time.Time `gorm:"column:created_at;default:current_timestamp"`
 	UpdateAt    time.Time `gorm:"column:updated_at;default:current_timestamp"`
+	CreatedBy   string    `gorm:"column:created_by;" json:"created_by"`
+	User        User      `gorm:"foreignKey:created_by"`
+	UpdatedBy   string    `gorm:"column:updated_by" json:"updated_by"`
+	UserUpdated User      `gorm:"foreignKey:updated_by"`
+	OrgCode     string    `gorm:"column:org_code;not null"`
+	Name        string    `gorm:"name;not null"`
 	CreatedBy   string    `gorm:"column:created_by;unique" json:"created_by"`
 	User        *User     `gorm:"foreignKey:created_by"`
 	UpdatedBy   string    `gorm:"column:updated_by" json:"updated_by"`

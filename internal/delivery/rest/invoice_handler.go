@@ -223,6 +223,43 @@ func (h *handler) CreateInvoiceV3(c echo.Context) error {
 	return handleError(c, http.StatusOK, errors.New("CREATE "+data.Header.BatchNo+" SUCCESS"), meta, returnData)
 }
 
+func (h *handler) UpdateInvoiceV3(c echo.Context) error {
+	// File validation
+	form, err := c.MultipartForm()
+	if err != nil {
+		return err
+	}
+
+	//get param
+	id, err := h.parsingId(c)
+	if err != nil {
+		return handleError(c, http.StatusInternalServerError, err, meta, data)
+	}
+
+	var request model.InvoiceRequest
+	err = json.Unmarshal([]byte(c.Request().FormValue("data")), &request)
+	if err != nil {
+		WriteLogErorr("[delivery][rest][invoice_handler][UpdateInvoiceV3] ", err)
+		return handleError(c, http.StatusInternalServerError, err, meta, data)
+	}
+
+	//getUserId
+	userInf, err := h.middleware.GetUserInformation(c.Request())
+	if err != nil {
+		WriteLogErorr("[delivery][rest][invoice_handler][UpdateInvoiceV3] ", err)
+		return handleError(c, http.StatusInternalServerError, err, meta, data)
+	}
+
+	//set org_id
+	request.OrganizationId = userInf.OrganizationID
+	data, err := h.invoiceUsecase.UpdateInvoiceV3(id, request, *form)
+	if err != nil {
+		WriteLogErorr("[delivery][rest][invoice_handler][UpdateInvoiceV3] ", err)
+		return handleError(c, http.StatusInternalServerError, err, meta, data)
+	}
+	return handleError(c, http.StatusOK, errors.New("Update SUCCESS"), meta, data)
+}
+
 func (h *handler) Partialnvoice(c echo.Context) error {
 	//get parameter
 	q := c.QueryParam("q")

@@ -2,6 +2,7 @@ package invoice
 
 import (
 	"bemyfaktur/internal/model"
+	"mime/multipart"
 
 	"github.com/google/uuid"
 )
@@ -23,5 +24,7 @@ type InvoiceUsecaseInterface interface {
 	HandlingPagination(q string, limit int, offset int, dateFrom string, dateTo string) (int64, error)
 	HandlingPaginationLine(q string, limit int, offset int, invoiceId int) (int64, error)
 
+	//v2
 	CreateInvoiceV2(request model.InvoiceRequestV2, userId string) (model.InvoiceRespontV2, error)
+	UpdateInvoiceV3(id uuid.UUID, request model.InvoiceRequest, form multipart.Form) (model.InvoiceRespontV3, error)
 }

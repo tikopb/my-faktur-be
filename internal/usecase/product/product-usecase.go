@@ -25,6 +25,7 @@ func (m *productUsecase) IndexProduct(limit int, offset int, q string, order []s
 // CreateProduct implements Usecase.
 func (m *productUsecase) CreateProduct(request model.Product, userId string) (model.ProductRespon, error) {
 	request.CreatedBy = userId
+	request.OrganizationId = 1
 	return m.productRepo.Create(request)
 }
 
