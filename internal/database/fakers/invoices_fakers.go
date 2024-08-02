@@ -4,14 +4,12 @@ import (
 	"bemyfaktur/internal/model"
 	"time"
 
-	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
 func InvoiceFaker(db *gorm.DB, invoice model.Invoice) *model.Invoice {
 	return &model.Invoice{
-		ID:                invoice.ID,
-		UUID:              uuid.New(),
+		UUID:              invoice.UUID,
 		CreatedAt:         time.Time{},
 		UpdateAt:          time.Time{},
 		CreatedBy:         invoice.CreatedBy,

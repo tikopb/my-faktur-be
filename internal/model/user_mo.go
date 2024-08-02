@@ -15,6 +15,7 @@ type User struct {
 	IsActive       bool      `gorm:"column:isactive" json:"isactive"`
 	OrganizationId int       `gorm:"column:org_id;index:idx_user_org_id"`
 	//Organization   *Organization `gorm:"foreignKey:org_id"`
+
 }
 
 type RegisterRequest struct {

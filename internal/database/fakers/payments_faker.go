@@ -21,6 +21,7 @@ func PaymentFaker(db *gorm.DB, payment model.Payment) *model.Payment {
 		DocAction:      payment.DocAction,
 		DocumentNo:     payment.DocumentNo,
 		IsPrecentage:   payment.IsPrecentage,
+		UUID:           payment.UUID,
 		OrganizationId: payment.OrganizationId,
 	}
 }
@@ -38,6 +39,7 @@ func PaymentLineFaker(db *gorm.DB, line model.PaymentLine) *model.PaymentLine {
 		InvoiceID:      line.InvoiceID,
 		Discount:       line.Discount,
 		IsPrecentage:   line.IsPrecentage,
+		UUID:           line.UUID,
 		OrganizationId: line.OrganizationId,
 	}
 }

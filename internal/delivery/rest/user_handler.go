@@ -70,10 +70,6 @@ func (h *handler) RefreshSession(c echo.Context) error {
 
 	//decalre refresh token on sessioin is
 	request.RefreshToken = refreshToken
-	if err != nil {
-		WriteLogErorr("[delivery][rest][user_handler][RefreshSession] ", err)
-		return handleError(c, http.StatusInternalServerError, err, meta, data)
-	}
 
 	//clear the meta
 	meta = nil
