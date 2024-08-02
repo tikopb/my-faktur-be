@@ -334,8 +334,9 @@ func (iu *invoiceUsecase) UpdateInvoiceV3(id uuid.UUID, request model.InvoiceReq
 	if imageActionStr == string(constant.FileActionUpdate) {
 		if len(form.File["files"]) > 0 {
 			fileRequest := model.FileServiceRequest{
-				UuidDoc: data.Header.ID,
-				DocType: "INV",
+				UuidDoc:   data.Header.ID,
+				DocType:   "INV",
+				CreatedBy: data.Header.CreatedBy.UserId,
 			}
 			files, err := iu.fileService.DeleteAndUpdateV1(fileRequest, &form)
 			if err != nil {

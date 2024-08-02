@@ -117,7 +117,7 @@ func (f *fileServiceUsecase) DeleteAndUpdateV1(request model.FileServiceRequest,
 	}
 
 	for _, file := range files {
-		//set the varibel translate from respont to request
+		//set the variabel translate from respont to request
 		requestDeleted := model.FileServiceRequest{
 			FileName: file.FileName,
 		}

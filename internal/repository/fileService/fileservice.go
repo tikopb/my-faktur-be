@@ -129,8 +129,13 @@ func (f *FileserviceRepo) SaveFile(request model.FileServiceRequest, form *multi
 
 	}
 
+	datas, err := f.GetUrlFile(request)
+	if err != nil {
+		return model.FileServiceRespont{}, err
+	}
+
 	//return msg
-	return model.FileServiceRespont{}, nil
+	return datas[0], nil
 }
 
 /*

@@ -192,7 +192,7 @@ func RegisterSeeders(db *gorm.DB) []Seeder {
 func DBSeed(db *gorm.DB) error {
 
 	// Disable foreign key constraints
-	db.Exec("ALTER TABLE users DROP CONSTRAINT fk_users_organization;")
+	//db.Exec("ALTER TABLE users DROP CONSTRAINT fk_users_organization;")
 	db.Exec("ALTER TABLE organizations DROP CONSTRAINT fk_organizations_user;")
 	db.Exec("ALTER TABLE organizations DROP CONSTRAINT fk_organizations_user_updated;")
 
@@ -209,13 +209,32 @@ func DBSeed(db *gorm.DB) error {
 	db.Exec("ALTER TABLE public.organizations ADD CONSTRAINT fk_organizations_user FOREIGN KEY (created_by) REFERENCES public.users(id);")
 	db.Exec("ALTER TABLE public.organizations ADD CONSTRAINT fk_organizations_user_updated FOREIGN KEY (updated_by) REFERENCES public.users(id);")
 
+	//change the scuence to 10 after the data
+	RunSequenceChange(db)
+
 	return nil
+}
+
+func RunSequenceChange(db *gorm.DB) {
+	sql := `
+		SELECT setval('document_no_temps_id_seq', 10, true);
+		SELECT setval('file_services_id_seq', 10, true);
+		SELECT setval('invoice_lines_id_seq', 10, true);
+		SELECT setval('invoices_id_seq', 10, true);
+		SELECT setval('organizations_id_seq', 10, true);
+		SELECT setval('partners_id_seq', 10, true);
+		SELECT setval('payment_lines_id_seq', 10, true);
+		SELECT setval('payments_id_seq', 10, true);
+		SELECT setval('products_id_seq', 10, true);
+	`
+	db.Exec(sql)
 }
 
 func MigrateDb(db *gorm.DB) {
 	db.Exec("CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\";")
 	db.AutoMigrate(
 		&model.User{},
+		&model.Organization{},
 		&model.Partner{},
 		&model.Invoice{},
 		&model.InvoiceLine{},
@@ -224,7 +243,6 @@ func MigrateDb(db *gorm.DB) {
 		&model.PaymentLine{},
 		&model.DocumentNoTemp{},
 		&model.FileService{},
-		&model.Organization{},
 	)
 }
 

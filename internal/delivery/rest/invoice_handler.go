@@ -257,7 +257,7 @@ func (h *handler) UpdateInvoiceV3(c echo.Context) error {
 		WriteLogErorr("[delivery][rest][invoice_handler][UpdateInvoiceV3] ", err)
 		return handleError(c, http.StatusInternalServerError, err, meta, data)
 	}
-	return handleError(c, http.StatusOK, err, meta, data)
+	return handleError(c, http.StatusOK, errors.New("Update SUCCESS"), meta, data)
 }
 
 func (h *handler) Partialnvoice(c echo.Context) error {
