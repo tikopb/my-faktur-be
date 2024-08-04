@@ -16,15 +16,9 @@ type Organization struct {
 	UpdatedBy   string    `gorm:"column:updated_by" json:"updated_by"`
 	UserUpdated User      `gorm:"foreignKey:updated_by"`
 	OrgCode     string    `gorm:"column:org_code;not null"`
-	Name        string    `gorm:"name;not null"`
-	CreatedBy   string    `gorm:"column:created_by;unique" json:"created_by"`
-	User        *User     `gorm:"foreignKey:created_by"`
-	UpdatedBy   string    `gorm:"column:updated_by" json:"updated_by"`
-	UserUpdated *User     `gorm:"foreignKey:updated_by"`
-	OrgCode     string    `gorm:"column:org_code;not null;unique"`
-	Name        string    `gorm:"name;not null;not null"`
-	Description string    `gorm:"description"`
-	IsActive    bool      `gorm:"isactive;default: true"`
+	Name        string    `gorm:"column:name;not null"`
+	Description string    `gorm:"column:description"`
+	IsActive    bool      `gorm:"column:isactive;default: true"`
 }
 
 type OrganizationRequest struct {

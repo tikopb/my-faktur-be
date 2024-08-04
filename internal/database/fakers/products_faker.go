@@ -2,6 +2,7 @@ package fakers
 
 import (
 	"bemyfaktur/internal/model"
+	"time"
 
 	"gorm.io/gorm"
 )
@@ -18,10 +19,6 @@ func ProductFaker(db *gorm.DB, product model.Product) *model.Product {
 		CreatedBy:      product.CreatedBy,
 		CreatedAt:      time.Time{},
 		UpdateAt:       time.Time{},
-		IsActive:       product.IsActive,
-		UUID:           uuid.New(),
-		CreatedAt:      product.CreatedAt,
-		UpdateAt:       product.UpdateAt,
 		IsActive:       product.IsActive,
 		UUID:           product.UUID,
 		OrganizationId: product.OrganizationId,

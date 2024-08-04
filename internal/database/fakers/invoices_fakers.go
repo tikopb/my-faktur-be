@@ -9,6 +9,7 @@ import (
 
 func InvoiceFaker(db *gorm.DB, invoice model.Invoice) *model.Invoice {
 	return &model.Invoice{
+		ID:                invoice.ID,
 		UUID:              invoice.UUID,
 		CreatedAt:         time.Time{},
 		UpdateAt:          time.Time{},
@@ -42,7 +43,7 @@ func InvoiceLineFaker(db *gorm.DB, line model.InvoiceLine) *model.InvoiceLine {
 		IsPrecentage:   line.IsPrecentage,
 		ProductID:      line.ProductID,
 		InvoiceID:      line.InvoiceID,
-		UUID:           uuid.New(),
+		UUID:           line.UUID,
 		OrganizationId: line.OrganizationId,
 	}
 }

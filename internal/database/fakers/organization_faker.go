@@ -8,6 +8,7 @@ import (
 func OrgFaker(db *gorm.DB, org model.Organization) *model.Organization {
 	return &model.Organization{
 		ID:          org.ID,
+		UUID:        org.UUID,
 		CreatedAt:   org.CreatedAt,
 		UpdateAt:    org.UpdateAt,
 		CreatedBy:   org.CreatedBy,
