@@ -256,8 +256,9 @@ func (f *FileserviceRepo) GetUrlFile(request model.FileServiceRequest) ([]model.
 		panic("env of " + "url_FileService" + "not found")
 	}
 
-	file_service_port := viper.GetString("file_service_port")
-	url_FileService := viper.GetString("url_FileService")
+	fileServiceUrl := viper.GetString("fileserviceurl")
+	portservice := viper.GetString("be_port")
+	fileServiceEndpoint := viper.GetString("fileserviceendpoint")
 
 	dataList, err := f.GetFromDb(request.UuidDoc, request.DocType)
 	if err != nil {
@@ -268,7 +269,7 @@ func (f *FileserviceRepo) GetUrlFile(request model.FileServiceRequest) ([]model.
 	for _, data := range dataList {
 		returnData = append(returnData, model.FileServiceRespont{
 			FileName: data.FileName,
-			FileUrl:  file_service_port + url_FileService + data.FileName,
+			FileUrl:  fileServiceUrl + portservice + fileServiceEndpoint + data.FileName,
 		})
 	}
 
