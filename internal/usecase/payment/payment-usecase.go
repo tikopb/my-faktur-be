@@ -8,6 +8,7 @@ import (
 	"bemyfaktur/internal/repository/payment"
 	"errors"
 	"fmt"
+	"mime/multipart"
 
 	"github.com/google/uuid"
 )
@@ -18,7 +19,7 @@ type paymentUsecase struct {
 	partnerRepo partner.Repository
 }
 
-func GetUsecase(paymentRepo payment.PaymentRepositoryinterface, invoiceRepo invoice.InvoiceRepositoryInterface, partnerRepo partner.Repository) PaymentUsecaseInterface {
+func GetUsecase(paymentRepo payment.PaymentRepositoryinterface, invoiceRepo invoice.InvoiceRepositoryInterface, partnerRepo partner.Repository) *paymentUsecase {
 	return &paymentUsecase{
 		paymentRepo: paymentRepo,
 		invoiceRepo: invoiceRepo,
@@ -196,4 +197,30 @@ func (pu *paymentUsecase) HandlingPaginationLine(q string, limit int, offset int
 		return 0, err
 	}
 	return count, nil
+}
+
+// post data for payment with v3 api versioning
+func (pu *paymentUsecase) PostPaymentV3(request model.PaymentRequestV3, userID string, form multipart.Form) (model.PaymentRespontV3, error) {
+	//run on postV2 for processing
+	request.Data.Header.CreatedBy = userID
+	request.Data.Header.UpdatedBy = userID
+
+	//run createpaymentV2
+	data, err := pu.CreatePaymentV2(model.PaymentRequestV2{
+		Header: request.Data.Header,
+		Line:   request.Data.Line},
+		userID)
+	if err != nil {
+		return model.PaymentRespontV3{}, err
+	}
+
+	//TODO implement me
+	panic("implement me")
+}
+
+// set the update for payment with v3 api versioning
+func (pu *paymentUsecase) UpdatePaymentV3(id uuid.UUID, request model.PaymentRequestV3, form multipart.Form) (model.PaymentRespontV3, error) {
+
+	//TODO implement me
+	panic("implement me")
 }

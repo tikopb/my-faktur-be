@@ -79,9 +79,20 @@ type PaymentRequestV2 struct {
 	Header PaymentRequest       `json:"header"`
 	Line   []PaymentLineRequest `json:"line"`
 }
+
+type PaymentRequestV3 struct {
+	Data PaymentRequestV2   `json:"data"`
+	File FileServiceRespont `json:"file"`
+}
+
 type PaymentRespontV2 struct {
 	Header PaymentRespont       `json:"header"`
 	Line   []PaymentLineRespont `json:"line"`
+}
+
+type PaymentRespontV3 struct {
+	Data PaymentRespontV2   `json:"data"`
+	File FileServiceRespont `json:"file"`
 }
 
 type PaymentLine struct {
