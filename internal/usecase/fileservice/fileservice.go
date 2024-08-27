@@ -23,6 +23,23 @@ func (f *fileServiceUsecase) GetFileList(request model.FileServiceRequest) ([]mo
 	return f.fileServiceRepo.GetFileList(request)
 }
 
+/*
+	process to delete old file to get new File this is for V1 file update
+
+on the update file on v1 version file before must be saved before and save the file from request later
+*/
+func (f *fileServiceUsecase) UpdateAndDeletedFileV1(request model.FileServiceRequest, form *multipart.Form) (model.FileServiceRespont, error) {
+
+	// save file after the file berfore
+	file, err := f.SaveFile(request, form)
+	if err != nil {
+		return model.FileServiceRespont{}, err
+	}
+
+	//save the file
+	return file, nil
+}
+
 // SaveFile implements Repository.
 func (f *fileServiceUsecase) SaveFile(request model.FileServiceRequest, form *multipart.Form) (model.FileServiceRespont, error) {
 
