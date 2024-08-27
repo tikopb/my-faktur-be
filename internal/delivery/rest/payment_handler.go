@@ -176,10 +176,10 @@ func (h *handler) CreatePaymentV3(c echo.Context) error {
 		return err
 	}
 
-	var request model.PaymentRequestV3
+	var request model.PaymentRequestV2
 	err = json.Unmarshal([]byte(c.Request().FormValue("data")), &request)
 	if err != nil {
-		WriteLogErorr("[delivery][rest][payment_handler][CreatePaymentV3] ", err)
+		WriteLogErorr("[delivery][rest][invoice_handler][CreatePaymentV3] ", err)
 		return handleError(c, http.StatusInternalServerError, err, meta, data)
 	}
 
@@ -189,6 +189,7 @@ func (h *handler) CreatePaymentV3(c echo.Context) error {
 		WriteLogErorr("[delivery][rest][payment_handler][CreatePaymentV3] ", err)
 		return handleError(c, http.StatusInternalServerError, err, meta, data)
 	}
+	request.Header.OrganizationId = userInf.OrganizationID
 
 	//start the usercase process
 	data, err := h.paymentUsecase.PostPaymentV3(request, userInf.UserId, form)
@@ -197,7 +198,7 @@ func (h *handler) CreatePaymentV3(c echo.Context) error {
 		return handleError(c, http.StatusInternalServerError, err, meta, data)
 	}
 
-	return handleError(c, http.StatusOK, err, meta, data)
+	return handleError(c, http.StatusOK, errors.New("Created Successfull "+data.Data.BatchNo+"with documentno"+data.Data.DocumentNo), meta, data)
 }
 
 func (h *handler) UpdatePaymentV3(c echo.Context) error {
@@ -228,5 +229,5 @@ func (h *handler) UpdatePaymentV3(c echo.Context) error {
 		return handleError(c, http.StatusInternalServerError, err, meta, data)
 	}
 
-	return handleError(c, http.StatusOK, err, meta, data)
+	return handleError(c, http.StatusOK, errors.New("UPDATE "+data.Data.BatchNo+" SUCCESS"), meta, data)
 }

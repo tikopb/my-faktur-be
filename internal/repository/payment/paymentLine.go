@@ -10,13 +10,14 @@ import (
 func (pr *paymentRepo) CreateLine(paymentLine model.PaymentLineRequest) (model.PaymentLineRespont, error) {
 	dataReturn := model.PaymentLineRespont{}
 	data := model.PaymentLine{
-		PaymentID:    paymentLine.PaymentID,
-		Price:        paymentLine.Price,
-		Discount:     paymentLine.Discount,
-		InvoiceID:    paymentLine.Invoice_id,
-		IsPrecentage: paymentLine.IsPrecentage,
-		CreatedBy:    paymentLine.CreatedBy,
-		UpdatedBy:    paymentLine.UpdatedBy,
+		PaymentID:      paymentLine.PaymentID,
+		Price:          paymentLine.Price,
+		Discount:       paymentLine.Discount,
+		InvoiceID:      paymentLine.Invoice_id,
+		IsPrecentage:   paymentLine.IsPrecentage,
+		CreatedBy:      paymentLine.CreatedBy,
+		UpdatedBy:      paymentLine.UpdatedBy,
+		OrganizationId: paymentLine.OrganizationId,
 	}
 
 	//beforesave validation

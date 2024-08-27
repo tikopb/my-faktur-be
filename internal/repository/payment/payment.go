@@ -101,14 +101,14 @@ func (pr *paymentRepo) Create(payment model.PaymentRequest) (model.PaymentRespon
 	payment.PayDate = date
 
 	paymentData := model.Payment{
-		CreatedBy:  payment.CreatedBy,
-		PartnerID:  payment.PartnerID,
-		UpdatedBy:  payment.UpdatedBy,
-		GrandTotal: 0,
-		Discount:   0,
-		BatchNo:    payment.BatchNo,
-		DocumentNo: documentno,
-		//PayDate:    payment.PayDate, turn off paydate just filled when updated function
+		CreatedBy:      payment.CreatedBy,
+		PartnerID:      payment.PartnerID,
+		UpdatedBy:      payment.UpdatedBy,
+		GrandTotal:     0,
+		Discount:       0,
+		BatchNo:        payment.BatchNo,
+		DocumentNo:     documentno,
+		OrganizationId: payment.OrganizationId,
 	}
 
 	if err := pr.db.Create(&paymentData).Error; err != nil {

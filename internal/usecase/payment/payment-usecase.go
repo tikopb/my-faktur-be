@@ -159,6 +159,7 @@ func (pu *paymentUsecase) CreatePaymentV2(request model.PaymentRequestV2, userId
 			//set created by
 			line.CreatedBy = userId
 			line.UpdatedBy = userId
+			line.OrganizationId = invoice.OrganizationId
 			linesPost = append(linesPost, line)
 		} else if err.Error() == "data not found" {
 			//if err !nil then return erorr
@@ -202,16 +203,9 @@ func (pu *paymentUsecase) HandlingPaginationLine(q string, limit int, offset int
 }
 
 // post data for payment with v3 api versioning
-func (pu *paymentUsecase) PostPaymentV3(request model.PaymentRequestV3, userID string, form *multipart.Form) (model.PaymentRespontV3, error) {
-	//run on postV2 for processing
-	request.Data.Header.CreatedBy = userID
-	request.Data.Header.UpdatedBy = userID
-
+func (pu *paymentUsecase) PostPaymentV3(request model.PaymentRequestV2, userID string, form *multipart.Form) (model.PaymentRespontV3, error) {
 	//run createpaymentV2
-	data, err := pu.CreatePaymentV2(model.PaymentRequestV2{
-		Header: request.Data.Header,
-		Line:   request.Data.Line},
-		userID)
+	data, err := pu.CreatePaymentV2(request, userID)
 	if err != nil {
 		return model.PaymentRespontV3{}, err
 	}
