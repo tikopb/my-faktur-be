@@ -85,13 +85,8 @@ type PaymentRequestV3 struct {
 	File FileServiceRespont `json:"file"`
 }
 
-type PaymentRespontV2 struct {
-	Header PaymentRespont       `json:"header"`
-	Line   []PaymentLineRespont `json:"line"`
-}
-
 type PaymentRespontV3 struct {
-	Data PaymentRespontV2   `json:"data"`
+	Data PaymentRespont     `json:"data"`
 	File FileServiceRespont `json:"file"`
 }
 

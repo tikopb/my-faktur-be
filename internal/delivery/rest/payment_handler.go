@@ -168,3 +168,65 @@ func (h *handler) CreatePaymentV2(c echo.Context) error {
 
 	return handleError(c, http.StatusOK, errors.New("Create "+data.DocumentNo+" SUCCESS"), meta, data)
 }
+
+func (h *handler) CreatePaymentV3(c echo.Context) error {
+	//file validation
+	form, err := c.MultipartForm()
+	if err != nil {
+		return err
+	}
+
+	var request model.PaymentRequestV3
+	err = json.Unmarshal([]byte(c.Request().FormValue("data")), &request)
+	if err != nil {
+		WriteLogErorr("[delivery][rest][payment_handler][CreatePaymentV3] ", err)
+		return handleError(c, http.StatusInternalServerError, err, meta, data)
+	}
+
+	//getUserId
+	userInf, err := h.middleware.GetUserInformation(c.Request())
+	if err != nil {
+		WriteLogErorr("[delivery][rest][payment_handler][CreatePaymentV3] ", err)
+		return handleError(c, http.StatusInternalServerError, err, meta, data)
+	}
+
+	//start the usercase process
+	data, err := h.paymentUsecase.PostPaymentV3(request, userInf.UserId, form)
+	if err != nil {
+		WriteLogErorr("[delivery][rest][payment_handler][CreatePaymentV3] ", err)
+		return handleError(c, http.StatusInternalServerError, err, meta, data)
+	}
+
+	return handleError(c, http.StatusOK, err, meta, data)
+}
+
+func (h *handler) UpdatePaymentV3(c echo.Context) error {
+	//file validation
+	form, err := c.MultipartForm()
+	if err != nil {
+		return err
+	}
+
+	//get param
+	id, err := h.parsingId(c)
+	if err != nil {
+		return handleError(c, http.StatusInternalServerError, err, meta, data)
+	}
+
+	var request model.PaymentRequest
+
+	//run the function unmarshal from form to struct
+	err = json.Unmarshal([]byte(c.Request().FormValue("data")), &request)
+	if err != nil {
+		WriteLogErorr("[delivery][rest][payment_handler][UpdatePaymentV3] ", err)
+		return handleError(c, http.StatusInternalServerError, err, meta, data)
+	}
+
+	data, err := h.paymentUsecase.UpdatePaymentV3(id, request, form)
+	if err != nil {
+		WriteLogErorr("[delivery][rest][payment_handler][UpdatePaymentV3] ", err)
+		return handleError(c, http.StatusInternalServerError, err, meta, data)
+	}
+
+	return handleError(c, http.StatusOK, err, meta, data)
+}

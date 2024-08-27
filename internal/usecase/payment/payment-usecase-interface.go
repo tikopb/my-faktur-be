@@ -24,6 +24,6 @@ type PaymentUsecaseInterface interface {
 	HandlingPagination(q string, limit int, offset int, dateFrom string, dateTo string) (int64, error)
 	HandlingPaginationLine(q string, limit int, offset int, paymentID int) (int64, error)
 
-	PostPaymentV3(request model.PaymentRequestV3, userID string, form multipart.Form) (model.PaymentRespontV3, error)
-	UpdatePaymentV3(id uuid.UUID, request model.PaymentRequestV3, form multipart.Form) (model.PaymentRespontV3, error)
+	PostPaymentV3(request model.PaymentRequestV3, userID string, form *multipart.Form) (model.PaymentRespontV3, error)
+	UpdatePaymentV3(id uuid.UUID, request model.PaymentRequest, form *multipart.Form) (model.PaymentRespontV3, error)
 }
