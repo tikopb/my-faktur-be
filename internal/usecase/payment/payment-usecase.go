@@ -6,23 +6,26 @@ import (
 	"bemyfaktur/internal/repository/invoice"
 	"bemyfaktur/internal/repository/partner"
 	"bemyfaktur/internal/repository/payment"
+	"bemyfaktur/internal/usecase/fileservice"
 	"errors"
 	"fmt"
-
 	"github.com/google/uuid"
+	"mime/multipart"
 )
 
 type paymentUsecase struct {
 	paymentRepo payment.PaymentRepositoryinterface
 	invoiceRepo invoice.InvoiceRepositoryInterface
 	partnerRepo partner.Repository
+	fileService fileservice.Usecase
 }
 
-func GetUsecase(paymentRepo payment.PaymentRepositoryinterface, invoiceRepo invoice.InvoiceRepositoryInterface, partnerRepo partner.Repository) PaymentUsecaseInterface {
+func GetUsecase(paymentRepo payment.PaymentRepositoryinterface, invoiceRepo invoice.InvoiceRepositoryInterface, partnerRepo partner.Repository, fileService fileservice.Usecase) *paymentUsecase {
 	return &paymentUsecase{
 		paymentRepo: paymentRepo,
 		invoiceRepo: invoiceRepo,
 		partnerRepo: partnerRepo,
+		fileService: fileService,
 	}
 }
 
@@ -156,6 +159,7 @@ func (pu *paymentUsecase) CreatePaymentV2(request model.PaymentRequestV2, userId
 			//set created by
 			line.CreatedBy = userId
 			line.UpdatedBy = userId
+			line.OrganizationId = invoice.OrganizationId
 			linesPost = append(linesPost, line)
 		} else if err.Error() == "data not found" {
 			//if err !nil then return erorr
@@ -196,4 +200,67 @@ func (pu *paymentUsecase) HandlingPaginationLine(q string, limit int, offset int
 		return 0, err
 	}
 	return count, nil
+}
+
+// post data for payment with v3 api versioning
+func (pu *paymentUsecase) PostPaymentV3(request model.PaymentRequestV2, userID string, form *multipart.Form) (model.PaymentRespontV3, error) {
+	//run createpaymentV2
+	data, err := pu.CreatePaymentV2(request, userID)
+	if err != nil {
+		return model.PaymentRespontV3{}, err
+	}
+
+	//file service start
+	fileRequest := model.FileServiceRequest{
+		File:       nil,
+		File64:     nil,
+		UuidDoc:    data.UUID,
+		DocType:    "PAY",
+		FileName:   "",
+		CreatedBy:  data.CreatedBy.UserId,
+		FileAction: "",
+	}
+
+	//set to usecase of file service formation
+	dataFile, err := pu.fileService.SaveFile(fileRequest, form)
+	if err != nil {
+		return model.PaymentRespontV3{}, err
+	}
+
+	return model.PaymentRespontV3{data, dataFile}, nil
+}
+
+// set the update for payment with v3 api versioning
+func (pu *paymentUsecase) UpdatePaymentV3(id uuid.UUID, request model.PaymentRequest, form *multipart.Form) (model.PaymentRespontV3, error) {
+	//run on process update
+	data, err := pu.paymentRepo.Update(id, request)
+	if err != nil {
+		return model.PaymentRespontV3{}, err
+	}
+
+	//start update the document
+	//just update when form is updated
+	returnData := model.PaymentRespontV3{}
+	imageActionStr := form.Value["image_action"][0]
+	if imageActionStr == string(constant.FileActionUpdate) {
+		if len(form.File["files"]) > 0 {
+			fileRequest := model.FileServiceRequest{
+				UuidDoc:   data.UUID,
+				DocType:   "INV",
+				CreatedBy: data.CreatedBy.UserId,
+			}
+			files, err := pu.fileService.DeleteAndUpdateV1(fileRequest, form)
+			if err != nil {
+				return model.PaymentRespontV3{}, err
+			}
+
+			returnData = model.PaymentRespontV3{
+				Data: data,
+				File: files,
+			}
+		}
+	}
+
+	//set the return when no erorr
+	return returnData, nil
 }

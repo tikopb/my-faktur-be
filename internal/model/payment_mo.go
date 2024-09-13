@@ -34,18 +34,19 @@ type Payment struct {
 }
 
 type PaymentRequest struct {
-	CreatedBy     string                    `json:"-"`
-	UpdatedBy     string                    `json:"-"`
-	PartnerID     int                       `json:"-"`
-	PartnerUUID   uuid.UUID                 `json:"partner_id"`
-	Discount      float64                   `json:"discount"`
-	BatchNo       string                    `json:"batchno"`
-	Status        constant.PaymentStatus    `json:"status"`
-	DocAction     constant.PaymentDocAction `json:"docaction"`
-	DocumentNo    string                    `json:"documentno"`
-	IsPrecentage  bool                      `json:"isprecentage"`
-	PayDateString string                    `json:"pay_date"`
-	PayDate       time.Time                 `json:"-"`
+	CreatedBy      string                    `json:"-"`
+	UpdatedBy      string                    `json:"-"`
+	PartnerID      int                       `json:"-"`
+	PartnerUUID    uuid.UUID                 `json:"partner_id"`
+	Discount       float64                   `json:"discount"`
+	BatchNo        string                    `json:"batchno"`
+	Status         constant.PaymentStatus    `json:"status"`
+	DocAction      constant.PaymentDocAction `json:"docaction"`
+	DocumentNo     string                    `json:"documentno"`
+	IsPrecentage   bool                      `json:"isprecentage"`
+	PayDateString  string                    `json:"pay_date"`
+	PayDate        time.Time                 `json:"-"`
+	OrganizationId int                       `json:"-"`
 }
 
 type PaymentRespont struct {
@@ -79,9 +80,15 @@ type PaymentRequestV2 struct {
 	Header PaymentRequest       `json:"header"`
 	Line   []PaymentLineRequest `json:"line"`
 }
-type PaymentRespontV2 struct {
-	Header PaymentRespont       `json:"header"`
-	Line   []PaymentLineRespont `json:"line"`
+
+type PaymentRequestV3 struct {
+	Data PaymentRequestV2   `json:"data"`
+	File FileServiceRespont `json:"file"`
+}
+
+type PaymentRespontV3 struct {
+	Data PaymentRespont     `json:"data"`
+	File FileServiceRespont `json:"file"`
 }
 
 type PaymentLine struct {
@@ -105,15 +112,16 @@ type PaymentLine struct {
 }
 
 type PaymentLineRequest struct {
-	PaymentUUID  uuid.UUID `json:"payment_id"`
-	PaymentID    int       `json:"-"`
-	Invoice_uuid uuid.UUID `json:"invoice_id"`
-	Invoice_id   int       `json:"-"`
-	Price        float64   `json:"price"`
-	Discount     float64   `json:"discount"`
-	IsPrecentage bool      `json:"isprecentage"`
-	CreatedBy    string    `json:"-"`
-	UpdatedBy    string    `json:"-"`
+	PaymentUUID    uuid.UUID `json:"payment_id"`
+	PaymentID      int       `json:"-"`
+	Invoice_uuid   uuid.UUID `json:"invoice_id"`
+	Invoice_id     int       `json:"-"`
+	Price          float64   `json:"price"`
+	Discount       float64   `json:"discount"`
+	IsPrecentage   bool      `json:"isprecentage"`
+	CreatedBy      string    `json:"-"`
+	UpdatedBy      string    `json:"-"`
+	OrganizationId int       `json:"-"`
 }
 
 type PaymentLineRespont struct {
