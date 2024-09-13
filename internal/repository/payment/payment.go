@@ -258,14 +258,16 @@ func (pr *paymentRepo) Delete(id uuid.UUID) (string, error) {
 
 func (pr *paymentRepo) BeforeSave(data model.Payment) (model.Payment, error) {
 	//change grand total to sum of line first!
-	var grandTotal float64 = 0
-	query := `
-    	select coalesce(sum(amount), 0) from payment_lines pl where payment_id = ?
-	`
-	if err := pr.db.Exec(query, data.ID).Scan(&grandTotal).Error; err != nil {
+	var totalAmount float64
+	//searching the value off grandtotal
+	err := pr.db.Table("payment_lines").Where("payment_id = ?", data.ID).Select("COALESCE(SUM(amount), 0)").Scan(&totalAmount).Error
+
+	if err != nil {
 		return data, err
 	}
-	data.GrandTotal = grandTotal
+
+	//set the value of grandtotal
+	data.GrandTotal = totalAmount
 
 	//run handling GrandTotal
 	data = pr.handlingGrandTotal(data)
@@ -276,7 +278,7 @@ func (pr *paymentRepo) BeforeSave(data model.Payment) (model.Payment, error) {
 // BeforeUpdate implements PaymentRepositoryinterface.
 func (pr *paymentRepo) BeforeUpdate(data model.Payment, docaction string) (model.Payment, error) {
 	// Open the JSON file
-	file, err := os.Open("./mapper.json")
+	file, err := os.Open("internal/repository/invoice/mapper.json")
 	if err != nil {
 		return model.Payment{}, err
 	}
@@ -367,7 +369,7 @@ func (pr *paymentRepo) getTableName() string {
 
 func (pr *paymentRepo) HandlingPagination(q string, limit int, offset int, dateFrom string, dateTo string) (int64, error) {
 	var count int64 = 0
-	data := model.Invoice{}
+	data := model.Payment{}
 	//q param handler
 	if q != "" {
 		if err := pr.db.Joins("Partner", pr.db.Where(model.GetSearchParamPartnerV2(q))).Where(model.GetSeatchParamPayment(q, dateFrom, dateTo)).Find(&data).Count(&count).Error; err != nil {

@@ -216,6 +216,15 @@ func (h *handler) UpdatePaymentV3(c echo.Context) error {
 
 	var request model.PaymentRequest
 
+	//getUserId
+	userId, err := h.middleware.GetuserId(c.Request())
+	if err != nil {
+		WriteLogErorr("[delivery][rest][payment_handler][UpdatePayment] ", err)
+		return handleError(c, http.StatusInternalServerError, err, meta, data)
+	}
+
+	request.UpdatedBy = userId
+	request.CreatedBy = userId
 	//run the function unmarshal from form to struct
 	err = json.Unmarshal([]byte(c.Request().FormValue("data")), &request)
 	if err != nil {
