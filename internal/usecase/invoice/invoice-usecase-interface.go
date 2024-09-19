@@ -2,6 +2,7 @@ package invoice
 
 import (
 	"bemyfaktur/internal/model"
+	"bemyfaktur/internal/model/constant"
 	"mime/multipart"
 
 	"github.com/google/uuid"
@@ -26,5 +27,8 @@ type InvoiceUsecaseInterface interface {
 
 	//v2
 	CreateInvoiceV2(request model.InvoiceRequestV2, userId string) (model.InvoiceRespontV2, error)
+
+	//v3
 	UpdateInvoiceV3(id uuid.UUID, request model.InvoiceRequest, form multipart.Form) (model.InvoiceRespontV3, error)
+	StatusUpdateV3(id uuid.UUID, docAction constant.InvoiceDocAction) (model.InvoiceRespont, error)
 }

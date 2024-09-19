@@ -74,7 +74,7 @@ func (ir *invoiceRepo) Create(request model.InvoiceRequest, partner model.Partne
 
 	//set return data
 	//parsing the data return
-	dataPreload, err := ir.ParsingInvoiceToInvoiceRequest(invoiceData)
+	dataPreload, err := ir.ParsingInvoiceToInvoiceRespont(invoiceData)
 	if err != nil {
 		return dataPreload, err
 	}
@@ -161,7 +161,7 @@ func (ir *invoiceRepo) Index(limit int, offset int, q string, order []string, da
 	for _, invoice := range data {
 
 		//get user return value
-		dataPreload, err := ir.ParsingInvoiceToInvoiceRequest(invoice)
+		dataPreload, err := ir.ParsingInvoiceToInvoiceRespont(invoice)
 		if err != nil {
 			return dataReturn, err
 		}
@@ -198,7 +198,7 @@ func (ir *invoiceRepo) Show(id uuid.UUID) (model.InvoiceRespont, error) {
 		}
 	}
 
-	return ir.ParsingInvoiceToInvoiceRequest(data)
+	return ir.ParsingInvoiceToInvoiceRespont(data)
 }
 
 // Show implements InvoiceRepositoryInterface.
@@ -263,7 +263,7 @@ func (ir *invoiceRepo) Update(id uuid.UUID, request model.InvoiceRequest) (model
 	}
 
 	//set return data
-	dataReturn, err := ir.ParsingInvoiceToInvoiceRequest(invoiceData)
+	dataReturn, err := ir.ParsingInvoiceToInvoiceRespont(invoiceData)
 	if err != nil {
 		return model.InvoiceRespont{}, err
 	}
@@ -295,7 +295,7 @@ func (ir *invoiceRepo) Partial(partner_id int, q string) ([]model.InvoicePartial
 	return data, nil
 }
 
-func (ir *invoiceRepo) ParsingInvoiceToInvoiceRequest(invoice model.Invoice) (model.InvoiceRespont, error) {
+func (ir *invoiceRepo) ParsingInvoiceToInvoiceRespont(invoice model.Invoice) (model.InvoiceRespont, error) {
 
 	dataPreload, err := ir.ShowInternal(invoice.UUID)
 	if err != nil {
@@ -339,6 +339,24 @@ func (ir *invoiceRepo) ParsingInvoiceToInvoiceRequest(invoice model.Invoice) (mo
 		UpdatedBy:         updateBy,
 		Partner:           partner,
 		Line:              line,
+	}
+
+	return data, nil
+}
+
+func (ir *invoiceRepo) ParsingInvoiceToInvoiceRequest(invoice model.Invoice) (model.InvoiceRequest, error) {
+
+	data := model.InvoiceRequest{
+		Discount:     invoice.Discount,
+		BatchNo:      invoice.BatchNo,
+		Status:       invoice.Status,
+		DocAction:    invoice.DocAction,
+		IsPrecentage: invoice.IsPrecentage,
+		PartnerUUID:  invoice.Partner.UUID,
+		PartnerId:    invoice.PartnerID,
+		CreatedById:  invoice.CreatedBy,
+		UpdatedById:  invoice.UpdatedBy,
+		PayDate:      invoice.PayDate,
 	}
 
 	return data, nil
