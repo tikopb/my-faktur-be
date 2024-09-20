@@ -30,5 +30,5 @@ type InvoiceUsecaseInterface interface {
 
 	//v3
 	UpdateInvoiceV3(id uuid.UUID, request model.InvoiceRequest, form multipart.Form) (model.InvoiceRespontV3, error)
-	StatusUpdateV3(id uuid.UUID, docAction constant.InvoiceDocAction) (model.InvoiceRespont, error)
+	StatusUpdateV3(id uuid.UUID, userId string, docAction constant.InvoiceDocAction) (model.InvoiceRespont, error)
 }

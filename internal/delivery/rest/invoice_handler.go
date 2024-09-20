@@ -300,17 +300,22 @@ func (h *handler) UpdateStatusDoc(c echo.Context) error {
 	//run function
 	err = json.NewDecoder(c.Request().Body).Decode(&request)
 	if err != nil {
-		WriteLogErorr("[delivery][rest][invoice_handler][UpdateInvoice] ", err)
+		WriteLogErorr("[delivery][rest][invoice_handler][UpdateStatusDoc] ", err)
 		return handleError(c, http.StatusInternalServerError, err, meta, data)
 	}
 
 	//getUpdateByUserId
 	userId, err := h.middleware.GetuserId(c.Request())
 	if err != nil {
-		WriteLogErorr("[delivery][rest][invoice_handler][CreateInvoice] ", err)
+		WriteLogErorr("[delivery][rest][invoice_handler][UpdateStatusDoc] ", err)
 		return handleError(c, http.StatusInternalServerError, err, meta, data)
 	}
 
-	data, err := h.invoiceUsecase.StatusUpdateV3(id, request)
+	data, err := h.invoiceUsecase.StatusUpdateV3(id, userId, request.DocAction)
+	if err != nil {
+		WriteLogErorr("[delivery][rest][invoice_handler][UpdateStatusDoc] ", err)
+		return handleError(c, http.StatusInternalServerError, err, meta, data)
+	}
 
+	return handleError(c, http.StatusOK, errors.New("Update of "+data.DocumentNo+"SUCCESS"), meta, data)
 }
