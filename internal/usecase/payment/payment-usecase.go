@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"github.com/google/uuid"
 	"mime/multipart"
+	"time"
 )
 
 type paymentUsecase struct {
@@ -20,7 +21,7 @@ type paymentUsecase struct {
 	fileService fileservice.Usecase
 }
 
-func GetUsecase(paymentRepo payment.PaymentRepositoryinterface, invoiceRepo invoice.InvoiceRepositoryInterface, partnerRepo partner.Repository, fileService fileservice.Usecase) *paymentUsecase {
+func GetUsecase(paymentRepo payment.PaymentRepositoryinterface, invoiceRepo invoice.InvoiceRepositoryInterface, partnerRepo partner.Repository, fileService fileservice.Usecase) PaymentUsecaseInterface {
 	return &paymentUsecase{
 		paymentRepo: paymentRepo,
 		invoiceRepo: invoiceRepo,
@@ -29,7 +30,7 @@ func GetUsecase(paymentRepo payment.PaymentRepositoryinterface, invoiceRepo invo
 	}
 }
 
-// ehader payment part
+// Createpayment header payment part
 // Createpayment implements PaymentUsecaseInterface.
 func (pu *paymentUsecase) Createpayment(request model.PaymentRequest, userId string) (model.PaymentRespont, error) {
 	request.CreatedBy = userId
@@ -263,4 +264,39 @@ func (pu *paymentUsecase) UpdatePaymentV3(id uuid.UUID, request model.PaymentReq
 
 	//set the return when no erorr
 	return returnData, nil
+}
+
+/*
+* update for docaction function
+* run on getting data internal
+* set value of data
+* run the function of update
+ */
+func (pu *paymentUsecase) StatusUpdateV3(id uuid.UUID, userId string, docAction constant.PaymentDocAction) (model.PaymentRespont, error) {
+	//get the data of paymentData internal
+	paymentData, err := pu.paymentRepo.ShowInternal(id)
+	if err != nil {
+		return model.PaymentRespont{}, err
+	}
+
+	//set value of docaction
+	paymentData.DocAction = docAction
+	paymentData.UpdatedBy = userId
+
+	if paymentData.PayDate.IsZero() {
+		paymentData.PayDate = time.Now()
+	}
+
+	requestData, err := pu.paymentRepo.ParsingPaymentToPaymentRequest(paymentData)
+	if err != nil {
+		return model.PaymentRespont{}, err
+	}
+
+	//run the function for update
+	data, err := pu.paymentRepo.Update(id, requestData)
+	if err != nil {
+		return model.PaymentRespont{}, err
+	}
+
+	return data, nil
 }

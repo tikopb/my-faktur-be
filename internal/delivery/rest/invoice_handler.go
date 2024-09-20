@@ -289,7 +289,7 @@ func (h *handler) Partialnvoice(c echo.Context) error {
 	return handleError(c, http.StatusOK, errors.New("Get SUCCESS"), meta, data)
 }
 
-func (h *handler) UpdateStatusDoc(c echo.Context) error {
+func (h *handler) UpdateStatusDocInvoice(c echo.Context) error {
 	var request model.InvoiceRequest
 	//get param
 	id, err := h.parsingId(c)
@@ -300,20 +300,20 @@ func (h *handler) UpdateStatusDoc(c echo.Context) error {
 	//run function
 	err = json.NewDecoder(c.Request().Body).Decode(&request)
 	if err != nil {
-		WriteLogErorr("[delivery][rest][invoice_handler][UpdateStatusDoc] ", err)
+		WriteLogErorr("[delivery][rest][invoice_handler][UpdateStatusDocInvoice] ", err)
 		return handleError(c, http.StatusInternalServerError, err, meta, data)
 	}
 
 	//getUpdateByUserId
 	userId, err := h.middleware.GetuserId(c.Request())
 	if err != nil {
-		WriteLogErorr("[delivery][rest][invoice_handler][UpdateStatusDoc] ", err)
+		WriteLogErorr("[delivery][rest][invoice_handler][UpdateStatusDocInvoice] ", err)
 		return handleError(c, http.StatusInternalServerError, err, meta, data)
 	}
 
 	data, err := h.invoiceUsecase.StatusUpdateV3(id, userId, request.DocAction)
 	if err != nil {
-		WriteLogErorr("[delivery][rest][invoice_handler][UpdateStatusDoc] ", err)
+		WriteLogErorr("[delivery][rest][invoice_handler][UpdateStatusDocInvoice] ", err)
 		return handleError(c, http.StatusInternalServerError, err, meta, data)
 	}
 

@@ -18,6 +18,8 @@ func (pr *paymentRepo) DocProcess(data model.Payment, docaction string) (model.P
 	case "CO":
 		data, err = pr.CompleteIT(data, docaction)
 	case "IP":
+		data.Status = constant.PaymentStatusProcessed
+		data.DocAction = constant.PaymentDocActionProcessed
 		err = nil
 	case "VO":
 		data, err = pr.ReversedIt(data, docaction)

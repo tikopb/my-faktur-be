@@ -34,4 +34,7 @@ type PaymentRepositoryinterface interface {
 	//pagination handling
 	HandlingPagination(q string, limit int, offset int, dateFrom string, dateTo string) (int64, error)
 	HandlingPaginationLine(q string, limit int, offset int, paymentID int) (int64, error)
+
+	//parsing
+	ParsingPaymentToPaymentRequest(payment model.Payment) (model.PaymentRequest, error)
 }

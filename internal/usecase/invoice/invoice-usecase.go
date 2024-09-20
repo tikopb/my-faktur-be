@@ -9,6 +9,7 @@ import (
 	"bemyfaktur/internal/usecase/fileservice"
 	"errors"
 	"mime/multipart"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -374,6 +375,10 @@ func (iu *invoiceUsecase) StatusUpdateV3(id uuid.UUID, userId string, docAction 
 	//set value of doaction
 	invoiceData.DocAction = docAction
 	invoiceData.UpdatedBy = userId
+
+	if invoiceData.PayDate.IsZero() {
+		invoiceData.PayDate = time.Now()
+	}
 
 	requestData, err := iu.invoiceRepo.ParsingInvoiceToInvoiceRequest(invoiceData)
 	if err != nil {

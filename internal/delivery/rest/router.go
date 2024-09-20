@@ -43,7 +43,7 @@ func LoadRoutes(e *echo.Echo, handler *handler) {
 	invoiceGroup.POST("/v3", handler.CreateInvoiceV3, handler.middleware.CheckAuth)
 	invoiceGroup.PUT("/:id", handler.UpdateInvoice, handler.middleware.CheckAuth)
 	invoiceGroup.PUT("/v3/:id", handler.UpdateInvoiceV3, handler.middleware.CheckAuth)
-	invoiceGroup.PUT("/v3/status/:id", handler.UpdateStatusDoc, handler.middleware.CheckAuth)
+	invoiceGroup.PUT("/v3/status/:id", handler.UpdateStatusDocInvoice, handler.middleware.CheckAuth)
 	invoiceGroup.DELETE("/:id", handler.DeleteInvoice, handler.middleware.CheckAuth)
 
 	//group invoice
@@ -63,6 +63,7 @@ func LoadRoutes(e *echo.Echo, handler *handler) {
 	paymentGroup.POST("/v3", handler.CreatePaymentV3, handler.middleware.CheckAuth)
 	paymentGroup.PUT("/:id", handler.UpdatePayment, handler.middleware.CheckAuth)
 	paymentGroup.PUT("/v3/:id", handler.UpdatePaymentV3, handler.middleware.CheckAuth)
+	paymentGroup.PUT("/v3/status/:id", handler.UpdateStatusDocPayment, handler.middleware.CheckAuth)
 	paymentGroup.DELETE("/:id", handler.DeletePayment, handler.middleware.CheckAuth)
 
 	//group invoice
