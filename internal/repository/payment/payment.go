@@ -203,12 +203,14 @@ func (pr *paymentRepo) Update(id uuid.UUID, updatedPayment model.PaymentRequest)
 	}
 
 	//change the value from string to timestamp format
-	dateStr := updatedPayment.PayDateString
-	date, err := time.Parse("02-01-2006", dateStr)
-	if err != nil {
-		return model.PaymentRespont{}, err
+	if updatedPayment.PayDateString != "" {
+		dateStr := updatedPayment.PayDateString
+		date, err := time.Parse("02-01-2006", dateStr)
+		if err != nil {
+			return model.PaymentRespont{}, err
+		}
+		updatedPayment.PayDate = date
 	}
-	updatedPayment.PayDate = date
 
 	paymentData.PartnerID = updatedPayment.PartnerID
 	paymentData.Discount = updatedPayment.Discount
@@ -360,6 +362,21 @@ func (pr *paymentRepo) parsingPaymentToPaymentRespont(payment model.Payment) (mo
 		PayDate:      data.PayDate,
 		Line:         line,
 	}
+	return data, nil
+}
+
+func (pr *paymentRepo) ParsingPaymentToPaymentRequest(payment model.Payment) (model.PaymentRequest, error) {
+	data := model.PaymentRequest{
+		UpdatedBy:    payment.CreatedBy,
+		PartnerID:    payment.PartnerID,
+		Discount:     payment.Discount,
+		BatchNo:      payment.BatchNo,
+		Status:       payment.Status,
+		DocAction:    payment.DocAction,
+		IsPrecentage: payment.IsPrecentage,
+		PayDate:      payment.PayDate,
+	}
+
 	return data, nil
 }
 

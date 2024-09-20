@@ -240,3 +240,35 @@ func (h *handler) UpdatePaymentV3(c echo.Context) error {
 
 	return handleError(c, http.StatusOK, errors.New("UPDATE "+data.Data.BatchNo+" SUCCESS"), meta, data)
 }
+
+func (h *handler) UpdateStatusDocPayment(c echo.Context) error {
+	var request model.PaymentRequest
+	//get param
+	id, err := h.parsingId(c)
+	if err != nil {
+		WriteLogErorr("[delivery][rest][payment_handler][UpdateStatusDocPayment] ", err)
+		return handleError(c, http.StatusInternalServerError, err, meta, data)
+	}
+
+	//run function
+	err = json.NewDecoder(c.Request().Body).Decode(&request)
+	if err != nil {
+		WriteLogErorr("[delivery][rest][payment_handler][UpdateStatusDocPayment] ", err)
+		return handleError(c, http.StatusInternalServerError, err, meta, data)
+	}
+
+	//get User Id
+	userId, err := h.middleware.GetuserId(c.Request())
+	if err != nil {
+		WriteLogErorr("[delivery][rest][payment_handler][UpdateStatusDocPayment] ", err)
+		return handleError(c, http.StatusInternalServerError, err, meta, data)
+	}
+
+	data, err := h.paymentUsecase.StatusUpdateV3(id, userId, request.DocAction)
+	if err != nil {
+		WriteLogErorr("[delivery][rest][payment_handler][UpdateStatusDocPayment] ", err)
+		return handleError(c, http.StatusInternalServerError, err, meta, data)
+	}
+
+	return handleError(c, http.StatusOK, errors.New("Update of "+data.DocumentNo+" SUCCESS"), meta, data)
+}
