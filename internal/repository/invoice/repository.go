@@ -39,4 +39,8 @@ type InvoiceRepositoryInterface interface {
 
 	//create simultaneously header and line
 	CreateInvoiceV2(request model.InvoiceRequest, requestLines []model.InvoiceLineRequest, partner model.Partner) (model.InvoiceRespont, []model.InvoiceLineRespont, error)
+
+	//parsing
+	ParsingInvoiceToInvoiceRespont(invoice model.Invoice) (model.InvoiceRespont, error)
+	ParsingInvoiceToInvoiceRequest(invoice model.Invoice) (model.InvoiceRequest, error)
 }

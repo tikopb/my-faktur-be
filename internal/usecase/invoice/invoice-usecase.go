@@ -363,3 +363,28 @@ func (iu *invoiceUsecase) Partial(partner_id uuid.UUID, q string) ([]model.Invoi
 
 	return iu.invoiceRepo.Partial(partner.ID, q)
 }
+
+func (iu *invoiceUsecase) StatusUpdateV3(id uuid.UUID, userId string, docAction constant.InvoiceDocAction) (model.InvoiceRespont, error) {
+	//Get the data of invoiceData internal
+	invoiceData, err := iu.invoiceRepo.ShowInternal(id)
+	if err != nil {
+		return model.InvoiceRespont{}, err
+	}
+
+	//set value of doaction
+	invoiceData.DocAction = docAction
+	invoiceData.UpdatedBy = userId
+
+	requestData, err := iu.invoiceRepo.ParsingInvoiceToInvoiceRequest(invoiceData)
+	if err != nil {
+		return model.InvoiceRespont{}, err
+	}
+
+	//run the function for update
+	data, err := iu.invoiceRepo.Update(id, requestData)
+	if err != nil {
+		return model.InvoiceRespont{}, err
+	}
+
+	return data, nil
+}
