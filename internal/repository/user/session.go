@@ -264,7 +264,8 @@ func (ur *userRepo) GetuserIdFromClaims(accesstoken string) (string, error) {
 func (o *userRepo) GetOrgByUserId(userId string) (model.Organization, error) {
 	var data model.Organization
 	if err := o.db.Preload("User").Where(model.Organization{CreatedBy: userId, IsActive: true}).First(&data).Error; err != nil {
-		panic("erorr")
+		//doesnt return erorr because organization is not mandatory
+		return model.Organization{}, nil
 	}
 
 	return data, nil
