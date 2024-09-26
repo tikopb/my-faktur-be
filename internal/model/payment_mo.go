@@ -94,7 +94,7 @@ type PaymentRespontV3 struct {
 type PaymentLine struct {
 	ID             int           `json:"-" gorm:"primaryKey;autoIncrement"`
 	PaymentID      int           `gorm:"column:payment_id;index:idx_payment_id"`
-	Payment        Payment       `gorm:"foreignKey:payment_id"`
+	Payment        Payment       `gorm:"foreignKey:payment_id;constraint:OnDelete:CASCADE"`
 	Price          float64       `gorm:"column:price"`
 	Amount         float64       `gorm:"column:amount"`
 	CreatedAt      time.Time     `gorm:"column:created_at;default:CURRENT_TIMESTAMP"`
