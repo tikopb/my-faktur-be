@@ -56,7 +56,14 @@ func (h *handler) Login(c echo.Context) error {
 
 	msg := "[delivery][rest][user_handler][Login] LOGIN SUCCESS " + sessionData.UserInformation.Username
 	WriteLogInfo(msg)
-	return handleError(c, http.StatusOK, errors.New("AUTHORIZED"), meta, sessionData)
+
+	errMsg := errors.New("AUTHORIZED")
+	//add msg to FE
+	if sessionData.UserSession.OrganizationID == 0 {
+		errMsg = errors.New("Organization Not Exist journey, continue to start creating organization")
+	}
+
+	return handleError(c, http.StatusOK, errMsg, meta, sessionData)
 }
 
 func (h *handler) RefreshSession(c echo.Context) error {
