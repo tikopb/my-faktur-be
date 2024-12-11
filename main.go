@@ -4,6 +4,7 @@ import (
 	"bemyfaktur/internal/database"
 	"bemyfaktur/internal/database/seeders"
 	"flag"
+	echoSwagger "github.com/swaggo/echo-swagger"
 	"log"
 	"os"
 
@@ -15,7 +16,24 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/spf13/viper"
 	"github.com/urfave/cli"
+
+	_ "bemyfaktur/docs"
 )
+
+// @title Swagger Example API
+// @version 1.0
+// @description This is a sample server Petstore server.
+// @termsOfService http://swagger.io/terms/
+
+// @contact.name API Support
+// @contact.url http://www.swagger.io/support
+// @contact.email support@swagger.io
+
+// @license.name Apache 2.0
+// @license.url http://www.apache.org/licenses/LICENSE-2.0.html
+
+// @host petstore.swagger.io
+// @BasePath /v2
 
 func main() {
 	logger.Init()
@@ -28,6 +46,8 @@ func main() {
 	h := rest.NewHandler(container.PartnerUsecase, container.ProductUsecase, container.InvoiceUsecase, container.PaymentUsecase, container.FileserviceUsecase, container.PgUtil, container.AuthUsecase, container.OrganizationUsecase, container.Middleware, db)
 
 	rest.LoadRoutes(e, h)
+
+	e.GET("/docs/*", echoSwagger.WrapHandler)
 
 	flag.Parse()
 	arg := flag.Arg(0)
