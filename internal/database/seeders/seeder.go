@@ -37,7 +37,7 @@ func RegisterSeeders(db *gorm.DB) []Seeder {
 		//products
 		{Seeder: fakers.ProductFaker(db, model.Product{
 			ID:             1,
-			UUID:           StringToUUID("34e4dd7c-521c-41ef-833e-de08e54353a3s"),
+			UUID:           StringToUUID("673a0ff4-a6ac-4e67-888f-38a546c13325"),
 			Name:           "MARKUS",
 			Value:          "C-1.1",
 			Upc:            "502.611.51",
@@ -206,11 +206,6 @@ func RegisterSeeders(db *gorm.DB) []Seeder {
 // run on db seed with function to delete constaint first for smooth seeder
 func DBSeed(db *gorm.DB) error {
 
-	// Disable foreign key constraints
-	//db.Exec("ALTER TABLE users DROP CONSTRAINT fk_users_organization;")
-	//db.Exec("ALTER TABLE organizations DROP CONSTRAINT fk_organizations_user;")
-	//db.Exec("ALTER TABLE organizations DROP CONSTRAINT fk_organizations_user_updated;")
-
 	// Run seeders
 	for _, seeder := range RegisterSeeders(db) {
 		err := db.Debug().Create(seeder.Seeder).Error
@@ -219,12 +214,7 @@ func DBSeed(db *gorm.DB) error {
 		}
 	}
 
-	// Re-enable foreign key constraints
-	//db.Exec("ALTER TABLE public.users ADD CONSTRAINT fk_users_organization FOREIGN KEY (org_id) REFERENCES public.organizations(id);")
-	//db.Exec("ALTER TABLE public.organizations ADD CONSTRAINT fk_organizations_user FOREIGN KEY (created_by) REFERENCES public.users(id);")
-	//db.Exec("ALTER TABLE public.organizations ADD CONSTRAINT fk_organizations_user_updated FOREIGN KEY (updated_by) REFERENCES public.users(id);")
-
-	//change the scuence to 10 after the data
+	//change the squence to 10 after the data
 	RunSequenceChange(db)
 
 	return nil
