@@ -43,6 +43,11 @@ func (f *fileServiceUsecase) UpdateAndDeletedFileV1(request model.FileServiceReq
 // SaveFile implements Repository.
 func (f *fileServiceUsecase) SaveFile(request model.FileServiceRequest, form *multipart.Form) (model.FileServiceRespont, error) {
 
+	// Check if form.File["files"] is nil or does not exist
+	if form.File == nil || form.File["files"] == nil {
+		return model.FileServiceRespont{}, nil
+	}
+
 	//validate just 5 file in a row!
 	if len(form.File["files"]) > 5 {
 		return model.FileServiceRespont{}, errors.New("can't save, 5 file max in a row")

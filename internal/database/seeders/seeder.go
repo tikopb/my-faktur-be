@@ -222,19 +222,24 @@ func DBSeed(db *gorm.DB) error {
 
 // function to change all squence id for table to start at 10 to make room for seeder input
 func RunSequenceChange(db *gorm.DB) {
-	sql := `
-		SELECT setval('document_no_temps_id_seq', 10, true);
-		SELECT setval('file_services_id_seq', 10, true);
-		SELECT setval('invoice_lines_id_seq', 10, true);
-		SELECT setval('invoices_id_seq', 10, true);
-		SELECT setval('organizations_id_seq', 10, true);
-		SELECT setval('partners_id_seq', 10, true);
-		SELECT setval('payment_lines_id_seq', 10, true);
-		SELECT setval('payments_id_seq', 10, true);
-		SELECT setval('products_id_seq', 10, true);
-		SELECT setval('file_services_id_seq', 10, true);
-	`
-	db.Exec(sql)
+	// List of sequences to update
+	sequences := []string{
+		"document_no_temps_id_seq",
+		"file_services_id_seq",
+		"invoices_id_seq",
+		"invoice_lines_id_seq",
+		"organizations_id_seq",
+		"partners_id_seq",
+		"payment_lines_id_seq",
+		"payments_id_seq",
+		"products_id_seq",
+	}
+
+	// Loop through the sequences and execute the setval query for each one
+	for _, seq := range sequences {
+		query := fmt.Sprintf("SELECT setval('%s', 100, true);", seq)
+		db.Exec(query)
+	}
 }
 
 func MigrateDb(db *gorm.DB) {
