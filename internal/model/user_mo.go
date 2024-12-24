@@ -13,9 +13,8 @@ type User struct {
 	FullName       string    `gorm:"column:full_name" json:"full_name"`
 	CreatedAt      time.Time `gorm:"column:created_at" json:"created_at"`
 	IsActive       bool      `gorm:"column:isactive" json:"isactive"`
-	OrganizationId int       `gorm:"column:org_id;index:idx_user_org_id"`
+	OrganizationId int       `gorm:"column:org_id;index:idx_user_org_id" json:"organization_id"`
 	//Organization   *Organization `gorm:"foreignKey:org_id"`
-
 }
 
 type RegisterRequest struct {
